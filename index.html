@@ -1144,23 +1144,40 @@
       padding: 0.62rem 0.55rem;
     }
 
+    .datenbank-bereich {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .datenbank-block {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .datenbank-status {
+      margin: 0.5rem 0 0;
+      text-align: center;
+    }
+
     .daten-aktionen {
       display: flex;
       gap: 0.55rem;
+      margin: 0;
       align-items: center;
       justify-content: center;
-      margin: 0.35rem 0 0.55rem;
     }
 
     .daten-aktionen button {
-      width: 54px;
-      height: 54px;
+      width: 72px;
+      height: 72px;
       margin-top: 0;
       padding: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.65rem;
+      font-size: 2rem;
       line-height: 1;
     }
 
@@ -2738,13 +2755,16 @@
       <button id="einstellungen-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
     </div>
     <div class="dialog-inhalt einstellungen-inhalt">
-      <section class="karte">
+      <section class="karte datenbank-bereich">
         <h2>Datenbank</h2>
-        <div class="daten-aktionen">
-          <button id="json-import-picker-btn" type="button" class="sekundaer" aria-label="Datenbank importieren" title="Datenbank importieren">📂</button>
-          <button id="json-export-btn" type="button" class="sekundaer" aria-label="Datenbank exportieren" title="Datenbank exportieren">💾</button>
+        <div class="datenbank-block">
+          <div class="daten-aktionen" role="group" aria-label="Datenbank Aktionen">
+            <button id="json-db-open-btn" type="button" class="sekundaer" aria-label="Datenbank öffnen" title="Datenbank öffnen">📂</button>
+            <button id="json-db-create-btn" type="button" class="sekundaer" aria-label="Neue Datenbank anlegen" title="Neue Datenbank anlegen">➕</button>
+            <button id="json-export-btn" type="button" class="sekundaer" aria-label="Datenbank exportieren" title="Datenbank exportieren">💾</button>
+          </div>
+          <p id="json-db-status" class="meta-text datenbank-status">Keine JSON-Datei verbunden.</p>
         </div>
-        <input id="json-import-input" name="jsonDatei" class="visuell-versteckt" type="file" accept=".json,application/json" autocomplete="off" />
         <p id="json-fehler" class="fehler" aria-live="polite"></p>
       </section>
       <section class="karte">
@@ -2939,10 +2959,6 @@
   </dialog>
 
 <script>
-    const ANZEIGEMODUS_STORAGE_KEY = "reiseplaner-anzeigemodus";
-    const DB_NAME = "reiseplaner-db";
-    const DB_VERSION = 8;
-
     const STORE_NAMES = {
       projekte: "projekte",
       stops: "stops",
@@ -2954,10 +2970,11 @@
       geocodeCache: "geocodeCache",
       currencyCache: "currencyCache",
       fxRates: "fxRates",
+      appSettings: "appSettings",
     };
     const BACKUP_FORMAT = "reiseplaner-backup";
-    const BACKUP_VERSION = 2;
-    const BACKUP_STORES = [
+    const BACKUP_VERSION = 3;
+    const BACKUP_V2_STORES = [
       STORE_NAMES.projekte,
       STORE_NAMES.stops,
       STORE_NAMES.eintraege,
@@ -2968,6 +2985,10 @@
       STORE_NAMES.geocodeCache,
       STORE_NAMES.currencyCache,
       STORE_NAMES.fxRates,
+    ];
+    const BACKUP_STORES = [
+      ...BACKUP_V2_STORES,
+      STORE_NAMES.appSettings,
     ];
 
     function normalizeAnzeigemodus(value) {
@@ -2983,18 +3004,6 @@
         return "dunkel";
       }
       return "hell";
-    }
-
-    function leseGespeichertenAnzeigemodus() {
-      try {
-        const stored = window.localStorage.getItem(ANZEIGEMODUS_STORAGE_KEY);
-        if (!stored) {
-          return "hell";
-        }
-        return normalizeAnzeigemodus(stored);
-      } catch {
-        return "hell";
-      }
     }
 
     async function leseServiceWorkerVersion() {
@@ -3016,328 +3025,169 @@
 
     class ReiseDB {
       constructor() {
-        this.db = null;
+        this.fileHandle = null;
+        this.initialized = false;
+        this.stores = this._createEmptyStores();
+        this.writeChain = Promise.resolve();
       }
 
-      async init() {
-        if (this.db) {
+      supportsFilePicker() {
+        return Boolean(
+          typeof window !== "undefined" &&
+          typeof window.showOpenFilePicker === "function" &&
+          typeof window.showSaveFilePicker === "function",
+        );
+      }
+
+      isReady() {
+        return Boolean(this.initialized && this.fileHandle);
+      }
+
+      getDateiName() {
+        return String(this.fileHandle?.name || "").trim();
+      }
+
+      _pickerOptions() {
+        return {
+          excludeAcceptAllOption: true,
+          multiple: false,
+          types: [{
+            description: "Reiseplaner-Datenbank",
+            accept: {
+              "application/json": [".json"],
+            },
+          }],
+        };
+      }
+
+      async init({ mode } = {}) {
+        if (this.initialized) {
           return;
         }
-
-        this.db = await new Promise((resolve, reject) => {
-          const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-          request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            const oldVersion = Number(event.oldVersion || 0);
-            const tx = event.target.transaction || null;
-            this._erstelleSchema(db, oldVersion, tx);
-          };
-
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
+        await this.waehleDatei({ mode });
       }
 
-      _erstelleSchema(db, oldVersion = 0, tx = null) {
-        if (!db.objectStoreNames.contains(STORE_NAMES.projekte)) {
-          const store = db.createObjectStore(STORE_NAMES.projekte, { keyPath: "id" });
-          store.createIndex("startDatum", "startDatum", { unique: false });
+      async waehleDatei({ mode } = {}) {
+        if (!["open", "create"].includes(String(mode || "").trim().toLowerCase())) {
+          throw new Error("Ungültiger Startmodus für die Datenbank.");
         }
 
-        if (!db.objectStoreNames.contains(STORE_NAMES.stops)) {
-          const store = db.createObjectStore(STORE_NAMES.stops, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-          store.createIndex("datumZeit", "datumZeit", { unique: false });
-          store.createIndex("reihenfolge", "reihenfolge", { unique: false });
+        if (!this.supportsFilePicker()) {
+          throw new Error("Dateibasierte Speicherung wird von diesem Browser nicht unterstützt.");
         }
 
-        if (!db.objectStoreNames.contains(STORE_NAMES.eintraege)) {
-          const store = db.createObjectStore(STORE_NAMES.eintraege, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-          store.createIndex("typ", "typ", { unique: false });
-          store.createIndex("startZeit", "startZeit", { unique: false });
-        }
+        const pickerOptions = this._pickerOptions();
 
-        if (!db.objectStoreNames.contains(STORE_NAMES.ausgaben)) {
-          const store = db.createObjectStore(STORE_NAMES.ausgaben, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-          store.createIndex("datum", "datum", { unique: false });
-          store.createIndex("kategorie", "kategorie", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.dateien)) {
-          const store = db.createObjectStore(STORE_NAMES.dateien, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-          store.createIndex("erstelltAm", "erstelltAm", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.links)) {
-          const store = db.createObjectStore(STORE_NAMES.links, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.segmentProfiles)) {
-          const store = db.createObjectStore(STORE_NAMES.segmentProfiles, { keyPath: "id" });
-          store.createIndex("projektId", "projektId", { unique: false });
-          store.createIndex("segmentKey", "segmentKey", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.geocodeCache)) {
-          const store = db.createObjectStore(STORE_NAMES.geocodeCache, { keyPath: "query" });
-          store.createIndex("updatedAt", "updatedAt", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.currencyCache)) {
-          const store = db.createObjectStore(STORE_NAMES.currencyCache, { keyPath: "countryCode" });
-          store.createIndex("updatedAt", "updatedAt", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORE_NAMES.fxRates)) {
-          const store = db.createObjectStore(STORE_NAMES.fxRates, { keyPath: "pair" });
-          store.createIndex("updatedAt", "updatedAt", { unique: false });
-        }
-
-        if (oldVersion > 0 && oldVersion < 6 && tx) {
-          this._migrateLegacyEintraege(tx);
-        }
-      }
-
-      _migrateLegacyEintraege(tx) {
-        if (!tx.objectStoreNames.contains(STORE_NAMES.eintraege)) {
-          return;
-        }
-
-        const eintragStore = tx.objectStore(STORE_NAMES.eintraege);
-
-        const migrateFromStore = (storeName, mapper) => {
-          if (!tx.objectStoreNames.contains(storeName)) {
-            return;
+        try {
+          if (mode === "open") {
+            const [fileHandle] = await window.showOpenFilePicker(pickerOptions);
+            this.fileHandle = fileHandle || null;
+            await this._loadFromFile();
+          } else if (mode === "create") {
+            this.fileHandle = await window.showSaveFilePicker({
+              ...pickerOptions,
+              suggestedName: "reiseplaner-datenbank.json",
+            });
+            this.stores = this._createEmptyStores();
           }
-
-          const request = tx.objectStore(storeName).getAll();
-          request.onsuccess = () => {
-            const eintraege = Array.isArray(request.result) ? request.result : [];
-            for (const eintrag of eintraege) {
-              const normalized = mapper(eintrag);
-              if (!normalized || !normalized.id || !normalized.projektId || !normalized.typ) {
-                continue;
-              }
-              eintragStore.put(normalized);
-            }
-            tx.objectStore(storeName).clear();
-          };
-        };
-
-        migrateFromStore("unterkuenfte", (unterkunft) => this._legacyUnterkunftToEintrag(unterkunft));
-        migrateFromStore("aktivitaeten", (aktivitaet) => this._legacyAktivitaetToEintrag(aktivitaet));
-      }
-
-      _legacyUnterkunftToEintrag(unterkunft) {
-        if (!unterkunft || typeof unterkunft !== "object") {
-          return null;
+        } catch (error) {
+          if (error?.name === "AbortError") {
+            throw error;
+          }
+          throw error;
         }
 
-        return {
-          id: unterkunft.id,
-          projektId: unterkunft.projektId,
-          typ: "unterkunft",
-          startZeit: unterkunft.checkIn || "",
-          endZeit: unterkunft.checkOut || "",
-          titel: String(unterkunft.name || "").trim(),
-          adresse: String(unterkunft.adresse || "").trim(),
-          lat: toNumberOrNull(unterkunft.lat),
-          lon: toNumberOrNull(unterkunft.lon),
-          kosten: toNumberOrNull(unterkunft.preis),
-          waehrung: normalizeWaehrung(unterkunft.waehrung),
-          notizen: String(unterkunft.notizen || "").trim(),
-          link: String(unterkunft.link || "").trim(),
-          countryCode: String(unterkunft.countryCode || "").toUpperCase(),
-          fruehstueckInklusive: Boolean(unterkunft.fruehstueckInklusive),
-        };
-      }
-
-      _legacyAktivitaetToEintrag(aktivitaet) {
-        if (!aktivitaet || typeof aktivitaet !== "object") {
-          return null;
+        const hasWriteAccess = await this._ensureReadWritePermission();
+        if (!hasWriteAccess) {
+          throw new Error("Schreibzugriff auf die ausgewählte JSON-Datei wurde nicht erlaubt.");
         }
 
-        return {
-          id: aktivitaet.id,
-          projektId: aktivitaet.projektId,
-          typ: "aktivitaet",
-          startZeit: aktivitaet.startZeit || "",
-          endZeit: aktivitaet.endZeit || "",
-          titel: String(aktivitaet.titel || "").trim(),
-          adresse: String(aktivitaet.ort || "").trim(),
-          lat: toNumberOrNull(aktivitaet.lat),
-          lon: toNumberOrNull(aktivitaet.lon),
-          kosten: toNumberOrNull(aktivitaet.kosten),
-          waehrung: normalizeWaehrung(aktivitaet.waehrung),
-          notizen: String(aktivitaet.notizen || "").trim(),
-          link: String(aktivitaet.link || "").trim(),
-          countryCode: String(aktivitaet.countryCode || "").toUpperCase(),
-        };
+        this.initialized = true;
+        await this._persist();
       }
 
-      _store(storeName, mode = "readonly") {
-        if (!this.db) {
+      _createEmptyStores() {
+        const stores = {};
+        for (const storeName of BACKUP_STORES) {
+          stores[storeName] = [];
+        }
+        return stores;
+      }
+
+      _getStoreKeyField(storeName) {
+        if ([STORE_NAMES.projekte, STORE_NAMES.stops, STORE_NAMES.eintraege, STORE_NAMES.ausgaben, STORE_NAMES.dateien, STORE_NAMES.links, STORE_NAMES.segmentProfiles].includes(storeName)) {
+          return "id";
+        }
+        if (storeName === STORE_NAMES.geocodeCache) {
+          return "query";
+        }
+        if (storeName === STORE_NAMES.currencyCache) {
+          return "countryCode";
+        }
+        if (storeName === STORE_NAMES.fxRates) {
+          return "pair";
+        }
+        if (storeName === STORE_NAMES.appSettings) {
+          return "id";
+        }
+        throw new Error(`Unbekannter Store: ${storeName}`);
+      }
+
+      _assertReady() {
+        if (!this.initialized || !this.fileHandle) {
           throw new Error("Datenbank ist nicht initialisiert.");
         }
-
-        return this.db.transaction(storeName, mode).objectStore(storeName);
       }
 
-      _toPromise(request) {
-        return new Promise((resolve, reject) => {
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
+      _clone(value) {
+        if (typeof structuredClone === "function") {
+          return structuredClone(value);
+        }
+        return JSON.parse(JSON.stringify(value));
       }
 
-      async add(storeName, value) {
-        return this._toPromise(this._store(storeName, "readwrite").add(value));
+      _isSameKey(a, b) {
+        if (a === b) {
+          return true;
+        }
+        return String(a ?? "") === String(b ?? "");
       }
 
-      async put(storeName, value) {
-        return this._toPromise(this._store(storeName, "readwrite").put(value));
+      async _ensureReadWritePermission() {
+        if (!this.fileHandle || typeof this.fileHandle.queryPermission !== "function") {
+          return true;
+        }
+        const options = { mode: "readwrite" };
+        const current = await this.fileHandle.queryPermission(options);
+        if (current === "granted") {
+          return true;
+        }
+        const requested = await this.fileHandle.requestPermission(options);
+        return requested === "granted";
       }
 
-      async get(storeName, id) {
-        return this._toPromise(this._store(storeName).get(id));
-      }
-
-      async getAll(storeName) {
-        return this._toPromise(this._store(storeName).getAll());
-      }
-
-      async delete(storeName, id) {
-        return this._toPromise(this._store(storeName, "readwrite").delete(id));
-      }
-
-      async clear(storeName) {
-        return this._toPromise(this._store(storeName, "readwrite").clear());
-      }
-
-      async getAllByIndex(storeName, indexName, key) {
-        const index = this._store(storeName).index(indexName);
-        return this._toPromise(index.getAll(IDBKeyRange.only(key)));
-      }
-
-      async deleteByProjektId(storeName, projektId) {
-        const eintraege = await this.getAllByIndex(storeName, "projektId", projektId);
-        await Promise.all(eintraege.map((eintrag) => this.delete(storeName, eintrag.id)));
-        return eintraege.length;
-      }
-    }
-
-
-
-    const PROJEKT_ABHAENGIGE_STORES = [
-      STORE_NAMES.stops,
-      STORE_NAMES.eintraege,
-      STORE_NAMES.ausgaben,
-      STORE_NAMES.dateien,
-      STORE_NAMES.links,
-      STORE_NAMES.segmentProfiles,
-    ];
-    const GEOCODE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 90;
-    const GEOCODE_FAIL_CACHE_TTL_MS = 1000 * 60 * 2;
-    const CURRENCY_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365;
-    const FX_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
-    const PHOTON_URL = "https://photon.komoot.io/api/";
-    const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-    const RESTCOUNTRIES_URL = "https://restcountries.com/v3.1/alpha/";
-    const FX_API_URL = "https://api.frankfurter.app/latest";
-
-    function neueId() {
-      if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-        return crypto.randomUUID();
-      }
-
-      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
-
-    class ReiseStorage {
-      constructor(db) {
-        this.db = db;
-        this.geocodeInFlight = new Map();
-        this.geocodeChain = Promise.resolve();
-      }
-
-      async exportJsonBackup() {
-        const stores = {};
-
-        for (const storeName of BACKUP_STORES) {
-          const eintraege = await this.db.getAll(storeName);
-          if (storeName === STORE_NAMES.dateien) {
-            stores[storeName] = await Promise.all(
-              eintraege.map(async (dateiEintrag) => {
-                const { blob, ...rest } = dateiEintrag || {};
-                return {
-                  ...rest,
-                  blobDataUrl: await blobToDataUrl(blob),
-                };
-              }),
-            );
-            continue;
-          }
-
-          stores[storeName] = eintraege;
+      async _loadFromFile() {
+        if (!this.fileHandle) {
+          throw new Error("Keine Datei ausgewählt.");
+        }
+        const file = await this.fileHandle.getFile();
+        const text = await file.text();
+        if (!String(text || "").trim()) {
+          this.stores = this._createEmptyStores();
+          return;
         }
 
-        return {
-          format: BACKUP_FORMAT,
-          version: BACKUP_VERSION,
-          exportedAt: new Date().toISOString(),
-          stores,
-        };
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          throw new Error("Die ausgewählte Datei enthält kein gültiges JSON.");
+        }
+        const normalized = this._normalizePayload(payload);
+        this.stores = normalized.stores;
       }
 
-      async importJsonBackup(payload) {
-        const backup = this._normalizeBackupPayload(payload);
-        const importedCounts = {};
-
-        for (const storeName of BACKUP_STORES) {
-          await this.db.clear(storeName);
-        }
-
-        for (const storeName of BACKUP_STORES) {
-          const eintraege = Array.isArray(backup.stores[storeName]) ? backup.stores[storeName] : [];
-          let count = 0;
-
-          for (const eintrag of eintraege) {
-            if (!isPlainObject(eintrag)) {
-              continue;
-            }
-
-            let value = eintrag;
-
-            if (storeName === STORE_NAMES.dateien) {
-              const { blobDataUrl, ...rest } = eintrag || {};
-              value = {
-                ...rest,
-                blob: await dataUrlToBlob(blobDataUrl, rest?.typ || "application/octet-stream"),
-              };
-            }
-            if (storeName === STORE_NAMES.eintraege) {
-              value = this._sanitizeEintragRecord(eintrag);
-              if (!value) {
-                continue;
-              }
-            }
-
-            await this.db.put(storeName, value);
-            count += 1;
-          }
-
-          importedCounts[storeName] = count;
-        }
-
-        return importedCounts;
-      }
-
-      _normalizeBackupPayload(payload) {
+      _normalizePayload(payload) {
         if (!isPlainObject(payload)) {
           throw new Error("Ungültige Datenbank-Datei.");
         }
@@ -3347,7 +3197,7 @@
         }
 
         const version = Number(payload.version);
-        if (!Number.isFinite(version) || ![1, BACKUP_VERSION].includes(version)) {
+        if (!Number.isFinite(version) || ![1, 2, BACKUP_VERSION].includes(version)) {
           throw new Error("Nicht unterstützte Daten-Version.");
         }
 
@@ -3356,14 +3206,33 @@
         }
 
         if (version === BACKUP_VERSION) {
-          const normalizedStores = {};
+          const stores = this._createEmptyStores();
           for (const storeName of BACKUP_STORES) {
-            normalizedStores[storeName] = Array.isArray(payload.stores[storeName]) ? payload.stores[storeName] : [];
+            stores[storeName] = Array.isArray(payload.stores[storeName])
+              ? payload.stores[storeName].filter((value) => isPlainObject(value)).map((value) => this._clone(value))
+              : [];
           }
           return {
-            ...payload,
+            format: BACKUP_FORMAT,
             version: BACKUP_VERSION,
-            stores: normalizedStores,
+            stores,
+          };
+        }
+
+        if (version === 2) {
+          const stores = this._createEmptyStores();
+          for (const storeName of BACKUP_V2_STORES) {
+            stores[storeName] = Array.isArray(payload.stores[storeName])
+              ? payload.stores[storeName].filter((value) => isPlainObject(value)).map((value) => this._clone(value))
+              : [];
+          }
+          stores[STORE_NAMES.appSettings] = Array.isArray(payload.stores[STORE_NAMES.appSettings])
+            ? payload.stores[STORE_NAMES.appSettings].filter((value) => isPlainObject(value)).map((value) => this._clone(value))
+            : [];
+          return {
+            format: BACKUP_FORMAT,
+            version: BACKUP_VERSION,
+            stores,
           };
         }
 
@@ -3379,15 +3248,17 @@
           format: BACKUP_FORMAT,
           version: BACKUP_VERSION,
           stores: {
-            projekte: Array.isArray(legacyStores.projekte) ? legacyStores.projekte : [],
-            stops: Array.isArray(legacyStores.stops) ? legacyStores.stops : [],
+            projekte: Array.isArray(legacyStores.projekte) ? legacyStores.projekte.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            stops: Array.isArray(legacyStores.stops) ? legacyStores.stops.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
             eintraege,
-            ausgaben: Array.isArray(legacyStores.ausgaben) ? legacyStores.ausgaben : [],
-            dateien: Array.isArray(legacyStores.dateien) ? legacyStores.dateien : [],
-            links: Array.isArray(legacyStores.links) ? legacyStores.links : [],
-            geocodeCache: Array.isArray(legacyStores.geocodeCache) ? legacyStores.geocodeCache : [],
-            currencyCache: Array.isArray(legacyStores.currencyCache) ? legacyStores.currencyCache : [],
-            fxRates: Array.isArray(legacyStores.fxRates) ? legacyStores.fxRates : [],
+            ausgaben: Array.isArray(legacyStores.ausgaben) ? legacyStores.ausgaben.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            dateien: Array.isArray(legacyStores.dateien) ? legacyStores.dateien.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            links: Array.isArray(legacyStores.links) ? legacyStores.links.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            segmentProfiles: Array.isArray(legacyStores.segmentProfiles) ? legacyStores.segmentProfiles.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            geocodeCache: Array.isArray(legacyStores.geocodeCache) ? legacyStores.geocodeCache.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            currencyCache: Array.isArray(legacyStores.currencyCache) ? legacyStores.currencyCache.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            fxRates: Array.isArray(legacyStores.fxRates) ? legacyStores.fxRates.filter((value) => isPlainObject(value)).map((value) => this._clone(value)) : [],
+            appSettings: [],
           },
         };
       }
@@ -3439,38 +3310,264 @@
         };
       }
 
-      _sanitizeEintragRecord(eintrag) {
-        if (!isPlainObject(eintrag)) {
-          return null;
+      async _normalizeForStorage(storeName, value) {
+        if (!isPlainObject(value)) {
+          throw new Error("Ungültiger Datensatz.");
         }
 
-        const typ = String(eintrag.typ || "").trim().toLowerCase();
-        if (!["aktivitaet", "unterkunft"].includes(typ)) {
-          return null;
+        if (storeName !== STORE_NAMES.dateien) {
+          return this._clone(value);
         }
 
-        const projektId = String(eintrag.projektId || "").trim();
-        if (!projektId) {
-          return null;
+        const cloned = this._clone(value);
+        const blob = value.blob instanceof Blob ? value.blob : null;
+        const blobDataUrl = String(cloned.blobDataUrl || "").trim() || (blob ? await blobToDataUrl(blob) : "");
+        delete cloned.blob;
+        return {
+          ...cloned,
+          typ: String(cloned.typ || blob?.type || "application/octet-stream"),
+          blobDataUrl,
+        };
+      }
+
+      async _normalizeForReturn(storeName, value) {
+        const cloned = this._clone(value);
+        if (storeName !== STORE_NAMES.dateien) {
+          return cloned;
+        }
+        const { blobDataUrl, ...rest } = cloned || {};
+        return {
+          ...rest,
+          blob: await dataUrlToBlob(blobDataUrl, rest?.typ || "application/octet-stream"),
+        };
+      }
+
+      _serializeStores() {
+        const stores = {};
+        for (const storeName of BACKUP_STORES) {
+          stores[storeName] = Array.isArray(this.stores[storeName])
+            ? this.stores[storeName].map((value) => this._clone(value))
+            : [];
+        }
+        return stores;
+      }
+
+      async _persist() {
+        this._assertReady();
+        this.writeChain = this.writeChain.catch(() => null).then(async () => {
+          const payload = {
+            format: BACKUP_FORMAT,
+            version: BACKUP_VERSION,
+            exportedAt: new Date().toISOString(),
+            stores: this._serializeStores(),
+          };
+          const writable = await this.fileHandle.createWritable();
+          await writable.write(JSON.stringify(payload, null, 2));
+          await writable.close();
+        });
+        return this.writeChain;
+      }
+
+      async add(storeName, value) {
+        this._assertReady();
+        const keyField = this._getStoreKeyField(storeName);
+        const normalized = await this._normalizeForStorage(storeName, value);
+        const keyValue = normalized?.[keyField];
+        if (keyValue === undefined || keyValue === null || String(keyValue).trim() === "") {
+          throw new Error("Datensatz hat keinen gültigen Schlüssel.");
+        }
+
+        if (!Array.isArray(this.stores[storeName])) {
+          this.stores[storeName] = [];
+        }
+
+        const exists = this.stores[storeName].some((eintrag) => this._isSameKey(eintrag?.[keyField], keyValue));
+        if (exists) {
+          throw new Error("Datensatz existiert bereits.");
+        }
+
+        this.stores[storeName].push(normalized);
+        await this._persist();
+        return this._normalizeForReturn(storeName, normalized);
+      }
+
+      async put(storeName, value) {
+        this._assertReady();
+        const keyField = this._getStoreKeyField(storeName);
+        const normalized = await this._normalizeForStorage(storeName, value);
+        const keyValue = normalized?.[keyField];
+        if (keyValue === undefined || keyValue === null || String(keyValue).trim() === "") {
+          throw new Error("Datensatz hat keinen gültigen Schlüssel.");
+        }
+
+        if (!Array.isArray(this.stores[storeName])) {
+          this.stores[storeName] = [];
+        }
+
+        const index = this.stores[storeName].findIndex((eintrag) => this._isSameKey(eintrag?.[keyField], keyValue));
+        if (index >= 0) {
+          this.stores[storeName][index] = normalized;
+        } else {
+          this.stores[storeName].push(normalized);
+        }
+        await this._persist();
+        return this._normalizeForReturn(storeName, normalized);
+      }
+
+      async get(storeName, id) {
+        this._assertReady();
+        const keyField = this._getStoreKeyField(storeName);
+        const eintrag = (this.stores[storeName] || []).find((value) => this._isSameKey(value?.[keyField], id));
+        if (!eintrag) {
+          return undefined;
+        }
+        return this._normalizeForReturn(storeName, eintrag);
+      }
+
+      async getAll(storeName) {
+        this._assertReady();
+        const eintraege = Array.isArray(this.stores[storeName]) ? this.stores[storeName] : [];
+        return Promise.all(eintraege.map((eintrag) => this._normalizeForReturn(storeName, eintrag)));
+      }
+
+      async delete(storeName, id) {
+        this._assertReady();
+        const keyField = this._getStoreKeyField(storeName);
+        const vorher = Array.isArray(this.stores[storeName]) ? this.stores[storeName] : [];
+        const nachher = vorher.filter((value) => !this._isSameKey(value?.[keyField], id));
+        if (nachher.length === vorher.length) {
+          return;
+        }
+        this.stores[storeName] = nachher;
+        await this._persist();
+      }
+
+      async clear(storeName) {
+        this._assertReady();
+        if (!Array.isArray(this.stores[storeName]) || !this.stores[storeName].length) {
+          return;
+        }
+        this.stores[storeName] = [];
+        await this._persist();
+      }
+
+      async getAllByIndex(storeName, indexName, key) {
+        this._assertReady();
+        const eintraege = (this.stores[storeName] || []).filter((eintrag) => this._isSameKey(eintrag?.[indexName], key));
+        return Promise.all(eintraege.map((eintrag) => this._normalizeForReturn(storeName, eintrag)));
+      }
+
+      async deleteByProjektId(storeName, projektId) {
+        const eintraege = await this.getAllByIndex(storeName, "projektId", projektId);
+        if (!eintraege.length) {
+          return 0;
+        }
+        const idFeld = this._getStoreKeyField(storeName);
+        this.stores[storeName] = (this.stores[storeName] || []).filter(
+          (eintrag) => !eintraege.some((zuLoeschen) => this._isSameKey(eintrag?.[idFeld], zuLoeschen?.[idFeld])),
+        );
+        await this._persist();
+        return eintraege.length;
+      }
+    }
+
+
+
+    const PROJEKT_ABHAENGIGE_STORES = [
+      STORE_NAMES.stops,
+      STORE_NAMES.eintraege,
+      STORE_NAMES.ausgaben,
+      STORE_NAMES.dateien,
+      STORE_NAMES.links,
+      STORE_NAMES.segmentProfiles,
+    ];
+    const GEOCODE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 90;
+    const GEOCODE_FAIL_CACHE_TTL_MS = 1000 * 60 * 2;
+    const CURRENCY_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365;
+    const FX_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
+    const PHOTON_URL = "https://photon.komoot.io/api/";
+    const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+    const RESTCOUNTRIES_URL = "https://restcountries.com/v3.1/alpha/";
+    const FX_API_URL = "https://api.frankfurter.app/latest";
+
+    function neueId() {
+      if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+      }
+
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    class ReiseStorage {
+      constructor(db) {
+        this.db = db;
+        this.geocodeInFlight = new Map();
+        this.geocodeChain = Promise.resolve();
+      }
+
+      isDbReady() {
+        return Boolean(this.db && typeof this.db.isReady === "function" && this.db.isReady());
+      }
+
+      supportsDbDateiauswahl() {
+        return Boolean(this.db && typeof this.db.supportsFilePicker === "function" && this.db.supportsFilePicker());
+      }
+
+      getDbDateiName() {
+        if (!this.db || typeof this.db.getDateiName !== "function") {
+          return "";
+        }
+        return this.db.getDateiName();
+      }
+
+      async waehleJsonDatenbank({ mode } = {}) {
+        if (!this.db || typeof this.db.waehleDatei !== "function") {
+          throw new Error("Datenbank-Backend unterstützt keine Dateiauswahl.");
+        }
+        await this.db.waehleDatei({ mode });
+      }
+
+      async exportJsonBackup() {
+        const stores = {};
+
+        for (const storeName of BACKUP_STORES) {
+          const eintraege = await this.db.getAll(storeName);
+          if (storeName === STORE_NAMES.dateien) {
+            stores[storeName] = await Promise.all(
+              eintraege.map(async (dateiEintrag) => {
+                const { blob, ...rest } = dateiEintrag || {};
+                return {
+                  ...rest,
+                  blobDataUrl: await blobToDataUrl(blob),
+                };
+              }),
+            );
+            continue;
+          }
+
+          stores[storeName] = eintraege;
         }
 
         return {
-          id: eintrag.id || neueId(),
-          projektId,
-          typ,
-          startZeit: String(eintrag.startZeit || ""),
-          endZeit: String(eintrag.endZeit || ""),
-          titel: String(eintrag.titel || "").trim(),
-          adresse: String(eintrag.adresse || "").trim(),
-          lat: toNumberOrNull(eintrag.lat),
-          lon: toNumberOrNull(eintrag.lon),
-          kosten: toNumberOrNull(eintrag.kosten),
-          waehrung: normalizeWaehrung(eintrag.waehrung),
-          notizen: String(eintrag.notizen || "").trim(),
-          link: String(eintrag.link || "").trim(),
-          countryCode: String(eintrag.countryCode || "").toUpperCase(),
-          fruehstueckInklusive: Boolean(eintrag.fruehstueckInklusive),
+          format: BACKUP_FORMAT,
+          version: BACKUP_VERSION,
+          exportedAt: new Date().toISOString(),
+          stores,
         };
+      }
+
+      async leseAnzeigemodus() {
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, "anzeigemodus");
+        const raw = String(eintrag?.value || "").trim();
+        return raw ? normalizeAnzeigemodus(raw) : "";
+      }
+
+      async speichereAnzeigemodus(mode) {
+        const resolved = normalizeAnzeigemodus(mode);
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: "anzeigemodus",
+          value: resolved,
+        });
       }
 
       async listProjekte() {
@@ -5535,7 +5632,7 @@
         this.aktiverHauptReiter = "timeline";
         this.segmentProfileByKey = {};
         this.zeigeSegmentSprechblasen = true;
-        this.anzeigemodus = leseGespeichertenAnzeigemodus();
+        this.anzeigemodus = detectSystemAnzeigemodus();
         this.aktiverKostenTab = "kategorie";
         this.kartenFokus = null;
         this.timelineBildVorschauUrls = [];
@@ -5582,9 +5679,10 @@
           ausgabeForm: document.querySelector("#ausgabe-form"),
           ausgabeFehler: document.querySelector("#ausgabe-fehler"),
           ablageBereich: document.querySelector("#ablage-bereich"),
+          jsonDbOpenBtn: document.querySelector("#json-db-open-btn"),
+          jsonDbCreateBtn: document.querySelector("#json-db-create-btn"),
+          jsonDbStatus: document.querySelector("#json-db-status"),
           jsonExportBtn: document.querySelector("#json-export-btn"),
-          jsonImportPickerBtn: document.querySelector("#json-import-picker-btn"),
-          jsonImportInput: document.querySelector("#json-import-input"),
           jsonFehler: document.querySelector("#json-fehler"),
           anzeigemodusButtons: Array.from(document.querySelectorAll("button[data-anzeigemodus]")),
           appVersionAnzeige: document.querySelector("#app-version-anzeige"),
@@ -5631,6 +5729,7 @@
         this._aktualisiereEintragTypTabs();
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this._setAnzeigemodus(this.anzeigemodus, { persist: false });
+        this._renderDbDateiStatus();
         if (this.elemente.appVersionAnzeige) {
           this.elemente.appVersionAnzeige.textContent = "Version: -";
         }
@@ -5638,8 +5737,23 @@
       }
 
       async renderInitial() {
-        await this._renderProjektliste();
         this._zeigeLeeresProjekt();
+        this._renderDbDateiStatus();
+
+        if (!this.storage.isDbReady()) {
+          if (this.elemente.einstellungenDialogSchliessen) {
+            this.elemente.einstellungenDialogSchliessen.disabled = true;
+          }
+          if (this.elemente.jsonFehler) {
+            this.elemente.jsonFehler.textContent = this.storage.supportsDbDateiauswahl()
+              ? ""
+              : "";
+          }
+          this._oeffneEinstellungenDialog();
+          return;
+        }
+
+        await this._renderProjektliste();
         if (!this.aktivesProjekt) {
           this._oeffneEinstellungenDialog();
         }
@@ -6106,17 +6220,14 @@
           await this._handleAusgabeErstellen();
         });
 
+        this.elemente.jsonDbOpenBtn?.addEventListener("click", async () => {
+          await this._handleJsonDbDateiAuswahl("open");
+        });
+        this.elemente.jsonDbCreateBtn?.addEventListener("click", async () => {
+          await this._handleJsonDbDateiAuswahl("create");
+        });
         this.elemente.jsonExportBtn?.addEventListener("click", async () => {
           await this._handleJsonExport();
-        });
-        this.elemente.jsonImportPickerBtn?.addEventListener("click", () => {
-          this.elemente.jsonImportInput?.click();
-        });
-        this.elemente.jsonImportInput?.addEventListener("change", () => {
-          if (!this.elemente.jsonImportInput?.files?.length) {
-            return;
-          }
-          void this._handleJsonImport();
         });
 
         this.elemente.dateiForm.addEventListener("submit", async (event) => {
@@ -6183,7 +6294,14 @@
           this._syncDialogBodyState();
         });
 
-        this.elemente.einstellungenDialog?.addEventListener("cancel", () => {
+        this.elemente.einstellungenDialog?.addEventListener("cancel", (event) => {
+          if (!this.storage.isDbReady()) {
+            event.preventDefault();
+            if (this.elemente.jsonFehler) {
+              this.elemente.jsonFehler.textContent = "";
+            }
+            return;
+          }
           this._syncDialogBodyState();
         });
 
@@ -6686,6 +6804,11 @@ ${"</ht"+"ml>"}
       }
 
       async _renderProjektliste() {
+        if (!this.storage.isDbReady()) {
+          this.elemente.projekteListe.innerHTML = "";
+          return;
+        }
+
         const projekte = await this.storage.listProjekte();
         const neueReiseEintrag = `
       <li class="neue-reise-eintrag">
@@ -6749,6 +6872,77 @@ ${"</ht"+"ml>"}
         this.map?.clear();
       }
 
+      async _resolveTimelineKoordinaten(eintraege) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        if (!list.length) {
+          return list;
+        }
+
+        const unterkuenfte = [];
+        const aktivitaeten = [];
+
+        for (const eintrag of list) {
+          if (eintrag?.typ === "unterkunft" && isPlainObject(eintrag?.eintrag)) {
+            unterkuenfte.push(eintrag.eintrag);
+          } else if (eintrag?.typ === "aktivitaet" && isPlainObject(eintrag?.eintrag)) {
+            aktivitaeten.push(eintrag.eintrag);
+          }
+        }
+
+        if (!unterkuenfte.length && !aktivitaeten.length) {
+          return list;
+        }
+
+        let resolved;
+        try {
+          resolved = await this.storage.resolveKoordinatenFuerProjekt({ unterkuenfte, aktivitaeten });
+        } catch {
+          return list;
+        }
+
+        const unterkunftById = new Map(
+          (Array.isArray(resolved?.unterkuenfte) ? resolved.unterkuenfte : [])
+            .map((eintrag) => [String(eintrag?.id || ""), eintrag]),
+        );
+        const aktivitaetById = new Map(
+          (Array.isArray(resolved?.aktivitaeten) ? resolved.aktivitaeten : [])
+            .map((eintrag) => [String(eintrag?.id || ""), eintrag]),
+        );
+
+        return list.map((eintrag) => {
+          const eintragId = String(eintrag?.eintrag?.id || "");
+          if (!eintragId) {
+            return eintrag;
+          }
+
+          if (eintrag.typ === "unterkunft") {
+            const resolvedEintrag = unterkunftById.get(eintragId);
+            if (!resolvedEintrag) {
+              return eintrag;
+            }
+            return {
+              ...eintrag,
+              eintrag: resolvedEintrag,
+              untertitel: resolvedEintrag.adresse || eintrag.untertitel || "Ohne Adresse",
+            };
+          }
+
+          if (eintrag.typ === "aktivitaet") {
+            const resolvedEintrag = aktivitaetById.get(eintragId);
+            if (!resolvedEintrag) {
+              return eintrag;
+            }
+            return {
+              ...eintrag,
+              eintrag: resolvedEintrag,
+              untertitel: resolvedEintrag.ort || eintrag.untertitel || "Ohne Ort",
+            };
+          }
+
+          return eintrag;
+        });
+      }
+
       async _renderTimeline() {
         if (!this.aktivesProjekt) {
           this._zeigeLeeresProjekt();
@@ -6756,7 +6950,8 @@ ${"</ht"+"ml>"}
         }
         this._resetTimelineBildVorschauen();
         const projektId = this.aktivesProjekt.id;
-        const eintraege = await this.storage.listTimelineEintraege(projektId);
+        const timelineEintraege = await this.storage.listTimelineEintraege(projektId);
+        const eintraege = await this._resolveTimelineKoordinaten(timelineEintraege);
         this._renderTimelineTypFilter(eintraege);
         const tagOptionen = this._collectTimelineTagOptionen(eintraege);
         this._renderTimelineTagFilter(tagOptionen);
@@ -7389,7 +7584,97 @@ ${"</ht"+"ml>"}
         this._setAktiverKostenTab(this.aktiverKostenTab);
       }
 
+      _renderDbDateiStatus() {
+        if (!this.elemente?.jsonDbStatus) {
+          return;
+        }
+        const dbReady = this.storage.isDbReady();
+        const name = String(this.storage.getDbDateiName() || "").trim();
+        this.elemente.jsonDbStatus.textContent = name
+          ? `Aktive Datei: ${name}`
+          : "Keine JSON-Datei verbunden.";
+        if (this.elemente.jsonExportBtn) {
+          this.elemente.jsonExportBtn.disabled = !dbReady;
+        }
+      }
+
+      _setJsonDbAuswahlPending(pending) {
+        const disabled = Boolean(pending);
+        if (this.elemente.jsonDbOpenBtn) {
+          this.elemente.jsonDbOpenBtn.disabled = disabled;
+        }
+        if (this.elemente.jsonDbCreateBtn) {
+          this.elemente.jsonDbCreateBtn.disabled = disabled;
+        }
+      }
+
+      async _handleJsonDbDateiAuswahl(mode) {
+        const normalizedMode = String(mode || "").trim().toLowerCase();
+        if (!["open", "create"].includes(normalizedMode)) {
+          return;
+        }
+        if (!this.storage.supportsDbDateiauswahl()) {
+          if (this.elemente.jsonFehler) {
+            this.elemente.jsonFehler.textContent = "";
+          }
+          return;
+        }
+
+        const vorherAktivesProjektId = this.aktivesProjekt?.id || "";
+        this._setJsonDbAuswahlPending(true);
+        if (this.elemente.jsonFehler) {
+          this.elemente.jsonFehler.textContent = "";
+        }
+
+        try {
+          await this.storage.waehleJsonDatenbank({ mode: normalizedMode });
+          await this._ladeAnzeigemodusAusDatenbank();
+          if (this.elemente.einstellungenDialogSchliessen) {
+            this.elemente.einstellungenDialogSchliessen.disabled = false;
+          }
+          this._renderDbDateiStatus();
+          this.bearbeiteEintrag = null;
+          this.bearbeiteProjektId = null;
+
+          await this._renderProjektliste();
+          if (vorherAktivesProjektId) {
+            const projekt = await this.storage.getProjekt(vorherAktivesProjektId);
+            if (projekt) {
+              await this._setAktivesProjekt(vorherAktivesProjektId);
+              this._setStatus("");
+              return;
+            }
+          }
+
+          const projekte = await this.storage.listProjekte();
+          if (projekte.length) {
+            await this._setAktivesProjekt(projekte[0].id);
+          } else {
+            this.aktivesProjekt = null;
+            this._zeigeLeeresProjekt();
+          }
+          this._setStatus("");
+        } catch (error) {
+          if (error?.name === "AbortError") {
+            if (this.elemente.jsonFehler) {
+              this.elemente.jsonFehler.textContent = "";
+            }
+            return;
+          }
+          if (this.elemente.jsonFehler) {
+            this.elemente.jsonFehler.textContent = error.message || "";
+          }
+        } finally {
+          this._setJsonDbAuswahlPending(false);
+          this._renderDbDateiStatus();
+        }
+      }
+
       async _handleJsonExport() {
+        if (!this.storage.isDbReady()) {
+          this.elemente.jsonFehler.textContent = "";
+          return;
+        }
         try {
           const backup = await this.storage.exportJsonBackup();
           const backupText = JSON.stringify(backup, null, 2);
@@ -7402,65 +7687,10 @@ ${"</ht"+"ml>"}
           link.click();
           window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
           this.elemente.jsonFehler.textContent = "";
-          this._setStatus("Datenbank exportiert.");
+          this._setStatus("");
         } catch (error) {
-          this.elemente.jsonFehler.textContent = error.message || "Datenbank konnte nicht exportiert werden.";
+          this.elemente.jsonFehler.textContent = error.message || "";
           this._setStatus("Fehler beim Datenbank-Export.");
-        }
-      }
-
-      async _handleJsonImport() {
-        const datei = this.elemente.jsonImportInput?.files?.[0];
-        if (!datei) {
-          this.elemente.jsonFehler.textContent = "Bitte eine Datenbank-Datei auswählen.";
-          return;
-        }
-
-        const bestaetigt = window.confirm("Beim Import werden vorhandene Daten überschrieben. Fortfahren?");
-        if (!bestaetigt) {
-          if (this.elemente.jsonImportInput) {
-            this.elemente.jsonImportInput.value = "";
-          }
-          return;
-        }
-
-        try {
-          const text = await datei.text();
-          const payload = JSON.parse(text);
-          const vorherAktivesProjektId = this.aktivesProjekt?.id || "";
-          await this.storage.importJsonBackup(payload);
-          if (this.elemente.jsonImportInput) {
-            this.elemente.jsonImportInput.value = "";
-          }
-          this.elemente.jsonFehler.textContent = "";
-          this.bearbeiteEintrag = null;
-          this.bearbeiteProjektId = null;
-
-          await this._renderProjektliste();
-          if (vorherAktivesProjektId) {
-            const projekt = await this.storage.getProjekt(vorherAktivesProjektId);
-            if (projekt) {
-              await this._setAktivesProjekt(vorherAktivesProjektId);
-              this._setStatus("Datenbank importiert.");
-              return;
-            }
-          }
-
-          const projekte = await this.storage.listProjekte();
-          if (projekte.length) {
-            await this._setAktivesProjekt(projekte[0].id);
-          } else {
-            this.aktivesProjekt = null;
-            this._zeigeLeeresProjekt();
-          }
-
-          this._setStatus("Datenbank importiert.");
-        } catch (error) {
-          this.elemente.jsonFehler.textContent = error.message || "Datenbank konnte nicht importiert werden.";
-          if (this.elemente.jsonImportInput) {
-            this.elemente.jsonImportInput.value = "";
-          }
-          this._setStatus("Fehler beim Datenbank-Import.");
         }
       }
 
@@ -8178,10 +8408,17 @@ ${"</ht"+"ml>"}
       }
 
       _oeffneEinstellungenDialog() {
+        this._renderDbDateiStatus();
         this._oeffneDialog(this.elemente.einstellungenDialog);
       }
 
       _schliesseEinstellungenDialog() {
+        if (!this.storage.isDbReady()) {
+          if (this.elemente.jsonFehler) {
+            this.elemente.jsonFehler.textContent = "";
+          }
+          return;
+        }
         this._schliesseDialog(this.elemente.einstellungenDialog);
       }
 
@@ -8243,6 +8480,21 @@ ${"</ht"+"ml>"}
         this.elemente.appVersionAnzeige.textContent = version ? `Version: ${version}` : "Version: -";
       }
 
+      async _ladeAnzeigemodusAusDatenbank() {
+        if (!this.storage.isDbReady()) {
+          return;
+        }
+        try {
+          const gespeicherterModus = await this.storage.leseAnzeigemodus();
+          if (!gespeicherterModus) {
+            await this.storage.speichereAnzeigemodus(this.anzeigemodus);
+            return;
+          }
+          this._setAnzeigemodus(gespeicherterModus, { persist: false });
+        } catch {
+        }
+      }
+
       _setAnzeigemodus(mode, { persist = true } = {}) {
         const resolved = normalizeAnzeigemodus(mode || this.anzeigemodus);
         this.anzeigemodus = resolved;
@@ -8261,10 +8513,10 @@ ${"</ht"+"ml>"}
         if (!persist) {
           return;
         }
-        try {
-          window.localStorage.setItem(ANZEIGEMODUS_STORAGE_KEY, resolved);
-        } catch {
+        if (!this.storage.isDbReady()) {
+          return;
         }
+        void this.storage.speichereAnzeigemodus(resolved).catch(() => null);
       }
 
     }
@@ -8600,15 +8852,12 @@ ${"</ht"+"ml>"}
       })();
     }
 
-
-
     async function bootstrap() {
       try {
         const leafletReadyPromise = ensureLeafletLoaded();
         preloadMapTilesInBackground();
 
         const db = new ReiseDB();
-        await db.init();
 
         const storage = new ReiseStorage(db);
         const leafletReady = await leafletReadyPromise;
@@ -8624,6 +8873,7 @@ ${"</ht"+"ml>"}
         initPwa();
       } catch (error) {
         console.error("Bootstrap-Fehler:", error);
+        window.alert(error?.message || "Die Anwendung konnte nicht gestartet werden.");
       }
     }
 
