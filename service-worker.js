@@ -1,4 +1,4 @@
-const VERSION = 1;
+const VERSION = 2;
 const CACHE_NAME = `reiseplaner-v${VERSION}`;
 const CACHE_STATIC = CACHE_NAME;
 const CACHE_EXTERNAL = `${CACHE_NAME}-external`;

@@ -133,6 +133,7 @@
     .einstellungen-toggle {
       width: auto;
       margin-top: 0;
+      margin-left: auto;
       padding: 0.52rem 0.72rem;
       background: linear-gradient(160deg, #1f2937, #111827);
       white-space: nowrap;
@@ -257,6 +258,93 @@
       background: #f8fbff;
     }
 
+    .datei-dropzone {
+      border: 1.5px dashed #9fb8ea;
+      border-radius: 14px;
+      padding: 0.8rem;
+      background:
+        radial-gradient(140% 100% at 0% 0%, rgba(21, 93, 252, 0.09) 0%, rgba(21, 93, 252, 0.02) 52%, transparent 90%),
+        linear-gradient(180deg, #f8fbff 0%, #f1f6ff 100%);
+      transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease, transform 120ms ease;
+      cursor: pointer;
+    }
+
+    .datei-dropzone-kopf {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+      align-items: center;
+      margin-bottom: 0.55rem;
+    }
+
+    .datei-dropzone-titel {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #0f2f7a;
+    }
+
+    .datei-dropzone-hinweis {
+      margin: 0.08rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .datei-dropzone:focus-visible {
+      outline: none;
+      border-color: #6ea0ff;
+      box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .datei-dropzone input[type="file"] {
+      margin: 0;
+    }
+
+    .datei-dropzone:hover {
+      border-color: #6ea0ff;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12);
+    }
+
+    .datei-dropzone.drag-over {
+      border-color: #155dfc;
+      background:
+        radial-gradient(140% 100% at 0% 0%, rgba(21, 93, 252, 0.18) 0%, rgba(21, 93, 252, 0.05) 58%, transparent 90%),
+        linear-gradient(180deg, #eaf1ff 0%, #dfeaff 100%);
+      box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.2), 0 12px 24px rgba(21, 93, 252, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .eintrag-dateien-bereich {
+      margin-top: 0.55rem;
+    }
+
+    .eintrag-datei-optionen {
+      position: absolute;
+      z-index: 2600;
+      min-width: 188px;
+      max-width: min(280px, calc(100% - 16px));
+      padding: 0.45rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.2);
+    }
+
+    .eintrag-datei-optionen-aktionen {
+      display: grid;
+      gap: 0.28rem;
+    }
+
+    .eintrag-datei-optionen-aktionen button {
+      width: 100%;
+      margin-top: 0;
+      padding: 0.5rem 0.62rem;
+      font-size: 0.83rem;
+      text-align: left;
+    }
+
     input[type="file"].drag-over {
       border-color: #155dfc;
       background: #eaf1ff;
@@ -339,6 +427,11 @@
       gap: 0.7rem;
     }
 
+    #projekte-liste {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.85rem;
+    }
+
     .listen-eintrag {
       border: 1px solid #b7ccff;
       border-radius: 14px;
@@ -349,6 +442,45 @@
 
     .projekt-kachel {
       cursor: pointer;
+      min-height: 190px;
+      display: grid;
+      align-content: start;
+      gap: 0.55rem;
+      padding: 0.65rem;
+    }
+
+    .projekt-kachel-bild-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      border-radius: 10px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(30, 58, 138, 0.18);
+    }
+
+    .projekt-kachel-bild {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .projekt-kachel-placeholder {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1d4ed8;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .projekt-kachel-titel {
+      margin: 0;
+      font-size: 0.96rem;
+      line-height: 1.3;
+      word-break: break-word;
+      text-align: center;
     }
 
     .neue-reise-eintrag {
@@ -478,6 +610,11 @@
       color: #0b3bb7;
     }
 
+    .listen-eintrag.aktiv-projekt .projekt-kachel-bild-wrap {
+      border-color: rgba(15, 76, 220, 0.3);
+      box-shadow: 0 0 0 2px rgba(21, 93, 252, 0.16);
+    }
+
     .gefahr {
       background: linear-gradient(160deg, var(--danger), #a51c1c);
     }
@@ -500,6 +637,113 @@
       margin-top: 0;
       padding: 0.55rem 0.7rem;
       white-space: nowrap;
+    }
+
+    .timeline-filter-zeile {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.7rem;
+      margin: 0 0 0.75rem;
+    }
+
+    .timeline-filter-zeile[hidden] {
+      display: none;
+    }
+
+    .timeline-tag-filter {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.45rem;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    .timeline-tag-filter[hidden] {
+      display: none;
+    }
+
+    .timeline-tag-btn {
+      width: auto;
+      margin-top: 0;
+      padding: 0.42rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #cfdcf8;
+      background: #eef3ff;
+      color: #24458f;
+      box-shadow: none;
+      transform: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .timeline-tag-btn.aktiv {
+      background: linear-gradient(160deg, var(--primary), #0f4cdc);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(21, 93, 252, 0.22);
+    }
+
+    .timeline-typ-filter {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.45rem;
+      margin: 0 0 0 auto;
+      justify-content: flex-end;
+      overflow-x: auto;
+    }
+
+    .timeline-typ-filter[hidden] {
+      display: none;
+    }
+
+    .timeline-typ-btn {
+      width: auto;
+      margin-top: 0;
+      padding: 0.42rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #cfdcf8;
+      background: #eef3ff;
+      color: #24458f;
+      box-shadow: none;
+      transform: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .timeline-typ-btn.aktiv {
+      background: linear-gradient(160deg, var(--primary), #0f4cdc);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(21, 93, 252, 0.22);
+    }
+
+    .timeline-typ-btn[data-timeline-typ="unterkunft"] {
+      border-color: #ddd6fe;
+      background: #f3e8ff;
+      color: #5b21b6;
+    }
+
+    .timeline-typ-btn[data-timeline-typ="unterkunft"].aktiv {
+      background: linear-gradient(160deg, #7c3aed, #5b21b6);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.24);
+    }
+
+    .timeline-typ-btn[data-timeline-typ="aktivitaet"] {
+      border-color: #fed7aa;
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .timeline-typ-btn[data-timeline-typ="aktivitaet"].aktiv {
+      background: linear-gradient(160deg, #f97316, #ea580c);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(234, 88, 12, 0.24);
     }
 
     .meta-text {
@@ -533,12 +777,12 @@
       margin-left: auto;
     }
 
-    .segment-sprechblase {
-      border: 1px solid rgba(51, 65, 85, 0.22);
+    .leaflet-tooltip.segment-sprechblase {
+      border: 1px solid rgba(51, 65, 85, 0.22) !important;
       border-radius: 12px;
-      background: rgba(148, 163, 184, 0.08);
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-      color: #334155;
+      background: rgba(148, 163, 184, 0.36) !important;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08) !important;
+      color: #334155 !important;
       font-size: 0.78rem;
       font-weight: 700;
       line-height: 1.2;
@@ -552,21 +796,52 @@
       white-space: nowrap;
     }
 
-    .segment-sprechblase-driving {
-      border-color: rgba(6, 182, 212, 0.42);
-      background: rgba(6, 182, 212, 0.1);
-      color: #155e75;
-      box-shadow: 0 4px 10px rgba(6, 182, 212, 0.12);
+    .leaflet-tooltip.segment-sprechblase-driving {
+      border-color: rgba(100, 116, 139, 0.52) !important;
+      background: rgba(100, 116, 139, 0.42) !important;
+      color: #1f2937 !important;
+      box-shadow: 0 4px 10px rgba(100, 116, 139, 0.18) !important;
     }
 
-    .segment-sprechblase-walking {
-      border-color: rgba(22, 163, 74, 0.42);
-      background: rgba(22, 163, 74, 0.1);
-      color: #166534;
-      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.12);
+    .leaflet-tooltip.segment-sprechblase-walking {
+      border-color: rgba(22, 163, 74, 0.52) !important;
+      background: rgba(22, 163, 74, 0.4) !important;
+      color: #14532d !important;
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.16) !important;
+    }
+
+    .leaflet-tooltip.segment-sprechblase-flight {
+      border-color: rgba(239, 68, 68, 0.52) !important;
+      background: rgba(239, 68, 68, 0.4) !important;
+      color: #7f1d1d !important;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.18) !important;
+    }
+
+    .leaflet-tooltip.segment-sprechblase-ship {
+      border-color: rgba(59, 130, 246, 0.52) !important;
+      background: rgba(59, 130, 246, 0.4) !important;
+      color: #1e3a8a !important;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.18) !important;
+    }
+
+    .leaflet-tooltip-top.segment-sprechblase-driving::before {
+      border-top-color: rgba(100, 116, 139, 0.42) !important;
+    }
+
+    .leaflet-tooltip-top.segment-sprechblase-walking::before {
+      border-top-color: rgba(22, 163, 74, 0.4) !important;
+    }
+
+    .leaflet-tooltip-top.segment-sprechblase-flight::before {
+      border-top-color: rgba(239, 68, 68, 0.4) !important;
+    }
+
+    .leaflet-tooltip-top.segment-sprechblase-ship::before {
+      border-top-color: rgba(59, 130, 246, 0.4) !important;
     }
 
     .reiter-leiste {
+      position: relative;
       display: flex;
       align-items: stretch;
       border: 1px solid var(--border);
@@ -588,25 +863,77 @@
     }
 
     .reiter-tabs {
-      display: flex;
-      flex: 1;
-      overflow-x: auto;
-      scrollbar-width: thin;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.45rem;
+      border-right: 1px solid var(--border);
+      overflow: visible;
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .haupt-projekt-titel {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      max-width: min(48%, 520px);
+      padding: 0 0.75rem;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .reiter-projekt-aktionen {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.45rem;
+      border-left: 1px solid var(--border);
+      margin-left: auto;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .reiter-projekt-aktionen button {
+      width: 40px;
+      height: 40px;
+      margin-top: 0;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      line-height: 1;
+      border-radius: 11px;
     }
 
     .reiter {
-      width: auto;
+      width: 40px;
+      height: 40px;
       margin-top: 0;
-      border-radius: 0;
-      border-left: 1px solid var(--border);
-      padding: 0.62rem 0.85rem;
-      background: var(--surface);
-      color: #1e3a8a;
+      border-radius: 11px;
+      border: 1px solid #cfdcf8;
+      padding: 0;
+      background: linear-gradient(160deg, #4b5563, #374151);
+      color: #fff;
       white-space: nowrap;
-    }
-
-    .reiter:first-child {
-      border-left: 0;
+      min-width: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      line-height: 1;
     }
 
     .reiter.aktiv {
@@ -659,6 +986,47 @@
     .tab.aktiv {
       background: linear-gradient(160deg, var(--primary), #0f4cdc);
       color: #fff;
+    }
+
+    .projekt-bild-zeile {
+      margin-top: 0.3rem;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .projekt-bild-vorschau-wrap {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      border: 1px solid #cfdcf8;
+      background: linear-gradient(180deg, #f8fbff 0%, #e9f2ff 100%);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .projekt-bild-vorschau-wrap[hidden] {
+      display: none;
+    }
+
+    .projekt-bild-vorschau {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .projekt-bild-aktionen {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .projekt-bild-aktionen button {
+      margin-top: 0;
+      width: auto;
+      padding: 0.5rem 0.75rem;
     }
 
     body[data-theme="dark"] .tab-leiste {
@@ -731,6 +1099,27 @@
       padding: 0.7rem 0.85rem;
       background: linear-gradient(160deg, #1e40af, #155dfc);
       box-shadow: 0 10px 24px rgba(21, 93, 252, 0.2);
+    }
+
+    .eintrag-unterkunft-option {
+      display: none;
+      margin: 0.35rem 0 0.15rem;
+    }
+
+    #eintrag-form.eintrag-form-unterkunft .eintrag-unterkunft-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #334155;
+      user-select: none;
+    }
+
+    #eintrag-form.eintrag-form-unterkunft .eintrag-unterkunft-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: #16a34a;
     }
 
     #eintrag-form.eintrag-form-aktivitaet button[type="submit"] {
@@ -996,8 +1385,16 @@
     }
 
     .timeline-eintrag {
-      --timeline-bild-breite: clamp(180px, 24vw, 260px);
+      --timeline-bild-breite: clamp(150px, 21vw, 220px);
+      --timeline-bild-max-hoehe: clamp(120px, 22vh, 200px);
+      --timeline-bild-mitte-offset: clamp(10px, 1.1vw, 18px);
+      --timeline-pdf-scrollbar-trim: 14px;
+      --timeline-pdf-thumb-scrollbar-trim: 10px;
+      --timeline-aktionen-spalte: 3.1rem;
+      --timeline-bild-gap: 0.55rem;
+      --timeline-bild-radius: 16px;
       position: relative;
+      container-type: inline-size;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--surface);
@@ -1062,6 +1459,17 @@
       border-left: 0;
     }
 
+    .timeline-eintrag.timeline-eintrag-mit-bild .timeline-zeile {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--timeline-bild-breite) + 44px));
+      grid-template-areas:
+        "kopf bild"
+        "daten bild";
+      column-gap: 0.7rem;
+      row-gap: 0.36rem;
+      align-items: start;
+    }
+
     .timeline-kopf {
       display: flex;
       align-items: center;
@@ -1072,7 +1480,9 @@
     }
 
     .timeline-eintrag.timeline-eintrag-mit-bild .timeline-kopf {
-      padding-right: calc(var(--timeline-bild-breite) + 4.2rem);
+      grid-area: kopf;
+      align-self: start;
+      padding-right: 5.4rem;
     }
 
     .timeline-kopf-links {
@@ -1194,93 +1604,344 @@
 
     .timeline-dateien {
       margin-top: 0.55rem;
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: 0.35rem;
+      align-items: center;
     }
 
     .timeline-inhalt {
       margin-top: 0.36rem;
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: stretch;
       gap: 0.55rem;
+      padding-right: 0;
+    }
+
+    .timeline-eintrag.timeline-eintrag-mit-bild .timeline-inhalt {
+      display: contents;
+      margin-top: 0;
       padding-right: 0;
     }
 
     .timeline-daten {
       min-width: 0;
+      width: 100%;
+      text-align: left;
+      justify-self: stretch;
+      align-self: start;
+      margin-left: 0;
+      padding-left: 0;
     }
 
     .timeline-eintrag.timeline-eintrag-mit-bild .timeline-daten {
-      padding-right: calc(var(--timeline-bild-breite) + 4.2rem);
+      grid-area: daten;
+      align-self: start;
+      margin-left: 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .timeline-eintrag.timeline-eintrag-mit-bild .timeline-kopf,
+    .timeline-eintrag.timeline-eintrag-mit-bild .timeline-inhalt {
+      margin-left: 0;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    .timeline-bild-galerie {
+      width: 100%;
+      max-width: calc(var(--timeline-bild-breite) + 44px);
+      display: grid;
+      gap: 0.35rem;
+      justify-self: stretch;
+      align-self: start;
+      grid-area: bild;
+      height: auto;
+      max-height: var(--timeline-bild-max-hoehe);
+      min-height: 0;
+      padding-block: 0;
+      box-sizing: border-box;
+      transform: translateX(calc(-1 * var(--timeline-bild-mitte-offset)));
+    }
+
+    .timeline-bild-galerie.timeline-bild-galerie-mit-thumbs {
+      grid-template-columns: minmax(0, 1fr) 46px;
+      align-items: stretch;
+      column-gap: 0.36rem;
+      height: auto;
+      max-height: var(--timeline-bild-max-hoehe);
+      min-height: 0;
     }
 
     .timeline-bild-vorschau-wrap {
-      position: absolute;
-      top: 0.45rem;
-      bottom: 0.45rem;
-      right: 3.35rem;
-      width: var(--timeline-bild-breite);
-      max-width: min(38vw, 260px);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      text-align: inherit;
+      position: relative;
+      top: auto;
+      bottom: auto;
+      right: auto;
+      transform: none;
+      width: 100%;
+      height: var(--timeline-bild-max-hoehe);
+      min-height: 0;
+      max-height: var(--timeline-bild-max-hoehe);
+      aspect-ratio: auto;
       margin: 0;
+      padding: 0;
       display: flex;
-      align-items: flex-start;
+      align-items: stretch;
       justify-content: center;
+      overflow: visible;
+      border-radius: var(--timeline-bild-radius);
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .timeline-bild-vorschau-wrap.timeline-bild-vorschau-wrap-pdf {
       overflow: hidden;
+    }
+
+    .timeline-bild-vorschau-wrap:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .timeline-bild-vorschau-wrap:focus-visible {
+      outline: none;
+      box-shadow: none;
     }
 
     .timeline-bild-vorschau {
       display: block;
-      width: auto;
-      max-width: 100%;
-      height: auto;
-      max-height: min(140px, 100%);
-      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      border-radius: var(--timeline-bild-radius);
+      clip-path: inset(0 round var(--timeline-bild-radius));
       border: 0;
-      object-fit: contain;
-      object-position: center;
+      object-fit: cover;
+      object-position: center center;
       background: transparent;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
     }
 
-    @media (max-width: 640px) {
+    .timeline-datei-vorschau-pdf {
+      display: block;
+      width: calc(100% + var(--timeline-pdf-scrollbar-trim));
+      height: calc(100% + var(--timeline-pdf-scrollbar-trim));
+      margin-right: calc(-1 * var(--timeline-pdf-scrollbar-trim));
+      margin-bottom: calc(-1 * var(--timeline-pdf-scrollbar-trim));
+      border: 0;
+      border-radius: var(--timeline-bild-radius);
+      background: #fff;
+      pointer-events: none;
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .timeline-datei-vorschau-pdf::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    .timeline-datei-vorschau-fallback {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      border-radius: var(--timeline-bild-radius);
+      background: linear-gradient(165deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.5rem;
+      box-sizing: border-box;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+    }
+
+    .timeline-bild-galerie-thumbs {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 0.32rem;
+      overflow: hidden;
+      padding: 0.03rem 0.02rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .timeline-bild-galerie-thumbs::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    .timeline-bild-galerie.timeline-bild-galerie-mit-thumbs .timeline-bild-galerie-thumbs {
+      height: var(--timeline-bild-max-hoehe);
+      max-height: var(--timeline-bild-max-hoehe);
+      min-height: 0;
+    }
+
+    .timeline-bild-thumb-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      border-radius: 10px;
+      padding: 0;
+      margin: 0;
+      background: rgba(255, 255, 255, 0.65);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+    }
+
+    .timeline-bild-thumb-btn:hover {
+      transform: translateY(-1px);
+      border-color: #6ea0ff;
+    }
+
+    .timeline-bild-thumb-btn:focus-visible {
+      outline: none;
+      border-color: #6ea0ff;
+      box-shadow: 0 0 0 2px rgba(21, 93, 252, 0.22);
+    }
+
+    .timeline-bild-thumb-btn.aktiv {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+    }
+
+    .timeline-bild-thumb-btn img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .timeline-bild-thumb-pdf {
+      display: block;
+      width: calc(100% + var(--timeline-pdf-thumb-scrollbar-trim));
+      height: calc(100% + var(--timeline-pdf-thumb-scrollbar-trim));
+      margin-right: calc(-1 * var(--timeline-pdf-thumb-scrollbar-trim));
+      margin-bottom: calc(-1 * var(--timeline-pdf-thumb-scrollbar-trim));
+      border: 0;
+      pointer-events: none;
+      background: #fff;
+      overflow: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .timeline-bild-thumb-pdf::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    .timeline-bild-thumb-fallback {
+      display: inline-flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(165deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #334155;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    @container (max-width: 760px) {
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-zeile {
+        display: block;
+      }
+
       .timeline-eintrag.timeline-eintrag-mit-bild .timeline-kopf {
         padding-right: 5.4rem;
       }
 
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-inhalt {
+        display: grid;
+        margin-top: 0.36rem;
+      }
+
       .timeline-eintrag.timeline-eintrag-mit-bild .timeline-daten {
+        grid-area: auto;
         padding-right: 0;
       }
 
-      .timeline-bild-vorschau-wrap {
-        position: static;
-        width: 100%;
-        max-width: 100%;
-        max-height: none;
-        margin: 0.1rem auto 0.15rem;
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-bild-galerie {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-zeile {
+        display: block;
       }
 
-      .timeline-bild-vorschau {
-        width: min(100%, 360px);
-        margin: 0 auto;
-        height: auto;
-        max-height: 180px;
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-kopf {
+        padding-right: 5.4rem;
+      }
+
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-inhalt {
+        display: grid;
+        margin-top: 0.36rem;
+      }
+
+      .timeline-eintrag.timeline-eintrag-mit-bild .timeline-daten {
+        grid-area: auto;
+        padding-right: 0;
+      }
+
+      .timeline-bild-galerie {
+        display: none;
       }
     }
 
     .timeline-datei-zeile {
-      display: flex;
+      display: inline-flex;
       gap: 0.35rem;
       align-items: center;
+      max-width: 100%;
     }
 
     .timeline-datei-btn {
       width: auto;
-      flex: 1;
+      max-width: min(100%, 260px);
       margin-top: 0;
-      padding: 0.35rem 0.55rem;
+      padding: 0.32rem 0.5rem;
       font-size: 0.8rem;
       display: inline-flex;
       align-items: center;
       justify-content: flex-start;
       text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .timeline-datei-loeschen {
@@ -1330,7 +1991,30 @@
     .timeline-segment-inhalt {
       display: inline-flex;
       align-items: center;
-      gap: 0;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .timeline-segment-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.18rem 0.52rem;
+      border: 1px solid #d6e1f7;
+      border-radius: 999px;
+      background: #f0f5ff;
+      color: #334155;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .timeline-segment-info-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      white-space: nowrap;
     }
 
     .timeline-segment-pfeil {
@@ -1394,13 +2078,25 @@
     }
 
     .timeline-segment-btn.aktiv[data-segment-profile="driving"] {
-      background: linear-gradient(160deg, #06b6d4, #0284c7);
+      background: linear-gradient(160deg, #64748b, #334155);
       color: #fff;
       border-color: transparent;
     }
 
     .timeline-segment-btn.aktiv[data-segment-profile="walking"] {
       background: linear-gradient(160deg, #22c55e, #15803d);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .timeline-segment-btn.aktiv[data-segment-profile="flight"] {
+      background: linear-gradient(160deg, #ef4444, #b91c1c);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .timeline-segment-btn.aktiv[data-segment-profile="ship"] {
+      background: linear-gradient(160deg, #3b82f6, #1e40af);
       color: #fff;
       border-color: transparent;
     }
@@ -1476,14 +2172,83 @@
     }
 
     body[data-theme="dark"] .reiter {
-      background: #0f172a;
-      color: #bfdbfe;
+      border-color: #334155;
+    }
+
+    body[data-theme="dark"] .haupt-projekt-titel {
+      color: #dbeafe;
+    }
+
+    body[data-theme="dark"] .reiter-projekt-aktionen {
       border-left-color: #334155;
+    }
+
+    body[data-theme="dark"] .reiter-tabs {
+      border-right-color: #334155;
     }
 
     body[data-theme="dark"] .reiter-eintraege {
       background: #3a220f;
       color: #fed7aa;
+    }
+
+    body[data-theme="dark"] .projekt-kachel-bild-wrap {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border-color: #334155;
+    }
+
+    body[data-theme="dark"] .projekt-kachel-placeholder {
+      color: #93c5fd;
+    }
+
+    body[data-theme="dark"] .projekt-bild-vorschau-wrap {
+      border-color: #334155;
+      background: linear-gradient(180deg, #172033 0%, #111827 100%);
+    }
+
+    body[data-theme="dark"] .datei-dropzone {
+      border-color: #3d5a91;
+      background:
+        radial-gradient(140% 100% at 0% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0.05) 58%, transparent 92%),
+        linear-gradient(180deg, #111d33 0%, #0f1a2d 100%);
+    }
+
+    body[data-theme="dark"] .datei-dropzone:hover {
+      border-color: #6093ff;
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+
+    body[data-theme="dark"] .datei-dropzone-titel {
+      color: #dbeafe;
+    }
+
+    body[data-theme="dark"] .datei-dropzone.drag-over {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.28), 0 12px 24px rgba(59, 130, 246, 0.25);
+    }
+
+    body[data-theme="dark"] .timeline-tag-btn {
+      background: #1e293b;
+      color: #bfdbfe;
+      border-color: #334155;
+    }
+
+    body[data-theme="dark"] .timeline-typ-btn {
+      background: #1e293b;
+      color: #bfdbfe;
+      border-color: #334155;
+    }
+
+    body[data-theme="dark"] .timeline-typ-btn[data-timeline-typ="unterkunft"] {
+      background: #2e1065;
+      color: #ddd6fe;
+      border-color: #6d28d9;
+    }
+
+    body[data-theme="dark"] .timeline-typ-btn[data-timeline-typ="aktivitaet"] {
+      background: #431407;
+      color: #fed7aa;
+      border-color: #c2410c;
     }
 
     body[data-theme="dark"] .kosten-block h3 {
@@ -1525,6 +2290,45 @@
       border-color: rgba(167, 139, 250, 0.45);
     }
 
+    body[data-theme="dark"] .timeline-bild-vorschau-wrap {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    body[data-theme="dark"] .timeline-datei-vorschau-pdf {
+      background: #0f172a;
+    }
+
+    body[data-theme="dark"] .timeline-datei-vorschau-fallback {
+      background: linear-gradient(165deg, #1e293b 0%, #0f172a 100%);
+      border-color: #334155;
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .timeline-bild-thumb-btn {
+      border-color: rgba(100, 116, 139, 0.72);
+      background: rgba(30, 41, 59, 0.72);
+    }
+
+    body[data-theme="dark"] .timeline-bild-thumb-fallback {
+      background: linear-gradient(165deg, #334155 0%, #1e293b 100%);
+      color: #cbd5e1;
+    }
+
+    body[data-theme="dark"] .timeline-bild-thumb-pdf {
+      background: #0f172a;
+    }
+
+    body[data-theme="dark"] .timeline-bild-thumb-btn:hover {
+      border-color: #93c5fd;
+    }
+
+    body[data-theme="dark"] .timeline-bild-thumb-btn.aktiv {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35);
+    }
+
     body[data-theme="dark"] .badge-aktivitaet {
       background: #7c2d12;
       color: #ffedd5;
@@ -1550,6 +2354,12 @@
     body[data-theme="dark"] .timeline-segment-btn {
       border-color: #334155;
       background: #1e293b;
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info {
+      border-color: #334155;
+      background: #0f172a;
       color: #bfdbfe;
     }
 
@@ -1599,11 +2409,19 @@
     }
 
     body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="driving"] {
-      border-color: #67e8f9;
+      border-color: #cbd5e1;
     }
 
     body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="walking"] {
       border-color: #86efac;
+    }
+
+    body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="flight"] {
+      border-color: #fca5a5;
+    }
+
+    body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="ship"] {
+      border-color: #93c5fd;
     }
 
     .karte,
@@ -1739,6 +2557,29 @@
         border-bottom: 1px solid var(--border);
       }
 
+      .reiter-projekt-aktionen {
+        width: 100%;
+        justify-content: flex-end;
+        border-left: 0;
+        border-top: 1px solid var(--border);
+        margin-left: 0;
+        padding: 0.45rem 0.55rem;
+      }
+
+      .reiter-tabs {
+        border-right: 0;
+      }
+
+      .haupt-projekt-titel {
+        position: static;
+        transform: none;
+        max-width: 100%;
+        width: 100%;
+        padding: 0.45rem 0.7rem;
+        border-top: 1px solid var(--border);
+        background: transparent;
+      }
+
       .kopfbereich {
         padding-top: 1rem;
       }
@@ -1760,6 +2601,10 @@
 
       .listen-aktionen {
         flex-direction: column;
+      }
+
+      #projekte-liste {
+        grid-template-columns: 1fr;
       }
 
       .karte-canvas {
@@ -1795,29 +2640,33 @@
   <div class="hintergrund-orb orb-links"></div>
   <div class="hintergrund-orb orb-rechts"></div>
 
-  <header class="kopfbereich">
-    <div>
-      <h1>Reiseplaner</h1>
-    </div>
-    <button id="einstellungen-dialog-oeffnen" class="sekundaer einstellungen-toggle" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">⚙️</button>
-  </header>
-
   <main class="app-layout">
     <section class="hauptbereich">
       <nav id="haupt-reiter" class="reiter-leiste" aria-label="Projektbereiche" hidden>
         <div class="reiter-tabs" role="tablist" aria-label="Projektbereiche">
           <button type="button" class="reiter aktiv" role="tab" id="reiter-timeline" aria-controls="timeline-bereich"
-            aria-selected="true" data-reiter="timeline">Zeitplan</button>
+            aria-selected="true" data-reiter="timeline" aria-label="Zeitplan" title="Zeitplan">📅</button>
           <button type="button" class="reiter" role="tab" id="reiter-karte" aria-controls="karte-bereich"
-            aria-selected="false" data-reiter="karte">Karte</button>
+            aria-selected="false" data-reiter="karte" aria-label="Karte" title="Karte">🗺️</button>
           <button type="button" class="reiter" role="tab" id="reiter-kosten" aria-controls="kosten-bereich"
-            aria-selected="false" data-reiter="kosten">Kosten</button>
+            aria-selected="false" data-reiter="kosten" aria-label="Kosten" title="Kosten">💰</button>
+        </div>
+        <p id="haupt-projekt-titel" class="haupt-projekt-titel"></p>
+        <div id="reiter-projekt-aktionen" class="reiter-projekt-aktionen" aria-label="Aktives Projekt Aktionen">
+          <button id="reiter-projekt-drucken" type="button" class="sekundaer" aria-label="Projekt drucken" title="Projekt drucken">🖨️</button>
+          <button id="reiter-projekt-bearbeiten" type="button" class="sekundaer" aria-label="Reisetitel bearbeiten" title="Reisetitel bearbeiten">✏️</button>
+          <button id="reiter-projekt-loeschen" type="button" class="gefahr" aria-label="Projekt löschen" title="Projekt löschen">🗑️</button>
+          <button id="einstellungen-dialog-oeffnen" type="button" class="sekundaer" aria-label="Einstellungen öffnen" title="Einstellungen">⚙️</button>
         </div>
       </nav>
 
       <section class="karte" id="timeline-bereich" role="tabpanel" aria-labelledby="reiter-timeline">
         <div class="bereich-kopf">
           <div></div>
+        </div>
+        <div id="timeline-filter-zeile" class="timeline-filter-zeile" hidden>
+          <div id="timeline-tag-filter" class="timeline-tag-filter" hidden></div>
+          <div id="timeline-typ-filter" class="timeline-typ-filter" hidden></div>
         </div>
         <ul id="timeline-liste" class="timeline"></ul>
       </section>
@@ -1895,7 +2744,6 @@
           <button id="json-import-picker-btn" type="button" class="sekundaer" aria-label="Datenbank importieren" title="Datenbank importieren">📂</button>
           <button id="json-export-btn" type="button" class="sekundaer" aria-label="Datenbank exportieren" title="Datenbank exportieren">💾</button>
         </div>
-        <p id="datenbank-name-anzeige" class="meta-text"></p>
         <input id="json-import-input" name="jsonDatei" class="visuell-versteckt" type="file" accept=".json,application/json" autocomplete="off" />
         <p id="json-fehler" class="fehler" aria-live="polite"></p>
       </section>
@@ -1926,6 +2774,17 @@
       <label for="titel">Titel</label>
       <input id="titel" name="titel" type="text" required maxlength="120" placeholder="z. B. Andalusien 2026"
         autocomplete="off" />
+
+      <div class="projekt-bild-zeile">
+        <label for="projekt-bild">Reisefoto</label>
+        <input id="projekt-bild" name="projektBild" type="file" accept="image/*" autocomplete="off" />
+        <div id="projekt-bild-vorschau-wrap" class="projekt-bild-vorschau-wrap" hidden>
+          <img id="projekt-bild-vorschau" class="projekt-bild-vorschau" alt="Vorschau Reisefoto" />
+        </div>
+        <div class="projekt-bild-aktionen">
+          <button id="projekt-bild-entfernen-btn" type="button" class="sekundaer">Foto entfernen</button>
+        </div>
+      </div>
 
       <button id="projekt-dialog-submit" type="submit">Projekt speichern</button>
     </form>
@@ -1984,6 +2843,11 @@
           </select>
         </div>
 
+        <label class="eintrag-unterkunft-option" for="eintrag-fruehstueck">
+          <input id="eintrag-fruehstueck" name="fruehstueckInklusive" type="checkbox" autocomplete="off" />
+          Frühstück inklusive
+        </label>
+
         <label for="eintrag-link">Link</label>
         <input id="eintrag-link" name="link" type="url" maxlength="500" autocomplete="url" />
 
@@ -1991,7 +2855,27 @@
         <textarea id="eintrag-notizen" name="notizen" rows="5" maxlength="1000" autocomplete="off"></textarea>
 
         <label for="eintrag-datei">Dateiablage</label>
-        <input id="eintrag-datei" name="datei" type="file" autocomplete="off" />
+        <div id="eintrag-datei-dropzone" class="datei-dropzone" data-file-dropzone-for="eintrag-datei" role="button"
+          tabindex="0" aria-label="Datei hier ziehen oder einfügen">
+          <div class="datei-dropzone-kopf">
+            <div>
+              <p class="datei-dropzone-titel">Datei ablegen oder auswählen</p>
+              <p class="datei-dropzone-hinweis">Drag & Drop, Klick oder Rechtsklick zum Einfügen</p>
+            </div>
+          </div>
+          <input id="eintrag-datei" name="datei" class="visuell-versteckt" type="file" autocomplete="off" />
+        </div>
+        <div id="eintrag-dateien-bereich" class="eintrag-dateien-bereich" hidden>
+          <p class="datei-dropzone-hinweis">Gespeicherte Dateien</p>
+          <div id="eintrag-dateien-liste" class="timeline-dateien"></div>
+          <div id="eintrag-datei-optionen" class="eintrag-datei-optionen" hidden>
+            <div class="eintrag-datei-optionen-aktionen">
+              <button id="eintrag-datei-option-oeffnen" type="button" class="sekundaer">Öffnen</button>
+              <button id="eintrag-datei-option-vorschau" type="button" class="sekundaer">Als Vorschaubild</button>
+              <button id="eintrag-datei-option-loeschen" type="button" class="gefahr">Löschen</button>
+            </div>
+          </div>
+        </div>
 
       </form>
 
@@ -2067,7 +2951,6 @@
       dateien: "dateien",
       links: "links",
       segmentProfiles: "segmentProfiles",
-      internetBildCache: "internetBildCache",
       geocodeCache: "geocodeCache",
       currencyCache: "currencyCache",
       fxRates: "fxRates",
@@ -2082,7 +2965,6 @@
       STORE_NAMES.dateien,
       STORE_NAMES.links,
       STORE_NAMES.segmentProfiles,
-      STORE_NAMES.internetBildCache,
       STORE_NAMES.geocodeCache,
       STORE_NAMES.currencyCache,
       STORE_NAMES.fxRates,
@@ -2201,11 +3083,6 @@
           store.createIndex("segmentKey", "segmentKey", { unique: false });
         }
 
-        if (!db.objectStoreNames.contains(STORE_NAMES.internetBildCache)) {
-          const store = db.createObjectStore(STORE_NAMES.internetBildCache, { keyPath: "query" });
-          store.createIndex("updatedAt", "updatedAt", { unique: false });
-        }
-
         if (!db.objectStoreNames.contains(STORE_NAMES.geocodeCache)) {
           const store = db.createObjectStore(STORE_NAMES.geocodeCache, { keyPath: "query" });
           store.createIndex("updatedAt", "updatedAt", { unique: false });
@@ -2276,6 +3153,7 @@
           notizen: String(unterkunft.notizen || "").trim(),
           link: String(unterkunft.link || "").trim(),
           countryCode: String(unterkunft.countryCode || "").toUpperCase(),
+          fruehstueckInklusive: Boolean(unterkunft.fruehstueckInklusive),
         };
       }
 
@@ -2367,16 +3245,6 @@
     const GEOCODE_FAIL_CACHE_TTL_MS = 1000 * 60 * 2;
     const CURRENCY_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 365;
     const FX_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
-    const INTERNET_BILD_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30;
-    const WIKIPEDIA_BILD_LANGS = [
-      "de",
-      "en",
-      "es",
-      "it",
-      "fr",
-      "nl",
-      "pt",
-    ];
     const PHOTON_URL = "https://photon.komoot.io/api/";
     const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
     const RESTCOUNTRIES_URL = "https://restcountries.com/v3.1/alpha/";
@@ -2544,6 +3412,7 @@
           notizen: String(unterkunft.notizen || "").trim(),
           link: String(unterkunft.link || "").trim(),
           countryCode: String(unterkunft.countryCode || "").toUpperCase(),
+          fruehstueckInklusive: Boolean(unterkunft.fruehstueckInklusive),
         };
       }
 
@@ -2600,6 +3469,7 @@
           notizen: String(eintrag.notizen || "").trim(),
           link: String(eintrag.link || "").trim(),
           countryCode: String(eintrag.countryCode || "").toUpperCase(),
+          fruehstueckInklusive: Boolean(eintrag.fruehstueckInklusive),
         };
       }
 
@@ -2613,7 +3483,7 @@
         return this.db.get(STORE_NAMES.projekte, projektId);
       }
 
-      async createProjekt({ titel, notizen }) {
+      async createProjekt({ titel, notizen, fotoDataUrl }) {
         const bereinigterTitel = (titel || "").trim();
 
         if (!bereinigterTitel) {
@@ -2624,13 +3494,14 @@
           id: neueId(),
           titel: bereinigterTitel,
           notizen: (notizen || "").trim(),
+          fotoDataUrl: String(fotoDataUrl || "").trim(),
         };
 
         await this.db.add(STORE_NAMES.projekte, projekt);
         return projekt;
       }
 
-      async updateProjekt(projektId, { titel }) {
+      async updateProjekt(projektId, { titel, fotoDataUrl }) {
         if (!projektId) {
           throw new Error("Projekt fehlt.");
         }
@@ -2649,6 +3520,7 @@
         const aktualisiertesProjekt = {
           ...bestehendesProjekt,
           titel: bereinigterTitel,
+          fotoDataUrl: String(fotoDataUrl !== undefined ? fotoDataUrl : bestehendesProjekt.fotoDataUrl || "").trim(),
         };
 
         await this.db.put(STORE_NAMES.projekte, aktualisiertesProjekt);
@@ -2721,6 +3593,7 @@
         notizen,
         link,
         countryCode,
+        fruehstueckInklusive,
       }) {
         return {
           id: id || neueId(),
@@ -2737,6 +3610,7 @@
           notizen: String(notizen || "").trim(),
           link: String(link || "").trim(),
           countryCode: String(countryCode || "").toUpperCase(),
+          fruehstueckInklusive: Boolean(fruehstueckInklusive),
         };
       }
 
@@ -2759,6 +3633,7 @@
           notizen: eintrag.notizen || "",
           link: eintrag.link || "",
           countryCode: String(eintrag.countryCode || "").toUpperCase(),
+          fruehstueckInklusive: Boolean(eintrag.fruehstueckInklusive),
         };
       }
 
@@ -2959,7 +3834,7 @@
         return aktualisierterStop;
       }
 
-      async createUnterkunft({ projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link }) {
+      async createUnterkunft({ projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
         const bereinigterName = (name || "").trim();
         if (!projektId) {
           throw new Error("Projekt fehlt.");
@@ -2982,6 +3857,7 @@
           waehrung,
           notizen,
           link,
+          fruehstueckInklusive,
         });
 
         await this.db.add(STORE_NAMES.eintraege, eintrag);
@@ -2993,7 +3869,7 @@
         return this._toUnterkunftView(eintrag);
       }
 
-      async updateUnterkunft(unterkunftId, { projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link }) {
+      async updateUnterkunft(unterkunftId, { projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
         if (!unterkunftId) {
           throw new Error("Unterkunft fehlt.");
         }
@@ -3023,6 +3899,7 @@
           notizen,
           link,
           countryCode: bestehenderEintrag.countryCode || "",
+          fruehstueckInklusive,
         });
 
         await this.db.put(STORE_NAMES.eintraege, eintrag);
@@ -3355,14 +4232,26 @@
           throw new Error("Ungültige Datei.");
         }
 
+        const cleanEintragTyp = String(eintragTyp || "").trim();
+        const cleanEintragId = String(eintragId || "").trim();
+        const istBild = String(datei.type || "").toLowerCase().startsWith("image/");
+        let istVorschaubild = false;
+        if (cleanEintragTyp && cleanEintragId && istBild) {
+          const vorhandeneDateien = await this.listDateienByEintrag(projektId, cleanEintragTyp, cleanEintragId);
+          const hatBereitsVorschaubild = vorhandeneDateien.some((eintrag) =>
+            String(eintrag?.typ || "").toLowerCase().startsWith("image/") && Boolean(eintrag?.istVorschaubild));
+          istVorschaubild = !hatBereitsVorschaubild;
+        }
+
         const neueDatei = {
           id: neueId(),
           projektId,
           name: datei.name || "Datei",
           typ: datei.type || "application/octet-stream",
           blob: datei,
-          eintragTyp: String(eintragTyp || "").trim(),
-          eintragId: String(eintragId || "").trim(),
+          eintragTyp: cleanEintragTyp,
+          eintragId: cleanEintragId,
+          istVorschaubild,
           erstelltAm: new Date().toISOString(),
         };
 
@@ -3400,6 +4289,27 @@
         );
       }
 
+      async setEintragVorschaubildDatei({ projektId, eintragTyp, eintragId, dateiId }) {
+        const cleanProjektId = String(projektId || "").trim();
+        const cleanEintragTyp = String(eintragTyp || "").trim();
+        const cleanEintragId = String(eintragId || "").trim();
+        const selectedId = String(dateiId || "").trim();
+        if (!cleanProjektId || !cleanEintragTyp || !cleanEintragId) {
+          return;
+        }
+        const dateien = await this.listDateienByEintrag(cleanProjektId, cleanEintragTyp, cleanEintragId);
+        await Promise.all(
+          dateien.map((datei) => {
+            const istBild = String(datei?.typ || "").toLowerCase().startsWith("image/");
+            const istAusgewaehlt = istBild && selectedId && String(datei.id || "") === selectedId;
+            return this.db.put(STORE_NAMES.dateien, {
+              ...datei,
+              istVorschaubild: Boolean(istAusgewaehlt),
+            });
+          }),
+        );
+      }
+
       async listSegmentProfileByProjekt(projektId) {
         if (!projektId) {
           return {};
@@ -3430,52 +4340,6 @@
           projektId: cleanProjektId,
           segmentKey: cleanSegmentKey,
           profile: cleanProfile,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-
-      async getInternetBildCache(query) {
-        const key = String(query || "").trim().toLowerCase();
-        if (!key) {
-          return null;
-        }
-        const cached = await this.db.get(STORE_NAMES.internetBildCache, key);
-        if (!cached) {
-          return null;
-        }
-        const cachedUrl = String(cached.url || "").trim();
-        if (!cachedUrl) {
-          return null;
-        }
-        if (String(cached.source || "").toLowerCase() === "google") {
-          try {
-            await this.db.delete(STORE_NAMES.internetBildCache, key);
-          } catch {
-          }
-          return null;
-        }
-        if (cachedUrl.includes("source.unsplash.com")) {
-          try {
-            await this.db.delete(STORE_NAMES.internetBildCache, key);
-          } catch {
-          }
-          return null;
-        }
-        if (!isFreshCache(cached.updatedAt, INTERNET_BILD_CACHE_TTL_MS)) {
-          return null;
-        }
-        return cached;
-      }
-
-      async setInternetBildCache({ query, url, source = "" }) {
-        const key = String(query || "").trim().toLowerCase();
-        if (!key) {
-          return;
-        }
-        await this.db.put(STORE_NAMES.internetBildCache, {
-          query: key,
-          url: String(url || "").trim(),
-          source: String(source || "").trim(),
           updatedAt: new Date().toISOString(),
         });
       }
@@ -3886,16 +4750,6 @@
 
     const LEAFLET_ASSET_SOURCES = [
       {
-        name: "local",
-        css: "./leaflet/leaflet.css",
-        js: "./leaflet/leaflet.js",
-      },
-      {
-        name: "local-vendor",
-        css: "./vendor/leaflet/leaflet.css",
-        js: "./vendor/leaflet/leaflet.js",
-      },
-      {
         name: "unpkg",
         css: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
         js: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -3904,6 +4758,16 @@
         name: "jsdelivr",
         css: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
         js: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+      },
+      {
+        name: "local",
+        css: "./leaflet/leaflet.css",
+        js: "./leaflet/leaflet.js",
+      },
+      {
+        name: "local-vendor",
+        css: "./vendor/leaflet/leaflet.css",
+        js: "./vendor/leaflet/leaflet.js",
       },
     ];
     let leafletLoadPromise = null;
@@ -4057,13 +4921,25 @@
     const TILE_SUBDOMAINS = ["a", "b", "c"];
     const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1";
     const PROFILE_DEFAULT = "driving";
+    const SEGMENT_PROFILE_OPTIONS = [
+      { key: "driving", icon: "🚗", label: "Auto" },
+      { key: "walking", icon: "🚶", label: "Zu Fuß" },
+      { key: "flight", icon: "✈️", label: "Flugzeug" },
+      { key: "ship", icon: "🚢", label: "Schiff" },
+    ];
+    const SEGMENT_PROFILE_KEYS = SEGMENT_PROFILE_OPTIONS.map((option) => option.key);
+    const OSRM_ROUTING_PROFILES = ["driving", "walking"];
     const PROFILE_SPEED_KMH = {
       driving: 70,
       walking: 5,
+      flight: 750,
+      ship: 35,
     };
     const PROFILE_COLOR = {
-      driving: "#06b6d4",
+      driving: "#64748b",
       walking: "#16a34a",
+      flight: "#ef4444",
+      ship: "#3b82f6",
     };
     let mapTileWarmupStarted = false;
 
@@ -4400,15 +5276,21 @@
         }
 
         const fallbackDistanceKm = berechneDistanz(routeCoords);
+        const isRoadProfile = OSRM_ROUTING_PROFILES.includes(normalizedProfile);
         const fallback = {
           lineCoords: routeCoords,
           distanceKm: fallbackDistanceKm,
           durationMin: estimateDurationMinutes(fallbackDistanceKm, normalizedProfile),
           profile: normalizedProfile,
-          routeType: "fallback",
+          routeType: isRoadProfile ? "fallback" : "direct",
         };
 
         try {
+          if (!isRoadProfile) {
+            this.routeCache.set(cacheKey, fallback);
+            return fallback;
+          }
+
           const coordText = routeCoords.map(([lat, lon]) => `${lon},${lat}`).join(";");
           const url = `${OSRM_BASE_URL}/${normalizedProfile}/${coordText}?overview=full&geometries=geojson`;
           const response = await fetch(url, { headers: { Accept: "application/json" } });
@@ -4521,7 +5403,7 @@
 
     function normalizeProfile(profile) {
       const text = String(profile || "").trim().toLowerCase();
-      if (["driving", "walking"].includes(text)) {
+      if (SEGMENT_PROFILE_KEYS.includes(text)) {
         return text;
       }
       return PROFILE_DEFAULT;
@@ -4654,12 +5536,14 @@
         this.segmentProfileByKey = {};
         this.zeigeSegmentSprechblasen = true;
         this.anzeigemodus = leseGespeichertenAnzeigemodus();
-        this.importierteDatenbankDatei = "";
         this.aktiverKostenTab = "kategorie";
         this.kartenFokus = null;
         this.timelineBildVorschauUrls = [];
-        this.internetBildCache = new Map();
-        this.timelineRenderId = 0;
+        this.timelineGalerieAuswahlByEintrag = {};
+        this.aktiveEintragDateiOption = null;
+        this.projektBildDataUrlDraft = "";
+        this.timelineTagFilterValue = "all";
+        this.timelineTypFilterValue = "all";
         this.elemente = null;
       }
 
@@ -4669,14 +5553,26 @@
           projekteListe: document.querySelector("#projekte-liste"),
           projektDialogTitel: document.querySelector("#projekt-dialog-titel"),
           projektDialogSubmit: document.querySelector("#projekt-dialog-submit"),
+          projektBildInput: document.querySelector("#projekt-bild"),
+          projektBildVorschauWrap: document.querySelector("#projekt-bild-vorschau-wrap"),
+          projektBildVorschau: document.querySelector("#projekt-bild-vorschau"),
+          projektBildEntfernenBtn: document.querySelector("#projekt-bild-entfernen-btn"),
           formularFehler: document.querySelector("#formular-fehler"),
           timelineBereich: document.querySelector("#timeline-bereich"),
+          timelineFilterZeile: document.querySelector("#timeline-filter-zeile"),
+          timelineTypFilter: document.querySelector("#timeline-typ-filter"),
+          timelineTagFilter: document.querySelector("#timeline-tag-filter"),
           timelineListe: document.querySelector("#timeline-liste"),
           hauptReiter: document.querySelector("#haupt-reiter"),
+          hauptProjektTitel: document.querySelector("#haupt-projekt-titel"),
           karteBereich: document.querySelector("#karte-bereich"),
           karteDistanz: document.querySelector("#karte-distanz"),
           karteSegmentLabelsToggle: document.querySelector("#karte-segment-labels-toggle"),
           karteHinweis: document.querySelector("#karte-hinweis"),
+          reiterProjektAktionen: document.querySelector("#reiter-projekt-aktionen"),
+          reiterProjektDrucken: document.querySelector("#reiter-projekt-drucken"),
+          reiterProjektBearbeiten: document.querySelector("#reiter-projekt-bearbeiten"),
+          reiterProjektLoeschen: document.querySelector("#reiter-projekt-loeschen"),
           kostenBereich: document.querySelector("#kosten-bereich"),
           kostenGesamtListe: document.querySelector("#kosten-gesamt-liste"),
           kostenKategorieBereich: document.querySelector("#kosten-kategorie-bereich"),
@@ -4689,7 +5585,6 @@
           jsonExportBtn: document.querySelector("#json-export-btn"),
           jsonImportPickerBtn: document.querySelector("#json-import-picker-btn"),
           jsonImportInput: document.querySelector("#json-import-input"),
-          datenbankNameAnzeige: document.querySelector("#datenbank-name-anzeige"),
           jsonFehler: document.querySelector("#json-fehler"),
           anzeigemodusButtons: Array.from(document.querySelectorAll("button[data-anzeigemodus]")),
           appVersionAnzeige: document.querySelector("#app-version-anzeige"),
@@ -4699,6 +5594,12 @@
           dateiFehler: document.querySelector("#datei-fehler"),
           eintragFehler: document.querySelector("#eintrag-fehler"),
           eintragForm: document.querySelector("#eintrag-form"),
+          eintragDateienBereich: document.querySelector("#eintrag-dateien-bereich"),
+          eintragDateienListe: document.querySelector("#eintrag-dateien-liste"),
+          eintragDateiOptionen: document.querySelector("#eintrag-datei-optionen"),
+          eintragDateiOptionOeffnen: document.querySelector("#eintrag-datei-option-oeffnen"),
+          eintragDateiOptionVorschau: document.querySelector("#eintrag-datei-option-vorschau"),
+          eintragDateiOptionLoeschen: document.querySelector("#eintrag-datei-option-loeschen"),
           eintragTypInput: document.querySelector("#eintrag-typ"),
           eintragTypButtons: Array.from(document.querySelectorAll("#eintrag-typ-buttons [data-eintrag-typ]")),
           eintragLoeschenBtn: document.querySelector("#eintrag-loeschen-btn"),
@@ -4730,7 +5631,6 @@
         this._aktualisiereEintragTypTabs();
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this._setAnzeigemodus(this.anzeigemodus, { persist: false });
-        this._renderDatenbankAnzeige();
         if (this.elemente.appVersionAnzeige) {
           this.elemente.appVersionAnzeige.textContent = "Version: -";
         }
@@ -4816,6 +5716,86 @@
           this._setAktiverHauptReiter(button.dataset.reiter);
         });
 
+        this.elemente.timelineTagFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-timeline-tag]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.timelineTag || "").trim();
+          if (!value) {
+            return;
+          }
+          this.timelineTagFilterValue = this.timelineTagFilterValue === value ? "all" : value;
+          await this._renderTimeline();
+        });
+
+        this.elemente.timelineTypFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-timeline-typ]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.timelineTyp || "").trim();
+          if (!["unterkunft", "aktivitaet"].includes(value)) {
+            return;
+          }
+          this.timelineTypFilterValue = this.timelineTypFilterValue === value ? "all" : value;
+          await this._renderTimeline();
+        });
+
+        this.elemente.projektBildInput?.addEventListener("change", async () => {
+          const file = this.elemente.projektBildInput?.files?.[0];
+          if (!file) {
+            if (this.projektBildDataUrlDraft) {
+              this._renderProjektBildVorschau(this.projektBildDataUrlDraft);
+            } else {
+              this._renderProjektBildVorschau("");
+            }
+            return;
+          }
+          if (!String(file.type || "").toLowerCase().startsWith("image/")) {
+            this.elemente.formularFehler.textContent = "Bitte eine Bilddatei auswählen.";
+            this.elemente.projektBildInput.value = "";
+            return;
+          }
+          const fotoDataUrl = await blobToDataUrl(file);
+          if (!fotoDataUrl) {
+            this.elemente.formularFehler.textContent = "Bild konnte nicht gelesen werden.";
+            return;
+          }
+          this.projektBildDataUrlDraft = fotoDataUrl;
+          this._renderProjektBildVorschau(fotoDataUrl);
+          this.elemente.formularFehler.textContent = "";
+        });
+
+        this.elemente.projektBildEntfernenBtn?.addEventListener("click", () => {
+          this.projektBildDataUrlDraft = "";
+          if (this.elemente.projektBildInput) {
+            this.elemente.projektBildInput.value = "";
+          }
+          this._renderProjektBildVorschau("");
+        });
+
+        this.elemente.reiterProjektDrucken?.addEventListener("click", async () => {
+          if (!this.aktivesProjekt?.id) {
+            return;
+          }
+          await this._handleProjektDrucken(this.aktivesProjekt.id);
+        });
+
+        this.elemente.reiterProjektBearbeiten?.addEventListener("click", async () => {
+          if (!this.aktivesProjekt?.id) {
+            return;
+          }
+          await this._oeffneProjektBearbeitenDialog(this.aktivesProjekt.id);
+        });
+
+        this.elemente.reiterProjektLoeschen?.addEventListener("click", async () => {
+          if (!this.aktivesProjekt?.id) {
+            return;
+          }
+          await this._handleProjektLoeschen(this.aktivesProjekt.id);
+        });
+
         this.elemente.karteSegmentLabelsToggle?.addEventListener("change", async () => {
           this.zeigeSegmentSprechblasen = Boolean(this.elemente.karteSegmentLabelsToggle?.checked);
           await this._renderKarteRoute();
@@ -4831,6 +5811,10 @@
           event.preventDefault();
           await this._handleEintragErstellen(this.elemente.eintragForm);
         });
+        const eintragDateiInput = this.elemente.eintragForm.querySelector("#eintrag-datei");
+        eintragDateiInput?.addEventListener("change", async (event) => {
+          await this._handleEintragDateiSofortUpload(event.target);
+        });
         this.elemente.eintragTypButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const typ = String(button.dataset.eintragTyp || "").trim();
@@ -4845,11 +5829,158 @@
           await this._handleTimelineEintragLoeschen(this.bearbeiteEintrag.typ, this.bearbeiteEintrag.id);
           this._schliesseZeitplanDialog();
         });
+        this.elemente.eintragDateienListe?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-eintrag-datei-action]");
+          if (!button) {
+            return;
+          }
+          const dateiId = String(button.dataset.dateiId || "").trim();
+          const action = String(button.dataset.eintragDateiAction || "").trim();
+          if (!dateiId) {
+            return;
+          }
+          if (action === "oeffnen") {
+            await this._handleDateiOeffnen(dateiId);
+            return;
+          }
+          if (action === "optionen") {
+            const datei = await this.storage.getDatei(dateiId);
+            if (!datei) {
+              return;
+            }
+            const clickX = Number(event.clientX);
+            const clickY = Number(event.clientY);
+            const hatKoordinaten = Number.isFinite(clickX) && Number.isFinite(clickY) && (clickX > 0 || clickY > 0);
+            this._zeigeEintragDateiOptionen(datei, {
+              x: hatKoordinaten ? clickX : null,
+              y: hatKoordinaten ? clickY : null,
+              anchor: button,
+            });
+            return;
+          }
+          if (action === "loeschen") {
+            await this._handleDateiLoeschen(dateiId);
+            await this._renderEintragDateienImDialog();
+            await this._renderTimeline();
+          }
+        });
+        this.elemente.eintragDateiOptionOeffnen?.addEventListener("click", async () => {
+          const dateiId = String(this.aktiveEintragDateiOption?.id || "").trim();
+          if (!dateiId) {
+            return;
+          }
+          await this._handleDateiOeffnen(dateiId);
+          this._versteckeEintragDateiOptionen();
+        });
+        this.elemente.eintragDateiOptionVorschau?.addEventListener("click", async () => {
+          const dateiId = String(this.aktiveEintragDateiOption?.id || "").trim();
+          if (!dateiId || !this.aktivesProjekt?.id || !this.bearbeiteEintrag?.typ || !this.bearbeiteEintrag?.id) {
+            return;
+          }
+          if (!Boolean(this.aktiveEintragDateiOption?.istBild)) {
+            return;
+          }
+          await this.storage.setEintragVorschaubildDatei({
+            projektId: this.aktivesProjekt.id,
+            eintragTyp: this.bearbeiteEintrag.typ,
+            eintragId: this.bearbeiteEintrag.id,
+            dateiId,
+          });
+          await this._renderEintragDateienImDialog();
+          await this._renderTimeline();
+          this._versteckeEintragDateiOptionen();
+        });
+        this.elemente.eintragDateiOptionLoeschen?.addEventListener("click", async () => {
+          const dateiId = String(this.aktiveEintragDateiOption?.id || "").trim();
+          if (!dateiId) {
+            return;
+          }
+          await this._handleDateiLoeschen(dateiId);
+          this._versteckeEintragDateiOptionen();
+          await this._renderEintragDateienImDialog();
+          await this._renderTimeline();
+        });
+        this.elemente.eintragDateienListe?.addEventListener("contextmenu", async (event) => {
+          const button = event.target.closest("button[data-eintrag-datei-action='optionen']");
+          if (!button) {
+            return;
+          }
+          event.preventDefault();
+          const dateiId = String(button.dataset.dateiId || "").trim();
+          if (!dateiId) {
+            return;
+          }
+          const datei = await this.storage.getDatei(dateiId);
+          if (!datei) {
+            return;
+          }
+          this._zeigeEintragDateiOptionen(datei, {
+            x: event.clientX,
+            y: event.clientY,
+            anchor: button,
+          });
+        });
+        document.addEventListener("click", (event) => {
+          if (this.elemente.eintragDateiOptionen?.hidden) {
+            return;
+          }
+          const target = event.target;
+          if (target instanceof Element) {
+            if (target.closest("#eintrag-datei-optionen")) {
+              return;
+            }
+            if (target.closest("button[data-eintrag-datei-action='optionen']")) {
+              return;
+            }
+          }
+          this._versteckeEintragDateiOptionen();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") {
+            return;
+          }
+          this._versteckeEintragDateiOptionen();
+        });
 
         this.elemente.timelineListe.addEventListener("click", async (event) => {
           const addButton = event.target.closest("button[data-timeline-add]");
           if (addButton) {
             this._oeffneZeitplanDialog();
+            return;
+          }
+
+          const galerieButton = event.target.closest("button[data-timeline-galerie-action='waehlen']");
+          if (galerieButton) {
+            const galerieKey = String(galerieButton.dataset.timelineGalerieKey || "").trim();
+            const dateiId = String(galerieButton.dataset.dateiId || "").trim();
+            if (!galerieKey || !dateiId) {
+              return;
+            }
+            this.timelineGalerieAuswahlByEintrag[galerieKey] = dateiId;
+            const galerie = galerieButton.closest(".timeline-bild-galerie");
+            if (galerie instanceof HTMLElement) {
+              const hauptButton = galerie.querySelector("button.timeline-bild-vorschau-wrap[data-timeline-datei-action='oeffnen']");
+              const previewKind = String(galerieButton.dataset.previewKind || "file").trim().toLowerCase();
+              const previewSrc = String(galerieButton.dataset.previewSrc || "").trim();
+              const previewName = String(galerieButton.dataset.previewName || "Datei").trim();
+              if (hauptButton instanceof HTMLButtonElement) {
+                hauptButton.dataset.dateiId = dateiId;
+                hauptButton.dataset.previewKind = previewKind;
+                hauptButton.dataset.previewSrc = previewSrc;
+                hauptButton.dataset.previewName = previewName;
+                this._setTimelineGalerieHauptansicht(hauptButton, {
+                  previewKind,
+                  previewSrc,
+                  previewName,
+                });
+              }
+              galerie.querySelectorAll("button[data-timeline-galerie-action='waehlen']").forEach((button) => {
+                if (!(button instanceof HTMLButtonElement)) {
+                  return;
+                }
+                button.classList.toggle("aktiv", button === galerieButton);
+              });
+            }
             return;
           }
 
@@ -4865,7 +5996,7 @@
           if (segmentButton) {
             const segmentKey = String(segmentButton.dataset.segmentKey || "").trim();
             const profile = String(segmentButton.dataset.segmentProfile || "").trim().toLowerCase();
-            if (!segmentKey || !["driving", "walking"].includes(profile)) {
+            if (!segmentKey || !SEGMENT_PROFILE_KEYS.includes(profile)) {
               return;
             }
             this.segmentProfileByKey[segmentKey] = profile;
@@ -4876,7 +6007,31 @@
                 profile,
               });
             }
-            await this._renderTimeline();
+            const segmentContainer = segmentButton.closest(".timeline-segment-steuerung");
+            if (segmentContainer instanceof HTMLElement) {
+              segmentContainer.querySelectorAll("button[data-segment-profile][data-segment-key]").forEach((button) => {
+                if (!(button instanceof HTMLButtonElement)) {
+                  return;
+                }
+                const istAktiv = String(button.dataset.segmentProfile || "").trim().toLowerCase() === profile;
+                button.classList.toggle("aktiv", istAktiv);
+              });
+              const segmentInfo = segmentContainer.querySelector(".timeline-segment-info");
+              if (segmentInfo instanceof HTMLElement) {
+                const fromLat = Number(segmentContainer.dataset.segmentFromLat);
+                const fromLon = Number(segmentContainer.dataset.segmentFromLon);
+                const toLat = Number(segmentContainer.dataset.segmentToLat);
+                const toLon = Number(segmentContainer.dataset.segmentToLon);
+                const segmentMetrik = await this._resolveTimelineSegmentRouteByCoords(fromLat, fromLon, toLat, toLon, profile);
+                const segmentDauerText = Number.isFinite(Number(segmentMetrik?.durationMin)) && Number(segmentMetrik.durationMin) > 0
+                  ? formatDurationMinutes(segmentMetrik.durationMin)
+                  : "-";
+                const segmentDistanzText = Number.isFinite(Number(segmentMetrik?.distanceKm)) && Number(segmentMetrik.distanceKm) > 0
+                  ? formatDistanzKm(segmentMetrik.distanceKm)
+                  : "-";
+                segmentInfo.innerHTML = `<span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span>`;
+              }
+            }
             await this._renderKarteRoute();
             return;
           }
@@ -4892,11 +6047,6 @@
             const dateiAction = dateiButton.dataset.timelineDateiAction;
             if (dateiAction === "oeffnen") {
               await this._handleDateiOeffnen(dateiId);
-              return;
-            }
-            if (dateiAction === "loeschen") {
-              await this._handleDateiLoeschen(dateiId);
-              await this._renderTimeline();
               return;
             }
             return;
@@ -4987,10 +6137,6 @@
             await this._handleDateiOeffnen(dateiId);
             return;
           }
-
-          if (action === "loeschen") {
-            await this._handleDateiLoeschen(dateiId);
-          }
         });
 
         this.elemente.einstellungenDialogOeffnen?.addEventListener("click", () => {
@@ -5042,10 +6188,12 @@
         });
 
         this.elemente.zeitplanDialog?.addEventListener("close", () => {
+          this._resetZeitplanDialogState();
           this._syncDialogBodyState();
         });
 
         this.elemente.zeitplanDialog?.addEventListener("cancel", () => {
+          this._resetZeitplanDialogState();
           this._syncDialogBodyState();
         });
 
@@ -5056,6 +6204,7 @@
         this.elemente.kostenDialog?.addEventListener("cancel", () => {
           this._syncDialogBodyState();
         });
+
       }
 
       _initDateiDropzones() {
@@ -5068,53 +6217,193 @@
           return;
         }
 
-        const aktivieren = () => input.classList.add("drag-over");
-        const deaktivieren = () => input.classList.remove("drag-over");
-
-        input.addEventListener("dragenter", (event) => {
-          event.preventDefault();
-          aktivieren();
-        });
-
-        input.addEventListener("dragover", (event) => {
-          event.preventDefault();
-          aktivieren();
-        });
-
-        input.addEventListener("dragleave", (event) => {
-          if (event.relatedTarget && input.contains(event.relatedTarget)) {
-            return;
+        const dropzone = input.id
+          ? document.querySelector(`[data-file-dropzone-for="${input.id}"]`)
+          : null;
+        const zone = dropzone instanceof HTMLElement ? dropzone : input;
+        const aktivieren = () => {
+          input.classList.add("drag-over");
+          if (zone !== input) {
+            zone.classList.add("drag-over");
           }
-          deaktivieren();
-        });
-
-        input.addEventListener("drop", (event) => {
-          event.preventDefault();
-          deaktivieren();
-          const files = event.dataTransfer?.files;
+        };
+        const deaktivieren = () => {
+          input.classList.remove("drag-over");
+          if (zone !== input) {
+            zone.classList.remove("drag-over");
+          }
+        };
+        const applyFiles = (files) => {
           if (!files || !files.length) {
             return;
           }
-
-          const transfer = new DataTransfer();
-          const erlaubtMehrere = input.hasAttribute("multiple");
-          const max = erlaubtMehrere ? files.length : 1;
-          for (let i = 0; i < max; i += 1) {
-            transfer.items.add(files[i]);
+          this._setFilesOnInput(input, files);
+          if (zone !== input) {
+            zone.focus();
           }
-          input.files = transfer.files;
-          input.dispatchEvent(new Event("change", { bubbles: true }));
+        };
+
+        if (zone !== input) {
+          zone.addEventListener("click", (event) => {
+            if (event.target === input) {
+              return;
+            }
+            input.click();
+          });
+          zone.addEventListener("contextmenu", async (event) => {
+            event.preventDefault();
+            await this._pasteDateienAusZwischenablage(input, zone);
+          });
+
+          zone.addEventListener("keydown", (event) => {
+            if (!["Enter", " "].includes(event.key)) {
+              return;
+            }
+            event.preventDefault();
+            input.click();
+          });
+        }
+
+        [zone, input].forEach((target) => {
+          target.addEventListener("dragenter", (event) => {
+            event.preventDefault();
+            aktivieren();
+          });
+
+          target.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            aktivieren();
+          });
+
+          target.addEventListener("dragleave", (event) => {
+            if (event.relatedTarget && target.contains(event.relatedTarget)) {
+              return;
+            }
+            deaktivieren();
+          });
+
+          target.addEventListener("drop", (event) => {
+            event.preventDefault();
+            deaktivieren();
+            applyFiles(event.dataTransfer?.files);
+          });
         });
+
+      }
+
+      _setFilesOnInput(input, files) {
+        if (!(input instanceof HTMLInputElement)) {
+          return;
+        }
+        const list = Array.from(files || []).filter((file) => file instanceof File);
+        if (!list.length) {
+          return;
+        }
+        const transfer = new DataTransfer();
+        const erlaubtMehrere = input.hasAttribute("multiple");
+        const max = erlaubtMehrere ? list.length : 1;
+        for (let i = 0; i < max; i += 1) {
+          transfer.items.add(list[i]);
+        }
+        input.files = transfer.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      _mimeToDateiErweiterung(mimeType) {
+        const clean = String(mimeType || "").toLowerCase().split(";")[0].trim();
+        const known = {
+          "image/jpeg": ".jpg",
+          "image/jpg": ".jpg",
+          "image/png": ".png",
+          "image/webp": ".webp",
+          "image/gif": ".gif",
+          "image/heic": ".heic",
+          "image/heif": ".heif",
+          "application/pdf": ".pdf",
+        };
+        if (known[clean]) {
+          return known[clean];
+        }
+        if (!clean.includes("/")) {
+          return "";
+        }
+        const subtype = clean.split("/")[1].replace(/[^a-z0-9]+/g, "").slice(0, 8);
+        return subtype ? `.${subtype}` : "";
+      }
+
+      async _pasteDateienAusZwischenablage(input, zone = null) {
+        if (!(input instanceof HTMLInputElement)) {
+          return false;
+        }
+        if (!navigator?.clipboard || typeof navigator.clipboard.read !== "function") {
+          this._setStatus("Einfügen aus Zwischenablage wird vom Browser nicht unterstützt.");
+          return false;
+        }
+
+        try {
+          const clipboardItems = await navigator.clipboard.read();
+          const files = [];
+          let index = 0;
+
+          for (const item of clipboardItems) {
+            const types = Array.isArray(item?.types) ? item.types : [];
+            for (const rawType of types) {
+              const type = String(rawType || "").toLowerCase();
+              if (!type || type.startsWith("text/")) {
+                continue;
+              }
+              const blob = await item.getType(rawType);
+              if (!(blob instanceof Blob) || blob.size <= 0) {
+                continue;
+              }
+              const resolvedType = String(blob.type || rawType || "").trim() || "application/octet-stream";
+              const ext = this._mimeToDateiErweiterung(resolvedType);
+              const baseName = resolvedType.startsWith("image/")
+                ? "eingefuegtes-bild"
+                : (resolvedType === "application/pdf" ? "eingefuegtes-pdf" : "eingefuegte-datei");
+              const dateiName = `${baseName}-${Date.now()}-${index + 1}${ext}`;
+              files.push(new File([blob], dateiName, { type: resolvedType, lastModified: Date.now() }));
+              index += 1;
+              break;
+            }
+          }
+
+          if (!files.length) {
+            this._setStatus("Keine Datei in der Zwischenablage gefunden.");
+            return false;
+          }
+
+          this._setFilesOnInput(input, files);
+          if (zone instanceof HTMLElement && zone !== input) {
+            zone.focus();
+          }
+          this._setStatus("Datei aus Zwischenablage eingefügt.");
+          return true;
+        } catch (error) {
+          this._setStatus("Einfügen aus Zwischenablage fehlgeschlagen.");
+          return false;
+        }
       }
 
       async _handleProjektErstellen() {
         const formData = new FormData(this.elemente.projektFormular);
         const titel = String(formData.get("titel") || "").trim();
+        const bildDatei = formData.get("projektBild");
+        let fotoDataUrl = this.projektBildDataUrlDraft || "";
+
+        if (bildDatei instanceof File && bildDatei.size > 0) {
+          if (!String(bildDatei.type || "").toLowerCase().startsWith("image/")) {
+            this.elemente.formularFehler.textContent = "Bitte eine Bilddatei auswählen.";
+            return;
+          }
+          fotoDataUrl = await blobToDataUrl(bildDatei);
+        }
 
         try {
           if (this.bearbeiteProjektId) {
             const aktualisiertesProjekt = await this.storage.updateProjekt(this.bearbeiteProjektId, {
               titel,
+              fotoDataUrl,
             });
 
             this.elemente.formularFehler.textContent = "";
@@ -5128,7 +6417,7 @@
             return;
           }
 
-          const neuesProjekt = await this.storage.createProjekt({ titel });
+          const neuesProjekt = await this.storage.createProjekt({ titel, fotoDataUrl });
 
           this.elemente.formularFehler.textContent = "";
           this.elemente.projektFormular.reset();
@@ -5194,7 +6483,7 @@
           : '<tr><td colspan="2">Keine Kosten</td></tr>';
 
         const dateiRows = dateien.length
-          ? dateien.map((datei) => `<li>${escapeHtml(datei.name || "Datei")} (${escapeHtml(formatDateigroesse(datei.blob?.size || 0))})</li>`).join("")
+          ? dateien.map((datei) => `<li>${escapeHtml(formatAnzeigeDateiname(datei.name || "Datei", { maxLength: 40 }))} (${escapeHtml(formatDateigroesse(datei.blob?.size || 0))})</li>`).join("")
           : "<li>Keine Dateien</li>";
 
         const html = `<!doctype html>
@@ -5264,6 +6553,9 @@ ${"</ht"+"ml>"}
         this.aktivesProjekt = projekt;
         this.aktiverHauptReiter = "timeline";
         this.bearbeiteEintrag = null;
+        this.timelineGalerieAuswahlByEintrag = {};
+        this.timelineTagFilterValue = "all";
+        this.timelineTypFilterValue = "all";
         this.segmentProfileByKey = await this.storage.listSegmentProfileByProjekt(projekt.id);
         await this._renderProjektliste();
         await this._renderTimeline();
@@ -5335,6 +6627,7 @@ ${"</ht"+"ml>"}
               waehrung: formData.get("waehrung"),
               notizen: formData.get("notizen"),
               link: formData.get("link"),
+              fruehstueckInklusive: formData.has("fruehstueckInklusive"),
             };
 
             if (istBearbeiten) {
@@ -5414,12 +6707,13 @@ ${"</ht"+"ml>"}
 
               return `
             <li class="listen-eintrag projekt-kachel ${aktivKlasse}" data-action="oeffnen" data-projekt-id="${projekt.id}" role="button" tabindex="0" aria-label="Reise öffnen: ${escapeHtml(projekt.titel)}">
-              <h3>${escapeHtml(projekt.titel)}</h3>
-              <div class="listen-aktionen">
-                <button type="button" class="sekundaer" data-action="drucken" data-projekt-id="${projekt.id}" aria-label="Drucken" title="Drucken">🖨️</button>
-                <button type="button" class="sekundaer" data-action="bearbeiten" data-projekt-id="${projekt.id}" aria-label="Bearbeiten" title="Bearbeiten">✏️</button>
-                <button type="button" class="gefahr" data-action="loeschen" data-projekt-id="${projekt.id}" aria-label="Löschen" title="Löschen">🗑️</button>
+              <div class="projekt-kachel-bild-wrap">
+                ${projekt.fotoDataUrl
+          ? `<img class="projekt-kachel-bild" src="${escapeHtml(projekt.fotoDataUrl)}" alt="${escapeHtml(projekt.titel)}">`
+          : `<span class="projekt-kachel-placeholder" aria-hidden="true">${escapeHtml((projekt.titel || "?").trim().charAt(0).toUpperCase() || "?")}</span>`
+        }
               </div>
+              <h3 class="projekt-kachel-titel">${escapeHtml(projekt.titel)}</h3>
             </li>
           `;
             })
@@ -5430,8 +6724,20 @@ ${"</ht"+"ml>"}
       _zeigeLeeresProjekt() {
         this._beendeEintragBearbeiten();
         this._aktualisiereHauptReiter();
-        this.segmentProfileByKey = {};
         this._resetTimelineBildVorschauen();
+        this.timelineGalerieAuswahlByEintrag = {};
+        this.segmentProfileByKey = {};
+        this.timelineTagFilterValue = "all";
+        this.timelineTypFilterValue = "all";
+        if (this.elemente.timelineTypFilter) {
+          this.elemente.timelineTypFilter.innerHTML = "";
+          this.elemente.timelineTypFilter.hidden = true;
+        }
+        if (this.elemente.timelineTagFilter) {
+          this.elemente.timelineTagFilter.innerHTML = "";
+          this.elemente.timelineTagFilter.hidden = true;
+        }
+        this._syncTimelineFilterZeile();
         this.elemente.timelineListe.innerHTML = "";
         this.elemente.karteDistanz.textContent = "Gesamtstrecke: -";
         this.elemente.karteHinweis.textContent = "";
@@ -5443,17 +6749,21 @@ ${"</ht"+"ml>"}
         this.map?.clear();
       }
 
-      async _renderTimeline({ prefetchInternetBilder = true } = {}) {
+      async _renderTimeline() {
         if (!this.aktivesProjekt) {
           this._zeigeLeeresProjekt();
           return;
         }
-        const renderId = this.timelineRenderId + 1;
-        this.timelineRenderId = renderId;
-
         this._resetTimelineBildVorschauen();
         const projektId = this.aktivesProjekt.id;
         const eintraege = await this.storage.listTimelineEintraege(projektId);
+        this._renderTimelineTypFilter(eintraege);
+        const tagOptionen = this._collectTimelineTagOptionen(eintraege);
+        this._renderTimelineTagFilter(tagOptionen);
+        this._syncTimelineFilterZeile();
+        const eintraegeNachTyp = this._filterTimelineEintraegeByTyp(eintraege, this.timelineTypFilterValue);
+        const gefilterteEintraege = this._filterTimelineEintraegeByTag(eintraegeNachTyp, this.timelineTagFilterValue);
+        const hatAktiveFilter = this.timelineTypFilterValue !== "all" || this.timelineTagFilterValue !== "all";
         const plusEintrag = `
       <li class="timeline-plus-eintrag">
         <button type="button" class="plus-reise-knopf timeline-plus-knopf" data-timeline-add="1" aria-label="Eintrag hinzufügen">
@@ -5467,39 +6777,84 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const eintraegeMitBild = await Promise.all(
-          eintraege.map(async (eintrag) => {
-            const anhaenge = Array.isArray(eintrag.anhaenge) ? eintrag.anhaenge : [];
-            const bildVorschau = await this._buildTimelineBildVorschau(eintrag, anhaenge, { allowNetwork: false });
-            return { eintrag, anhaenge, bildVorschau };
-          }),
-        );
+        if (!gefilterteEintraege.length) {
+          this.elemente.timelineListe.innerHTML = `<li class="timeline-leer">Keine Einträge für den gewählten Tag vorhanden.</li>${plusEintrag}`;
+          return;
+        }
 
         const timelineKey = (eintrag) => `${eintrag.typ}:${eintrag?.eintrag?.id || ""}`;
         const segmentKey = (fromEintrag, toEintrag) => `${timelineKey(fromEintrag)}->${timelineKey(toEintrag)}`;
         let listHtml = "";
-        for (let index = 0; index < eintraegeMitBild.length; index += 1) {
-            const { eintrag, anhaenge, bildVorschau } = eintraegeMitBild[index];
+        for (let index = 0; index < gefilterteEintraege.length; index += 1) {
+            const eintrag = gefilterteEintraege[index];
+            const anhaenge = Array.isArray(eintrag.anhaenge) ? eintrag.anhaenge : [];
             const badge = badgeText(eintrag.typ);
             const badgeClass = `badge-${eintrag.typ}`;
             const zeiten = formatZeitZeilen(eintrag.typ, eintrag.eintrag);
+            const nights = eintrag.typ === "unterkunft"
+              ? berechneUebernachtungen(eintrag.eintrag?.checkIn, eintrag.eintrag?.checkOut)
+              : 0;
+            const naechteHtml = nights > 0 ? `<p class="timeline-details">🛏️ <strong>Anzahl Nächte:</strong> ${escapeHtml(String(nights))}</p>` : "";
+            const fruehstueckHtml = eintrag.typ === "unterkunft" && eintrag.eintrag?.fruehstueckInklusive
+              ? '<p class="timeline-details">🥐 Frühstück inklusive</p>'
+              : "";
             const detailsHtml = eintrag.details ? `<p class="timeline-details">${escapeHtml(eintrag.details)}</p>` : "";
             const linkUrl = normalizeExternalLink(eintrag?.eintrag?.link);
             const linkHtml = linkUrl
               ? `<p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">🔗</span><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer">Öffnen</a></p>`
               : "";
-            const dateienHtml = anhaenge.length
-              ? `<div class="timeline-dateien">${anhaenge
-                .map((datei) => {
-                  const name = escapeHtml(datei.name || "Datei öffnen");
-                  return `<div class="timeline-datei-zeile"><button type="button" class="sekundaer timeline-datei-btn" data-timeline-datei-action="oeffnen" data-datei-id="${datei.id}">${name}</button><button type="button" class="gefahr timeline-datei-loeschen" data-timeline-datei-action="loeschen" data-datei-id="${datei.id}" aria-label="Datei löschen" title="Datei löschen">🗑️</button></div>`;
-                })
-                .join("")}</div>`
+            const galerieDateien = anhaenge.filter((datei) => String(datei?.id || "").trim());
+            const standardBildDatei = galerieDateien.find((datei) => Boolean(datei?.istVorschaubild)) || galerieDateien[0] || null;
+            const galerieKey = timelineKey(eintrag);
+            const gespeicherteDateiId = String(this.timelineGalerieAuswahlByEintrag[galerieKey] || "").trim();
+            const aktiveBildDatei = galerieDateien.find((datei) => String(datei?.id || "") === gespeicherteDateiId) || standardBildDatei;
+            const aktiveBildDateiId = String(aktiveBildDatei?.id || "").trim();
+            if (aktiveBildDateiId) {
+              this.timelineGalerieAuswahlByEintrag[galerieKey] = aktiveBildDateiId;
+            } else if (this.timelineGalerieAuswahlByEintrag[galerieKey]) {
+              delete this.timelineGalerieAuswahlByEintrag[galerieKey];
+            }
+            const aktivePreviewKind = this._getTimelineDateiPreviewKind(aktiveBildDatei);
+            const aktiveNeedsSrc = aktivePreviewKind === "image" || aktivePreviewKind === "pdf";
+            const aktivePreviewSrc = aktiveNeedsSrc ? this._createBildBlobUrl(aktiveBildDatei) : "";
+            const galerieThumbsHtml = galerieDateien.length > 1
+              ? `<div class="timeline-bild-galerie-thumbs">${galerieDateien.map((datei) => {
+                const thumbDateiId = String(datei?.id || "").trim();
+                const previewKind = this._getTimelineDateiPreviewKind(datei);
+                const previewNeedsSrc = previewKind === "image" || previewKind === "pdf";
+                const thumbSrc = previewNeedsSrc ? this._createBildBlobUrl(datei) : "";
+                if (!thumbDateiId) {
+                  return "";
+                }
+                const istAktiv = thumbDateiId === aktiveBildDateiId;
+                const aktivKlasse = istAktiv ? " aktiv" : "";
+                const thumbTitel = String(datei?.name || "Datei").trim() || "Datei";
+                const thumbInhalt = this._renderTimelineGalerieThumbInhalt({
+                  datei,
+                  previewKind,
+                  previewSrc: thumbSrc,
+                  previewName: thumbTitel,
+                });
+                return `<button type="button" class="timeline-bild-thumb-btn${aktivKlasse}" data-timeline-galerie-action="waehlen" data-timeline-galerie-key="${escapeHtml(galerieKey)}" data-datei-id="${escapeHtml(thumbDateiId)}" data-preview-kind="${escapeHtml(previewKind)}" data-preview-src="${escapeHtml(thumbSrc)}" data-preview-name="${escapeHtml(thumbTitel)}" aria-label="Datei auswählen: ${escapeHtml(thumbTitel)}" title="${escapeHtml(thumbTitel)}">${thumbInhalt}</button>`;
+              }).join("")}</div>`
               : "";
-            const bildVorschauHtml = bildVorschau
-              ? `<div class="timeline-bild-vorschau-wrap"><img class="timeline-bild-vorschau" src="${escapeHtml(bildVorschau.src)}" alt="${escapeHtml(bildVorschau.alt)}" loading="lazy" decoding="async"${bildVorschau.isInternet ? ' referrerpolicy="no-referrer"' : ""}></div>`
+            const galerieKlasse = galerieDateien.length > 1 ? " timeline-bild-galerie-mit-thumbs" : "";
+            const aktivePreviewName = String(aktiveBildDatei?.name || eintrag?.titel || "Datei").trim() || "Datei";
+            const hauptButtonKlasse = aktivePreviewKind === "pdf"
+              ? "timeline-bild-vorschau-wrap timeline-bild-vorschau-wrap-pdf"
+              : "timeline-bild-vorschau-wrap";
+            const hauptInhaltHtml = aktiveBildDatei
+              ? this._renderTimelineGalerieHauptinhalt({
+                datei: aktiveBildDatei,
+                previewKind: aktivePreviewKind,
+                previewSrc: aktivePreviewSrc,
+                previewName: aktivePreviewName,
+              })
               : "";
-            const eintragBildKlasse = bildVorschau ? " timeline-eintrag-mit-bild" : "";
+            const bildVorschauHtml = aktiveBildDatei
+              ? `<div class="timeline-bild-galerie${galerieKlasse}"><button type="button" class="${hauptButtonKlasse}" data-timeline-datei-action="oeffnen" data-datei-id="${escapeHtml(aktiveBildDateiId)}" data-preview-kind="${escapeHtml(aktivePreviewKind)}" data-preview-src="${escapeHtml(aktivePreviewSrc)}" data-preview-name="${escapeHtml(aktivePreviewName)}" aria-label="Datei öffnen: ${escapeHtml(aktivePreviewName)}" title="${escapeHtml(aktivePreviewName)}">${hauptInhaltHtml}</button>${galerieThumbsHtml}</div>`
+              : "";
+            const eintragBildKlasse = aktiveBildDatei ? " timeline-eintrag-mit-bild" : "";
             const isEintrag = eintrag.typ === "aktivitaet" || eintrag.typ === "unterkunft";
             const aktionenHtml = isEintrag
               ? `<div class="timeline-aktionen"><button type="button" class="sekundaer timeline-bearbeiten" data-timeline-action="bearbeiten" data-timeline-typ="${eintrag.typ}" data-timeline-id="${eintrag.eintrag.id}" aria-label="Bearbeiten" title="Bearbeiten">✏️</button></div>`
@@ -5508,86 +6863,150 @@ ${"</ht"+"ml>"}
               ? `<button type="button" class="timeline-ort-link" data-timeline-ort-action="karte" data-timeline-typ="${eintrag.typ}" data-timeline-id="${eintrag.eintrag.id}">${escapeHtml(eintrag.untertitel || "-")}</button>`
               : `<span>${escapeHtml(eintrag.untertitel || "-")}</span>`;
 
-            const datenHtml = `<div class="timeline-daten"><div class="timeline-zeiten"><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🟢</span><span class="timeline-zeit-label">${escapeHtml(zeiten.startLabel)}:</span><span>${escapeHtml(zeiten.start)}</span></p><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🔴</span><span class="timeline-zeit-label">${escapeHtml(zeiten.endeLabel)}:</span><span>${escapeHtml(zeiten.ende)}</span></p></div><p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">📍</span>${ortHtml}</p>${linkHtml}${detailsHtml}${dateienHtml}</div>`;
+            const datenHtml = `<div class="timeline-daten"><div class="timeline-zeiten"><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🟢</span><span class="timeline-zeit-label">${escapeHtml(zeiten.startLabel)}:</span><span>${escapeHtml(zeiten.start)}</span></p><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🔴</span><span class="timeline-zeit-label">${escapeHtml(zeiten.endeLabel)}:</span><span>${escapeHtml(zeiten.ende)}</span></p></div><p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">📍</span>${ortHtml}</p>${naechteHtml}${fruehstueckHtml}${linkHtml}${detailsHtml}</div>`;
             listHtml += `<li class="timeline-eintrag timeline-typ-${eintrag.typ}${eintragBildKlasse}" style="animation-delay:${index * 36}ms"><div class="timeline-zeile"><div class="timeline-kopf"><div class="timeline-kopf-links"><h4>${escapeHtml(eintrag.titel)}</h4><span class="badge ${badgeClass}">${badge}</span></div><div class="timeline-kopf-rechts">${aktionenHtml}</div></div><div class="timeline-inhalt">${bildVorschauHtml}${datenHtml}</div></div></li>`;
 
-            const nextEintrag = eintraege[index + 1];
-            const hasCurrentAndNext = isEintrag
+            const nextEintrag = gefilterteEintraege[index + 1];
+            const hasCurrentAndNext = !hatAktiveFilter
+              && isEintrag
               && (nextEintrag?.typ === "aktivitaet" || nextEintrag?.typ === "unterkunft");
             if (hasCurrentAndNext) {
               const key = segmentKey(eintrag, nextEintrag);
               const activeProfile = normalizeProfile(this.segmentProfileByKey[key] || PROFILE_DEFAULT);
-              listHtml += `<li class="timeline-segment-steuerung"><div class="timeline-segment-inhalt"><button type="button" class="timeline-segment-btn ${activeProfile === "driving" ? "aktiv" : ""}" data-segment-key="${escapeHtml(key)}" data-segment-profile="driving" aria-label="Auto" title="Auto">🚗</button><div class="timeline-segment-pfeil" aria-hidden="true"></div><button type="button" class="timeline-segment-btn ${activeProfile === "walking" ? "aktiv" : ""}" data-segment-key="${escapeHtml(key)}" data-segment-profile="walking" aria-label="Zu Fuß" title="Zu Fuß">🚶</button></div></li>`;
+              const segmentMetrik = await this._resolveTimelineSegmentRoute(eintrag, nextEintrag, activeProfile);
+              const segmentDauerText = Number.isFinite(Number(segmentMetrik?.durationMin)) && Number(segmentMetrik.durationMin) > 0
+                ? formatDurationMinutes(segmentMetrik.durationMin)
+                : "-";
+              const segmentDistanzText = Number.isFinite(Number(segmentMetrik?.distanceKm)) && Number(segmentMetrik.distanceKm) > 0
+                ? formatDistanzKm(segmentMetrik.distanceKm)
+                : "-";
+              const segmentInfoHtml = `<div class="timeline-segment-info"><span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span></div>`;
+              const fromLat = Number(eintrag?.eintrag?.lat);
+              const fromLon = Number(eintrag?.eintrag?.lon);
+              const toLat = Number(nextEintrag?.eintrag?.lat);
+              const toLon = Number(nextEintrag?.eintrag?.lon);
+              const fromLatAttr = Number.isFinite(fromLat) ? String(fromLat) : "";
+              const fromLonAttr = Number.isFinite(fromLon) ? String(fromLon) : "";
+              const toLatAttr = Number.isFinite(toLat) ? String(toLat) : "";
+              const toLonAttr = Number.isFinite(toLon) ? String(toLon) : "";
+              const profileButtons = SEGMENT_PROFILE_OPTIONS.map((option) => {
+                const aktiv = activeProfile === option.key ? "aktiv" : "";
+                return `<button type="button" class="timeline-segment-btn ${aktiv}" data-segment-key="${escapeHtml(key)}" data-segment-profile="${escapeHtml(option.key)}" aria-label="${escapeHtml(option.label)}" title="${escapeHtml(option.label)}">${option.icon}</button>`;
+              }).join("");
+              listHtml += `<li class="timeline-segment-steuerung" data-segment-key="${escapeHtml(key)}" data-segment-from-lat="${escapeHtml(fromLatAttr)}" data-segment-from-lon="${escapeHtml(fromLonAttr)}" data-segment-to-lat="${escapeHtml(toLatAttr)}" data-segment-to-lon="${escapeHtml(toLonAttr)}"><div class="timeline-segment-inhalt">${segmentInfoHtml}${profileButtons}</div></li>`;
             }
-          }
+        }
 
         this.elemente.timelineListe.innerHTML = `${listHtml}${plusEintrag}`;
-        this._syncTimelineBildFallbacks();
-        if (prefetchInternetBilder) {
-          void this._prefetchTimelineInternetBilder(eintraege, { projektId, renderId });
-        }
       }
 
-      _syncTimelineBildFallbacks() {
-        const bilder = Array.from(this.elemente?.timelineListe?.querySelectorAll(".timeline-bild-vorschau") || []);
-        bilder.forEach((img) => {
-          const removeBroken = (reason = "error-event") => {
-            void this._logBildLadefehler(img, reason);
-            const wrap = img.closest(".timeline-bild-vorschau-wrap");
-            if (wrap) {
-              wrap.remove();
-            }
-            const eintrag = img.closest(".timeline-eintrag");
-            if (eintrag) {
-              eintrag.classList.remove("timeline-eintrag-mit-bild");
-            }
-          };
+      _collectTimelineTagOptionen(eintraege) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const alleKeys = Array.from(new Set(list.map((eintrag) => timelineEintragTagKey(eintrag))));
+        const datumsKeys = alleKeys
+          .filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(String(key || "")))
+          .sort((a, b) => String(a).localeCompare(String(b), "de"));
+        const hatOhneDatum = alleKeys.includes("ohne-datum");
 
-          if (img.complete && (!Number.isFinite(img.naturalWidth) || img.naturalWidth <= 0)) {
-            removeBroken("complete-without-dimensions");
-            return;
-          }
+        if (!datumsKeys.length) {
+          return hatOhneDatum ? ["ohne-datum"] : [];
+        }
 
-          img.addEventListener("error", () => removeBroken("img-error-event"), { once: true });
-        });
+        const start = new Date(`${datumsKeys[0]}T00:00:00Z`);
+        const ende = new Date(`${datumsKeys[datumsKeys.length - 1]}T00:00:00Z`);
+        if (Number.isNaN(start.getTime()) || Number.isNaN(ende.getTime()) || start > ende) {
+          return hatOhneDatum ? [...datumsKeys, "ohne-datum"] : datumsKeys;
+        }
+
+        const range = [];
+        const current = new Date(start);
+        while (current <= ende) {
+          const y = current.getUTCFullYear();
+          const m = String(current.getUTCMonth() + 1).padStart(2, "0");
+          const d = String(current.getUTCDate()).padStart(2, "0");
+          range.push(`${y}-${m}-${d}`);
+          current.setUTCDate(current.getUTCDate() + 1);
+        }
+
+        if (hatOhneDatum) {
+          range.push("ohne-datum");
+        }
+        return range;
       }
 
-      async _logBildLadefehler(img, reason = "unknown") {
-        try {
-          const src = String(img?.currentSrc || img?.src || "").trim();
-          const titel = String(img?.closest(".timeline-eintrag")?.querySelector(".timeline-kopf-links h4")?.textContent || "").trim();
-          if (!src) {
-            console.warn("[Bildfehler] Keine src vorhanden.", { reason, titel });
-            return;
-          }
-
-          const info = { reason, titel, src };
-          if (src.startsWith("blob:") || src.startsWith("data:")) {
-            console.warn("[Bildfehler] Lokale Bildquelle konnte nicht geladen werden.", info);
-            return;
-          }
-
-          try {
-            const response = await fetch(src, {
-              method: "HEAD",
-              cache: "no-store",
-              mode: "cors",
-            });
-            console.warn("[Bildfehler] HTTP-Probe", {
-              ...info,
-              status: response.status,
-              ok: response.ok,
-              contentType: response.headers.get("content-type") || "",
-            });
-          } catch (fetchError) {
-            const message = fetchError instanceof Error ? fetchError.message : String(fetchError || "");
-            console.warn("[Bildfehler] Fetch-Probe fehlgeschlagen (oft CORS/Netzwerk/Hotlink-Sperre).", {
-              ...info,
-              fetchError: message,
-            });
-          }
-        } catch {
+      _renderTimelineTypFilter(eintraege) {
+        if (!this.elemente.timelineTypFilter) {
+          return;
         }
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        if (!list.length) {
+          this.timelineTypFilterValue = "all";
+          this.elemente.timelineTypFilter.innerHTML = "";
+          this.elemente.timelineTypFilter.hidden = true;
+          return;
+        }
+        if (!["all", "unterkunft", "aktivitaet"].includes(this.timelineTypFilterValue)) {
+          this.timelineTypFilterValue = "all";
+        }
+        const html = [
+          `<button type="button" class="timeline-typ-btn ${this.timelineTypFilterValue === "unterkunft" ? "aktiv" : ""}" data-timeline-typ="unterkunft" title="Nochmal klicken zum Deselektieren">Unterkünfte</button>`,
+          `<button type="button" class="timeline-typ-btn ${this.timelineTypFilterValue === "aktivitaet" ? "aktiv" : ""}" data-timeline-typ="aktivitaet" title="Nochmal klicken zum Deselektieren">Aktivitäten</button>`,
+        ].join("");
+        this.elemente.timelineTypFilter.innerHTML = html;
+        this.elemente.timelineTypFilter.hidden = false;
+      }
+
+      _renderTimelineTagFilter(tagOptionen) {
+        if (!this.elemente.timelineTagFilter) {
+          return;
+        }
+        const optionen = Array.isArray(tagOptionen) ? tagOptionen : [];
+        if (!optionen.length) {
+          this.timelineTagFilterValue = "all";
+          this.elemente.timelineTagFilter.innerHTML = "";
+          this.elemente.timelineTagFilter.hidden = true;
+          return;
+        }
+        const erlaubteWerte = new Set(["all", ...optionen]);
+        if (!erlaubteWerte.has(this.timelineTagFilterValue)) {
+          this.timelineTagFilterValue = "all";
+        }
+
+        const html = [
+          ...optionen.map((tag) => `<button type="button" class="timeline-tag-btn ${this.timelineTagFilterValue === tag ? "aktiv" : ""}" data-timeline-tag="${escapeHtml(tag)}" title="Nochmal klicken zum Deselektieren">${escapeHtml(formatTimelineTagLabel(tag))}</button>`),
+        ].join("");
+        this.elemente.timelineTagFilter.innerHTML = html;
+        this.elemente.timelineTagFilter.hidden = false;
+      }
+
+      _filterTimelineEintraegeByTag(eintraege, tagValue) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const key = String(tagValue || "all").trim();
+        if (!key || key === "all") {
+          return list;
+        }
+        return list.filter((eintrag) => timelineEintragTagKey(eintrag) === key);
+      }
+
+      _filterTimelineEintraegeByTyp(eintraege, typValue) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const key = String(typValue || "all").trim();
+        if (!key || key === "all") {
+          return list;
+        }
+        if (!["unterkunft", "aktivitaet"].includes(key)) {
+          return list;
+        }
+        return list.filter((eintrag) => String(eintrag?.typ || "").trim() === key);
+      }
+
+      _syncTimelineFilterZeile() {
+        if (!this.elemente.timelineFilterZeile) {
+          return;
+        }
+        const tagHidden = this.elemente.timelineTagFilter?.hidden !== false;
+        const typHidden = this.elemente.timelineTypFilter?.hidden !== false;
+        this.elemente.timelineFilterZeile.hidden = tagHidden && typHidden;
       }
 
       _resetTimelineBildVorschauen() {
@@ -5605,6 +7024,93 @@ ${"</ht"+"ml>"}
         return typ.startsWith("image/");
       }
 
+      _isPdfDatei(datei) {
+        const typ = String(datei?.typ || datei?.blob?.type || "").toLowerCase();
+        if (typ.includes("pdf")) {
+          return true;
+        }
+        const name = String(datei?.name || "").trim().toLowerCase();
+        return name.endsWith(".pdf");
+      }
+
+      _getTimelineDateiPreviewKind(datei) {
+        if (this._isImageDatei(datei)) {
+          return "image";
+        }
+        if (this._isPdfDatei(datei)) {
+          return "pdf";
+        }
+        return "file";
+      }
+
+      _getTimelineDateiKurzLabel(datei) {
+        const name = String(datei?.name || "").trim();
+        if (!name) {
+          return "DATEI";
+        }
+        const teile = name.split(".");
+        if (teile.length < 2) {
+          return "DATEI";
+        }
+        const ext = String(teile.pop() || "").trim().toUpperCase();
+        if (!ext) {
+          return "DATEI";
+        }
+        return ext.slice(0, 6);
+      }
+
+      _renderTimelineGalerieHauptinhalt({ datei, previewKind, previewSrc, previewName }) {
+        const kind = String(previewKind || "file").trim().toLowerCase();
+        const name = String(previewName || datei?.name || "Datei").trim() || "Datei";
+        if (kind === "image" && previewSrc) {
+          return `<img class="timeline-bild-vorschau" src="${escapeHtml(previewSrc)}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">`;
+        }
+        if (kind === "pdf" && previewSrc) {
+          const pdfSrc = `${previewSrc}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&page=1&view=Fit`;
+          return `<iframe class="timeline-datei-vorschau-pdf" src="${escapeHtml(pdfSrc)}" title="${escapeHtml(name)}" loading="lazy" tabindex="-1" scrolling="no"></iframe>`;
+        }
+        const kurzLabel = this._getTimelineDateiKurzLabel(datei);
+        return `<span class="timeline-datei-vorschau-fallback" title="${escapeHtml(name)}">📎 ${escapeHtml(kurzLabel)}</span>`;
+      }
+
+      _renderTimelineGalerieThumbInhalt({ datei, previewKind, previewSrc, previewName }) {
+        const kind = String(previewKind || "file").trim().toLowerCase();
+        const name = String(previewName || datei?.name || "Datei").trim() || "Datei";
+        if (kind === "image" && previewSrc) {
+          return `<img src="${escapeHtml(previewSrc)}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">`;
+        }
+        if (kind === "pdf" && previewSrc) {
+          const pdfThumbSrc = `${previewSrc}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&page=1&view=Fit`;
+          return `<iframe class="timeline-bild-thumb-pdf" src="${escapeHtml(pdfThumbSrc)}" title="${escapeHtml(name)}" loading="lazy" tabindex="-1" scrolling="no"></iframe>`;
+        }
+        if (kind === "pdf") {
+          return `<span class="timeline-bild-thumb-fallback" aria-label="PDF">PDF</span>`;
+        }
+        const kurzLabel = this._getTimelineDateiKurzLabel(datei);
+        return `<span class="timeline-bild-thumb-fallback" aria-label="${escapeHtml(name)}">${escapeHtml(kurzLabel)}</span>`;
+      }
+
+      _setTimelineGalerieHauptansicht(hauptButton, { previewKind, previewSrc, previewName }) {
+        if (!(hauptButton instanceof HTMLButtonElement)) {
+          return;
+        }
+        const name = String(previewName || "Datei").trim() || "Datei";
+        const kind = String(previewKind || "").trim().toLowerCase();
+        hauptButton.classList.toggle("timeline-bild-vorschau-wrap-pdf", kind === "pdf");
+        const datei = {
+          name,
+          typ: kind === "image" ? "image/*" : (kind === "pdf" ? "application/pdf" : ""),
+        };
+        hauptButton.innerHTML = this._renderTimelineGalerieHauptinhalt({
+          datei,
+          previewKind: kind,
+          previewSrc,
+          previewName: name,
+        });
+        hauptButton.setAttribute("aria-label", `Datei öffnen: ${name}`);
+        hauptButton.setAttribute("title", name);
+      }
+
       _createBildBlobUrl(datei) {
         if (!datei) {
           return "";
@@ -5620,151 +7126,55 @@ ${"</ht"+"ml>"}
         return url;
       }
 
-      async _findInternetBildUrl(eintrag, anhaenge, { allowNetwork = true } = {}) {
-        if (Array.isArray(anhaenge) && anhaenge.some((datei) => this._isImageDatei(datei))) {
-          return "";
+      async _resolveTimelineSegmentRoute(fromEintrag, toEintrag, profile = PROFILE_DEFAULT) {
+        const start = fromEintrag?.eintrag;
+        const ziel = toEintrag?.eintrag;
+        if (!hasCoordinates(start) || !hasCoordinates(ziel)) {
+          return { distanceKm: 0, durationMin: 0 };
         }
 
-        const query = String(eintrag?.titel || "").trim().slice(0, 120);
-        if (!query) {
-          return "";
-        }
-
-        const cacheKey = query.toLowerCase();
-        if (this.internetBildCache.has(cacheKey)) {
-          const cachedValue = this.internetBildCache.get(cacheKey) || "";
-          if (cachedValue.includes("source.unsplash.com")) {
-            this.internetBildCache.delete(cacheKey);
-          } else if (cachedValue) {
-            return cachedValue;
-          }
-        }
-
-        try {
-          const persisted = await this.storage.getInternetBildCache(cacheKey);
-          if (persisted) {
-            const persistedUrl = String(persisted.url || "");
-            this.internetBildCache.set(cacheKey, persistedUrl);
-            return persistedUrl;
-          }
-        } catch {
-        }
-
-        if (!allowNetwork) {
-          return "";
-        }
-
-        try {
-          const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=5&prop=imageinfo&iiprop=url&iiurlwidth=420&iiurlheight=260`;
-          try {
-            const commonsResponse = await fetch(commonsUrl);
-            if (commonsResponse.ok) {
-              const commonsPayload = await commonsResponse.json();
-              const commonsPages = commonsPayload?.query?.pages ? Object.values(commonsPayload.query.pages) : [];
-              const commonsPage = commonsPages.find((page) => {
-                const info = Array.isArray(page?.imageinfo) ? page.imageinfo[0] : null;
-                return typeof info?.thumburl === "string" || typeof info?.url === "string";
-              });
-              const commonsInfo = Array.isArray(commonsPage?.imageinfo) ? commonsPage.imageinfo[0] : null;
-              const commonsBildUrl = String(commonsInfo?.thumburl || commonsInfo?.url || "");
-              if (commonsBildUrl) {
-                this.internetBildCache.set(cacheKey, commonsBildUrl);
-                try {
-                  await this.storage.setInternetBildCache({ query: cacheKey, url: commonsBildUrl, source: "wikimedia-commons" });
-                } catch {
-                }
-                return commonsBildUrl;
-              }
-            }
-          } catch {
-          }
-
-          for (const lang of WIKIPEDIA_BILD_LANGS) {
-            const url = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=320`;
-            try {
-              const response = await fetch(url);
-              if (!response.ok) {
-                continue;
-              }
-              const payload = await response.json();
-              const pages = payload?.query?.pages ? Object.values(payload.query.pages) : [];
-              const first = pages.find((page) => typeof page?.thumbnail?.source === "string");
-              const bildUrl = String(first?.thumbnail?.source || "");
-              if (!bildUrl) {
-                continue;
-              }
-              this.internetBildCache.set(cacheKey, bildUrl);
-              try {
-                await this.storage.setInternetBildCache({ query: cacheKey, url: bildUrl, source: `wikipedia-${lang}` });
-              } catch {
-              }
-              return bildUrl;
-            } catch {
-            }
-          }
-          return "";
-        } catch {
-          return "";
-        }
+        const fromCoord = [Number(start.lat), Number(start.lon)];
+        const toCoord = [Number(ziel.lat), Number(ziel.lon)];
+        return this._resolveTimelineSegmentRouteByCoords(fromCoord[0], fromCoord[1], toCoord[0], toCoord[1], profile);
       }
 
-      async _buildTimelineBildVorschau(eintrag, anhaenge, { allowNetwork = true } = {}) {
-        const bildDatei = Array.isArray(anhaenge) ? anhaenge.find((datei) => this._isImageDatei(datei)) : null;
-        if (bildDatei) {
-          const localUrl = this._createBildBlobUrl(bildDatei);
-          if (!localUrl) {
-            return null;
-          }
+      async _resolveTimelineSegmentRouteByCoords(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT) {
+        if (!Number.isFinite(Number(fromLat))
+          || !Number.isFinite(Number(fromLon))
+          || !Number.isFinite(Number(toLat))
+          || !Number.isFinite(Number(toLon))) {
+          return { distanceKm: 0, durationMin: 0 };
+        }
+
+        const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
+        const routeCoords = [
+          [Number(fromLat), Number(fromLon)],
+          [Number(toLat), Number(toLon)],
+        ];
+        const fallbackDistanceKm = berechneDistanz(routeCoords);
+        const fallbackDurationMin = estimateDurationMinutes(fallbackDistanceKm, normalizedProfile);
+
+        if (!this.map || typeof this.map._resolveRoute !== "function") {
           return {
-            src: localUrl,
-            alt: eintrag?.titel || "Bild",
-            isInternet: false,
+            distanceKm: fallbackDistanceKm,
+            durationMin: fallbackDurationMin,
           };
         }
 
-        const internetUrl = await this._findInternetBildUrl(eintrag, anhaenge, { allowNetwork });
-        if (!internetUrl) {
-          return null;
+        try {
+          const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile);
+          const distanceKm = Number(routeResult?.distanceKm);
+          const durationMin = Number(routeResult?.durationMin);
+          return {
+            distanceKm: Number.isFinite(distanceKm) && distanceKm >= 0 ? distanceKm : fallbackDistanceKm,
+            durationMin: Number.isFinite(durationMin) && durationMin >= 0 ? durationMin : fallbackDurationMin,
+          };
+        } catch {
+          return {
+            distanceKm: fallbackDistanceKm,
+            durationMin: fallbackDurationMin,
+          };
         }
-        return {
-          src: internetUrl,
-          alt: eintrag?.titel || "Bild aus dem Internet",
-          isInternet: true,
-        };
-      }
-
-      async _prefetchTimelineInternetBilder(eintraege, { projektId, renderId }) {
-        if (!this.aktivesProjekt || this.aktivesProjekt.id !== projektId) {
-          return;
-        }
-
-        let changed = false;
-        for (const eintrag of eintraege) {
-          if (!this.aktivesProjekt || this.aktivesProjekt.id !== projektId || this.timelineRenderId !== renderId) {
-            return;
-          }
-          const anhaenge = Array.isArray(eintrag?.anhaenge) ? eintrag.anhaenge : [];
-          const hasBildAnhang = anhaenge.some((datei) => this._isImageDatei(datei));
-          if (hasBildAnhang) {
-            continue;
-          }
-
-          const query = String(eintrag?.titel || "").trim().slice(0, 120).toLowerCase();
-          const hadCache = query ? Boolean(this.internetBildCache.get(query)) : false;
-          const url = await this._findInternetBildUrl(eintrag, anhaenge, { allowNetwork: true });
-          if (url && !hadCache) {
-            changed = true;
-          }
-        }
-
-        if (!changed) {
-          return;
-        }
-        if (!this.aktivesProjekt || this.aktivesProjekt.id !== projektId || this.timelineRenderId !== renderId) {
-          return;
-        }
-
-        await this._renderTimeline({ prefetchInternetBilder: false });
       }
 
       async _renderKarteRoute() {
@@ -5877,6 +7287,41 @@ ${"</ht"+"ml>"}
         });
       }
 
+      async _handleEintragDateiSofortUpload(input) {
+        if (!(input instanceof HTMLInputElement)) {
+          return;
+        }
+        const datei = input.files?.[0];
+        if (!(datei instanceof File) || datei.size <= 0) {
+          return;
+        }
+        if (!this.aktivesProjekt?.id) {
+          this.elemente.eintragFehler.textContent = "Bitte zuerst ein Projekt öffnen.";
+          return;
+        }
+
+        if (!this.bearbeiteEintrag?.id || !this.bearbeiteEintrag?.typ) {
+          return;
+        }
+
+        try {
+          await this.storage.createDatei({
+            projektId: this.aktivesProjekt.id,
+            datei,
+            eintragTyp: this.bearbeiteEintrag.typ,
+            eintragId: this.bearbeiteEintrag.id,
+          });
+          input.value = "";
+          this.elemente.eintragFehler.textContent = "";
+          await this._renderEintragDateienImDialog();
+          await this._renderTimeline();
+          this._setStatus(`Datei „${datei.name || "Datei"}“ hinzugefügt.`);
+        } catch (error) {
+          this.elemente.eintragFehler.textContent = error.message || "Datei konnte nicht hochgeladen werden.";
+          this._setStatus("Fehler beim Datei-Upload.");
+        }
+      }
+
       async _renderKostenUebersicht() {
         if (!this.aktivesProjekt) {
           return;
@@ -5984,8 +7429,6 @@ ${"</ht"+"ml>"}
           const payload = JSON.parse(text);
           const vorherAktivesProjektId = this.aktivesProjekt?.id || "";
           await this.storage.importJsonBackup(payload);
-          this.importierteDatenbankDatei = String(datei.name || "").trim();
-          this._renderDatenbankAnzeige();
           if (this.elemente.jsonImportInput) {
             this.elemente.jsonImportInput.value = "";
           }
@@ -6099,16 +7542,128 @@ ${"</ht"+"ml>"}
           .map(
             (datei) => `
           <li class="listen-eintrag">
-            <p class="datei-name">${escapeHtml(datei.name || "Datei")}</p>
+            <p class="datei-name">${escapeHtml(formatAnzeigeDateiname(datei.name || "Datei", { maxLength: 38 }))}</p>
             <p class="datei-meta">${escapeHtml(datei.typ || "Unbekannter Typ")} · ${escapeHtml(formatDateigroesse(datei.blob?.size || 0))} · ${escapeHtml(formatDatumZeit(datei.erstelltAm || ""))}</p>
             <div class="listen-aktionen">
               <button type="button" data-datei-action="oeffnen" data-datei-id="${datei.id}">Öffnen</button>
-              <button type="button" class="gefahr" data-datei-action="loeschen" data-datei-id="${datei.id}" aria-label="Löschen" title="Löschen">🗑️</button>
             </div>
           </li>
         `,
           )
           .join("");
+      }
+
+      async _renderEintragDateienImDialog() {
+        if (!this.elemente.eintragDateienBereich || !this.elemente.eintragDateienListe) {
+          return;
+        }
+        if (!this.aktivesProjekt || !this.bearbeiteEintrag?.id || !this.bearbeiteEintrag?.typ) {
+          this.elemente.eintragDateienBereich.hidden = true;
+          this.elemente.eintragDateienListe.innerHTML = "";
+          this._versteckeEintragDateiOptionen();
+          return;
+        }
+        const dateien = await this.storage.listDateienByEintrag(
+          this.aktivesProjekt.id,
+          this.bearbeiteEintrag.typ,
+          this.bearbeiteEintrag.id,
+        );
+        if (!dateien.length) {
+          this.elemente.eintragDateienBereich.hidden = true;
+          this.elemente.eintragDateienListe.innerHTML = "";
+          this._versteckeEintragDateiOptionen();
+          return;
+        }
+        this.elemente.eintragDateienBereich.hidden = false;
+        this.elemente.eintragDateienListe.innerHTML = dateien
+          .map((datei) => {
+            const name = escapeHtml(formatAnzeigeDateiname(datei.name || "Datei öffnen"));
+            const markierung = Boolean(datei.istVorschaubild) ? " ★" : "";
+            return `<div class="timeline-datei-zeile"><button type="button" class="sekundaer timeline-datei-btn" data-eintrag-datei-action="optionen" data-datei-id="${datei.id}">${name}${markierung}</button></div>`;
+          })
+          .join("");
+        const aktiveId = String(this.aktiveEintragDateiOption?.id || "").trim();
+        if (aktiveId) {
+          const aktiveDatei = dateien.find((datei) => String(datei?.id || "") === aktiveId);
+          if (aktiveDatei) {
+            this._zeigeEintragDateiOptionen(aktiveDatei);
+            return;
+          }
+        }
+        this._versteckeEintragDateiOptionen();
+      }
+
+      _zeigeEintragDateiOptionen(datei, position = null) {
+        if (!this.elemente.eintragDateiOptionen
+          || !this.elemente.eintragDateiOptionVorschau) {
+          return;
+        }
+        const hasValueCoord = (value) => Number.isFinite(value) && Number(value) > 0;
+        const posX = hasValueCoord(position?.x) ? Number(position.x) : Number(this.aktiveEintragDateiOption?.x);
+        const posY = hasValueCoord(position?.y) ? Number(position.y) : Number(this.aktiveEintragDateiOption?.y);
+        const istBild = this._isImageDatei(datei);
+        const istAktiveVorschau = Boolean(datei?.istVorschaubild);
+        this.aktiveEintragDateiOption = {
+          id: String(datei?.id || "").trim(),
+          istBild,
+          istAktiveVorschau,
+          x: Number.isFinite(posX) ? posX : null,
+          y: Number.isFinite(posY) ? posY : null,
+        };
+        const menu = this.elemente.eintragDateiOptionen;
+        menu.hidden = false;
+        this.elemente.eintragDateiOptionVorschau.disabled = !istBild || istAktiveVorschau;
+        this.elemente.eintragDateiOptionVorschau.title = !istBild
+          ? "Nur Bilddateien können Vorschaubild sein."
+          : (istAktiveVorschau ? "Bereits als Vorschaubild gesetzt." : "Dieses Bild als Vorschaubild festlegen");
+        const anchorElement = position?.anchor instanceof Element ? position.anchor : null;
+        const rect = anchorElement ? anchorElement.getBoundingClientRect() : null;
+        const menuRect = menu.getBoundingClientRect();
+        const dialog = this.elemente.zeitplanDialog;
+        if (dialog instanceof HTMLElement) {
+          const dialogRect = dialog.getBoundingClientRect();
+          const scrollLeft = Number(dialog.scrollLeft) || 0;
+          const scrollTop = Number(dialog.scrollTop) || 0;
+          const baseX = hasValueCoord(posX) ? (posX - dialogRect.left + scrollLeft) : (rect ? (rect.left - dialogRect.left + scrollLeft) : 12);
+          const baseY = hasValueCoord(posY) ? (posY - dialogRect.top + scrollTop) : (rect ? (rect.bottom - dialogRect.top + scrollTop) : 12);
+          let left = baseX + 6;
+          let top = baseY + 6;
+          const minLeft = scrollLeft + 8;
+          const maxLeft = scrollLeft + Math.max(8, dialog.clientWidth - menuRect.width - 8);
+          const minTop = scrollTop + 8;
+          const maxTop = scrollTop + Math.max(8, dialog.clientHeight - menuRect.height - 8);
+          if (left > maxLeft) {
+            left = Math.max(minLeft, maxLeft);
+          }
+          if (top > maxTop) {
+            const oberhalb = (hasValueCoord(posY) ? (posY - dialogRect.top + scrollTop) : (rect ? (rect.top - dialogRect.top + scrollTop) : top)) - menuRect.height - 6;
+            top = Math.max(minTop, oberhalb);
+          }
+          menu.style.left = `${Math.round(Math.max(minLeft, left))}px`;
+          menu.style.top = `${Math.round(Math.max(minTop, top))}px`;
+          return;
+        }
+        const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+        let left = hasValueCoord(posX) ? posX + 6 : (rect ? rect.left : 12);
+        let top = hasValueCoord(posY) ? posY + 6 : (rect ? rect.bottom + 6 : 12);
+        if (left + menuRect.width > viewportW - 8) {
+          left = Math.max(8, viewportW - menuRect.width - 8);
+        }
+        if (top + menuRect.height > viewportH - 8) {
+          top = rect ? rect.top - menuRect.height - 6 : Math.max(8, viewportH - menuRect.height - 8);
+        }
+        menu.style.left = `${Math.max(8, Math.round(left))}px`;
+        menu.style.top = `${Math.max(8, Math.round(top))}px`;
+      }
+
+      _versteckeEintragDateiOptionen() {
+        this.aktiveEintragDateiOption = null;
+        if (this.elemente.eintragDateiOptionen) {
+          this.elemente.eintragDateiOptionen.hidden = true;
+          this.elemente.eintragDateiOptionen.style.left = "";
+          this.elemente.eintragDateiOptionen.style.top = "";
+        }
       }
 
       _aktualisiereEintragTypTabs() {
@@ -6193,6 +7748,7 @@ ${"</ht"+"ml>"}
           this.bearbeiteEintrag = { typ, id: eintragId };
           this._setEintragTypValue("aktivitaet");
           this._aktualisiereEintragTypTabs();
+          await this._renderEintragDateienImDialog();
           if (this.elemente.eintragLoeschenBtn) {
             this.elemente.eintragLoeschenBtn.hidden = false;
           }
@@ -6219,9 +7775,14 @@ ${"</ht"+"ml>"}
           this.elemente.eintragForm.querySelector("#eintrag-waehrung").value = unterkunft.waehrung || "EUR";
           this.elemente.eintragForm.querySelector("#eintrag-link").value = unterkunft.link || "";
           this.elemente.eintragForm.querySelector("#eintrag-notizen").value = unterkunft.notizen || "";
+          const fruehstueckInput = this.elemente.eintragForm.querySelector("#eintrag-fruehstueck");
+          if (fruehstueckInput) {
+            fruehstueckInput.checked = Boolean(unterkunft.fruehstueckInklusive);
+          }
           this.bearbeiteEintrag = { typ, id: eintragId };
           this._setEintragTypValue("unterkunft");
           this._aktualisiereEintragTypTabs();
+          await this._renderEintragDateienImDialog();
           if (this.elemente.eintragLoeschenBtn) {
             this.elemente.eintragLoeschenBtn.hidden = false;
           }
@@ -6325,7 +7886,7 @@ ${"</ht"+"ml>"}
       }
 
       _setProjektDialogModus(istBearbeiten) {
-        this.elemente.projektDialogTitel.textContent = istBearbeiten ? "Reise bearbeiten" : "Neue Reise";
+        this.elemente.projektDialogTitel.textContent = istBearbeiten ? "Reisetitel bearbeiten" : "Neue Reise";
         this.elemente.projektDialogSubmit.textContent = istBearbeiten ? "Änderungen speichern" : "Projekt speichern";
       }
 
@@ -6350,6 +7911,15 @@ ${"</ht"+"ml>"}
         this.elemente.hauptReiter.hidden = !hatProjekt;
         this.elemente.hauptReiter.style.display = hatProjekt ? "" : "none";
         this.elemente.hauptReiter.setAttribute("aria-hidden", String(!hatProjekt));
+        if (this.elemente.hauptProjektTitel) {
+          this.elemente.hauptProjektTitel.textContent = hatProjekt
+            ? `Reiseplaner: ${String(this.aktivesProjekt?.titel || "").trim()}`
+            : "";
+          this.elemente.hauptProjektTitel.hidden = !hatProjekt;
+        }
+        if (this.elemente.reiterProjektAktionen) {
+          this.elemente.reiterProjektAktionen.hidden = !hatProjekt;
+        }
 
         const panels = {
           timeline: this.elemente.timelineBereich,
@@ -6372,12 +7942,26 @@ ${"</ht"+"ml>"}
           button.disabled = !hatProjekt;
           button.tabIndex = aktiv && hatProjekt ? 0 : -1;
         });
+
+        [
+          this.elemente.reiterProjektDrucken,
+          this.elemente.reiterProjektBearbeiten,
+          this.elemente.reiterProjektLoeschen,
+        ].forEach((button) => {
+          if (!button) {
+            return;
+          }
+          button.disabled = !hatProjekt;
+          button.tabIndex = hatProjekt ? 0 : -1;
+        });
       }
 
       _oeffneNeueReiseDialog() {
         this.bearbeiteProjektId = null;
         this._setProjektDialogModus(false);
         this.elemente.projektFormular.reset();
+        this.projektBildDataUrlDraft = "";
+        this._renderProjektBildVorschau("");
         this.elemente.formularFehler.textContent = "";
         const dialog = this.elemente.neueReiseDialog;
 
@@ -6421,6 +8005,11 @@ ${"</ht"+"ml>"}
         if (titelInput) {
           titelInput.value = projekt.titel || "";
         }
+        if (this.elemente.projektBildInput) {
+          this.elemente.projektBildInput.value = "";
+        }
+        this.projektBildDataUrlDraft = String(projekt.fotoDataUrl || "");
+        this._renderProjektBildVorschau(this.projektBildDataUrlDraft);
 
         const dialog = this.elemente.neueReiseDialog;
 
@@ -6472,7 +8061,23 @@ ${"</ht"+"ml>"}
         dialog.removeAttribute("open");
         this._setProjektDialogModus(false);
         this.bearbeiteProjektId = null;
+        this.projektBildDataUrlDraft = "";
+        this._renderProjektBildVorschau("");
         this._syncDialogBodyState();
+      }
+
+      _renderProjektBildVorschau(dataUrl) {
+        const src = String(dataUrl || "").trim();
+        if (!this.elemente.projektBildVorschauWrap || !this.elemente.projektBildVorschau) {
+          return;
+        }
+        if (!src) {
+          this.elemente.projektBildVorschau.removeAttribute("src");
+          this.elemente.projektBildVorschauWrap.hidden = true;
+          return;
+        }
+        this.elemente.projektBildVorschau.src = src;
+        this.elemente.projektBildVorschauWrap.hidden = false;
       }
 
       _oeffneZeitplanDialog() {
@@ -6481,10 +8086,7 @@ ${"</ht"+"ml>"}
         }
 
         if (!this.bearbeiteEintrag) {
-          this._beendeEintragBearbeiten();
-          this.elemente.eintragForm.reset();
-          this._setEintragTypValue("aktivitaet");
-          this._aktualisiereEintragTypTabs();
+          this._resetZeitplanDialogState();
         }
         this.elemente.eintragFehler.textContent = "";
         this._oeffneDialog(this.elemente.zeitplanDialog);
@@ -6541,7 +8143,25 @@ ${"</ht"+"ml>"}
       }
 
       _schliesseZeitplanDialog() {
+        this._resetZeitplanDialogState();
         this._schliesseDialog(this.elemente.zeitplanDialog);
+      }
+
+      _resetZeitplanDialogState() {
+        this._beendeEintragBearbeiten();
+        this.elemente.eintragForm?.reset();
+        this._versteckeEintragDateiOptionen();
+        if (this.elemente.eintragDateienBereich) {
+          this.elemente.eintragDateienBereich.hidden = true;
+        }
+        if (this.elemente.eintragDateienListe) {
+          this.elemente.eintragDateienListe.innerHTML = "";
+        }
+        this._setEintragTypValue("aktivitaet");
+        this._aktualisiereEintragTypTabs();
+        if (this.elemente.eintragFehler) {
+          this.elemente.eintragFehler.textContent = "";
+        }
       }
 
       _oeffneKostenDialog() {
@@ -6558,7 +8178,6 @@ ${"</ht"+"ml>"}
       }
 
       _oeffneEinstellungenDialog() {
-        this._renderDatenbankAnzeige();
         this._oeffneDialog(this.elemente.einstellungenDialog);
       }
 
@@ -6614,18 +8233,6 @@ ${"</ht"+"ml>"}
       _syncDialogBodyState() {
         const hatOffenenDialog = Boolean(document.querySelector("dialog[open]"));
         document.body.classList.toggle("dialog-offen", hatOffenenDialog);
-      }
-
-      _renderDatenbankAnzeige() {
-        if (!this.elemente?.datenbankNameAnzeige) {
-          return;
-        }
-        const dbNameText = `IndexedDB: ${DB_NAME} (Schema v${DB_VERSION})`;
-        if (this.importierteDatenbankDatei) {
-          this.elemente.datenbankNameAnzeige.textContent = `${dbNameText} | Quelle: ${this.importierteDatenbankDatei}`;
-          return;
-        }
-        this.elemente.datenbankNameAnzeige.textContent = dbNameText;
       }
 
       async _renderAppVersion() {
@@ -6753,6 +8360,57 @@ ${"</ht"+"ml>"}
       return formatDatum(value);
     }
 
+    function timelineEintragTagKey(eintrag) {
+      const value = String(eintrag?.zeitpunkt || "").trim();
+      if (!value) {
+        return "ohne-datum";
+      }
+      const text = value.includes("T") ? value.slice(0, 10) : value;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+        return text;
+      }
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return "ohne-datum";
+      }
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatTimelineTagLabel(tagKey) {
+      const key = String(tagKey || "").trim();
+      if (!key || key === "ohne-datum") {
+        return "Ohne Datum";
+      }
+      const date = new Date(`${key}T00:00:00`);
+      if (Number.isNaN(date.getTime())) {
+        return key;
+      }
+      return new Intl.DateTimeFormat("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+      }).format(date);
+    }
+
+    function berechneUebernachtungen(checkIn, checkOut) {
+      const start = String(checkIn || "").trim();
+      const ende = String(checkOut || "").trim();
+      if (!start || !ende) {
+        return 0;
+      }
+      const startDate = new Date(start);
+      const endDate = new Date(ende);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        return 0;
+      }
+      const startUtc = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const endUtc = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+      const diffDays = Math.round((endUtc - startUtc) / 86400000);
+      return Math.max(0, diffDays);
+    }
+
     function formatBetrag(value, waehrung) {
       const betrag = Number(value || 0);
       const code = /^[A-Z]{3}$/.test(String(waehrung || "").toUpperCase()) ? String(waehrung).toUpperCase() : "EUR";
@@ -6800,6 +8458,12 @@ ${"</ht"+"ml>"}
       if (key === "mixed") {
         return "Gemischt";
       }
+      if (key === "flight") {
+        return "Flugzeug";
+      }
+      if (key === "ship") {
+        return "Schiff";
+      }
       if (key === "walking") {
         return "Zu Fuß";
       }
@@ -6821,6 +8485,15 @@ ${"</ht"+"ml>"}
       }
 
       return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+    }
+
+    function formatAnzeigeDateiname(name, { maxLength = 26 } = {}) {
+      const original = String(name || "").trim() || "Datei";
+      const ohneEndung = original.replace(/\.[^./\\]+$/, "").trim() || original;
+      if (ohneEndung.length <= maxLength) {
+        return ohneEndung;
+      }
+      return `${ohneEndung.slice(0, Math.max(1, maxLength - 1)).trimEnd()}…`;
     }
 
     function normalizeCurrencyCode(value) {
