@@ -1213,18 +1213,20 @@
 
     .kosten-gesamt-zeile {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 0.8rem;
+      text-align: center;
     }
 
     .kosten-gesamt-zeile h3 {
       margin: 0;
-      white-space: nowrap;
     }
 
     .kosten-gesamt-zeile #kosten-gesamt-liste {
       display: flex;
+      justify-content: center;
       gap: 0.4rem;
       margin: 0;
     }
@@ -1239,6 +1241,47 @@
       margin: 0 0 0.5rem;
       font-size: 0.92rem;
       color: #1e3a8a;
+    }
+
+    #kosten-ausgaben-bereich {
+      margin-top: 0.8rem;
+    }
+
+    #kosten-ausgaben-filter-zeile {
+      margin: 0 0 0.65rem;
+    }
+
+    #kosten-ausgaben-kategorie-filter {
+      margin-left: 0;
+      justify-content: flex-start;
+    }
+
+    #kosten-ausgaben-liste {
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 0.8rem;
+    }
+
+    #kosten-ausgaben-liste .timeline-leer {
+      grid-column: 1 / -1;
+    }
+
+    #kosten-ausgaben-liste .kostenposten-kachel {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-height: 0;
+    }
+
+    #kosten-ausgaben-liste .kostenposten-kachel h3 {
+      margin: 0;
+      font-size: 0.96rem;
+      line-height: 1.2;
+    }
+
+    #kosten-ausgaben-liste .kostenposten-kachel .listen-aktionen {
+      margin-top: auto;
+      justify-content: flex-end;
     }
 
     .kennzahlen-liste {
@@ -1273,6 +1316,25 @@
     .kennzahl-wert {
       font-weight: 700;
       font-size: 0.88rem;
+    }
+
+    .kosten-filter-link {
+      width: auto;
+      margin-top: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font: inherit;
+      font-weight: 400;
+      box-shadow: none;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .kosten-filter-link:hover {
+      color: var(--text-muted);
+      transform: none;
     }
 
     .gruppen-liste {
@@ -2152,6 +2214,13 @@
       color: #bfdbfe;
     }
 
+    body[data-theme="dark"] .anzeigemodus-btn.aktiv[data-anzeigemodus="dunkel"] {
+      background: linear-gradient(160deg, #e2e8f0, #cbd5e1);
+      color: #0f172a;
+      border-color: #f8fafc;
+      box-shadow: 0 0 0 2px rgba(248, 250, 252, 0.35);
+    }
+
     body[data-theme="dark"] input[type="file"] {
       border-color: #3b4c69;
       background: #0f172a;
@@ -2723,6 +2792,15 @@
             <div id="kosten-tag-liste" class="gruppen-liste"></div>
           </article>
         </div>
+
+        <article id="kosten-ausgaben-bereich" class="kosten-block" aria-label="Weitere Kostenposten">
+          <h3>Weitere Kostenposten</h3>
+          <div id="kosten-ausgaben-filter-zeile" class="timeline-filter-zeile" hidden>
+            <div id="kosten-ausgaben-tag-filter" class="timeline-tag-filter" hidden></div>
+            <div id="kosten-ausgaben-kategorie-filter" class="timeline-typ-filter" hidden></div>
+          </div>
+          <ul id="kosten-ausgaben-liste" class="liste"></ul>
+        </article>
         <div class="timeline-plus-eintrag">
           <button id="kosten-dialog-oeffnen" type="button" class="plus-reise-knopf timeline-plus-knopf"
             aria-label="Kostenposten hinzufügen">
@@ -2905,7 +2983,7 @@
 
   <dialog id="kosten-dialog" class="dialog">
     <div class="dialog-kopf">
-      <h2>Kostenposten</h2>
+      <h2 id="kosten-dialog-titel">Kostenposten</h2>
       <button id="kosten-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
     </div>
     <div class="dialog-inhalt">
@@ -2916,9 +2994,7 @@
             placeholder="z. B. Transport" autocomplete="off" />
           <datalist id="kategorien">
             <option value="Transport"></option>
-            <option value="Unterkunft"></option>
             <option value="Verpflegung"></option>
-            <option value="Aktivität"></option>
             <option value="Tickets"></option>
             <option value="Sonstiges"></option>
           </datalist>
@@ -2952,7 +3028,7 @@
         <label for="ausgabe-datei">Dateiablage</label>
         <input id="ausgabe-datei" name="datei" type="file" autocomplete="off" />
 
-        <button type="submit">Ausgabe hinzufügen</button>
+        <button id="ausgabe-submit-btn" type="submit">Ausgabe hinzufügen</button>
       </form>
       <p id="ausgabe-fehler" class="fehler" aria-live="polite"></p>
     </div>
@@ -4176,6 +4252,42 @@
         };
 
         await this.db.add(STORE_NAMES.ausgaben, ausgabe);
+        return ausgabe;
+      }
+
+      async getAusgabe(ausgabeId) {
+        if (!ausgabeId) {
+          return null;
+        }
+        return this.db.get(STORE_NAMES.ausgaben, ausgabeId);
+      }
+
+      async updateAusgabe(ausgabeId, { projektId, datum, betrag, waehrung, kategorie, titel, notizen }) {
+        if (!ausgabeId) {
+          throw new Error("Ausgabe fehlt.");
+        }
+        const bestehendeAusgabe = await this.db.get(STORE_NAMES.ausgaben, ausgabeId);
+        if (!bestehendeAusgabe) {
+          throw new Error("Ausgabe nicht gefunden.");
+        }
+
+        const betragZahl = toNumberOrNull(betrag);
+        if (betragZahl === null || betragZahl <= 0) {
+          throw new Error("Betrag muss größer als 0 sein.");
+        }
+
+        const ausgabe = {
+          ...bestehendeAusgabe,
+          projektId: projektId || bestehendeAusgabe.projektId,
+          datum: datum || "",
+          betrag: betragZahl,
+          waehrung: normalizeWaehrung(waehrung),
+          kategorie: (kategorie || "Sonstiges").trim() || "Sonstiges",
+          titel: (titel || "").trim() || "Ausgabe",
+          notizen: (notizen || "").trim(),
+        };
+
+        await this.db.put(STORE_NAMES.ausgaben, ausgabe);
         return ausgabe;
       }
 
@@ -5637,10 +5749,14 @@
         this.kartenFokus = null;
         this.timelineBildVorschauUrls = [];
         this.timelineGalerieAuswahlByEintrag = {};
+        this.timelineRenderVersion = 0;
         this.aktiveEintragDateiOption = null;
+        this.bearbeiteAusgabeId = null;
         this.projektBildDataUrlDraft = "";
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
+        this.kostenAusgabenTagFilterValue = "all";
+        this.kostenAusgabenKategorieFilterValue = "all";
         this.elemente = null;
       }
 
@@ -5676,7 +5792,13 @@
           kostenTagBereich: document.querySelector("#kosten-tag-bereich"),
           kostenKategorieListe: document.querySelector("#kosten-kategorie-liste"),
           kostenTagListe: document.querySelector("#kosten-tag-liste"),
+          kostenAusgabenFilterZeile: document.querySelector("#kosten-ausgaben-filter-zeile"),
+          kostenAusgabenTagFilter: document.querySelector("#kosten-ausgaben-tag-filter"),
+          kostenAusgabenKategorieFilter: document.querySelector("#kosten-ausgaben-kategorie-filter"),
+          kostenAusgabenListe: document.querySelector("#kosten-ausgaben-liste"),
           ausgabeForm: document.querySelector("#ausgabe-form"),
+          ausgabeSubmitBtn: document.querySelector("#ausgabe-submit-btn"),
+          kostenDialogTitel: document.querySelector("#kosten-dialog-titel"),
           ausgabeFehler: document.querySelector("#ausgabe-fehler"),
           ablageBereich: document.querySelector("#ablage-bereich"),
           jsonDbOpenBtn: document.querySelector("#json-db-open-btn"),
@@ -5731,7 +5853,7 @@
         this._setAnzeigemodus(this.anzeigemodus, { persist: false });
         this._renderDbDateiStatus();
         if (this.elemente.appVersionAnzeige) {
-          this.elemente.appVersionAnzeige.textContent = "Version: -";
+          this.elemente.appVersionAnzeige.textContent = "-";
         }
         void this._renderAppVersion();
       }
@@ -5854,6 +5976,56 @@
           }
           this.timelineTypFilterValue = this.timelineTypFilterValue === value ? "all" : value;
           await this._renderTimeline();
+        });
+        this.elemente.kostenBereich?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-kosten-nav-action]");
+          if (!button) {
+            return;
+          }
+          const action = String(button.dataset.kostenNavAction || "").trim();
+          if (action === "tag") {
+            const tag = String(button.dataset.kostenTag || "").trim();
+            await this._oeffneTimelineMitKostenFilter({ tag });
+            return;
+          }
+          if (action === "typ") {
+            const typ = String(button.dataset.kostenTyp || "").trim();
+            await this._oeffneTimelineMitKostenFilter({ typ });
+            return;
+          }
+          if (action === "ausgaben-kategorie") {
+            const kategorie = String(button.dataset.kostenKategorie || "").trim();
+            if (!kategorie) {
+              return;
+            }
+            this.kostenAusgabenKategorieFilterValue = kategorie;
+            this.kostenAusgabenTagFilterValue = "all";
+            await this._renderKostenUebersicht();
+          }
+        });
+        this.elemente.kostenAusgabenTagFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-kosten-ausgaben-tag]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.kostenAusgabenTag || "").trim();
+          if (!value) {
+            return;
+          }
+          this.kostenAusgabenTagFilterValue = this.kostenAusgabenTagFilterValue === value ? "all" : value;
+          await this._renderKostenUebersicht();
+        });
+        this.elemente.kostenAusgabenKategorieFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-kosten-ausgaben-kategorie]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.kostenAusgabenKategorie || "").trim();
+          if (!value) {
+            return;
+          }
+          this.kostenAusgabenKategorieFilterValue = this.kostenAusgabenKategorieFilterValue === value ? "all" : value;
+          await this._renderKostenUebersicht();
         });
 
         this.elemente.projektBildInput?.addEventListener("change", async () => {
@@ -6219,6 +6391,24 @@
           event.preventDefault();
           await this._handleAusgabeErstellen();
         });
+        this.elemente.kostenAusgabenListe?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-ausgabe-action]");
+          if (!button) {
+            return;
+          }
+          const ausgabeId = String(button.dataset.ausgabeId || "").trim();
+          const action = String(button.dataset.ausgabeAction || "").trim();
+          if (!ausgabeId) {
+            return;
+          }
+          if (action === "bearbeiten") {
+            await this._starteAusgabeBearbeiten(ausgabeId);
+            return;
+          }
+          if (action === "loeschen") {
+            await this._handleAusgabeLoeschen(ausgabeId);
+          }
+        });
 
         this.elemente.jsonDbOpenBtn?.addEventListener("click", async () => {
           await this._handleJsonDbDateiAuswahl("open");
@@ -6316,10 +6506,12 @@
         });
 
         this.elemente.kostenDialog?.addEventListener("close", () => {
+          this._resetAusgabeDialogState();
           this._syncDialogBodyState();
         });
 
         this.elemente.kostenDialog?.addEventListener("cancel", () => {
+          this._resetAusgabeDialogState();
           this._syncDialogBodyState();
         });
 
@@ -6674,9 +6866,15 @@ ${"</ht"+"ml>"}
         this.timelineGalerieAuswahlByEintrag = {};
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
+        this.kostenAusgabenTagFilterValue = "all";
+        this.kostenAusgabenKategorieFilterValue = "all";
+        this.bearbeiteAusgabeId = null;
         this.segmentProfileByKey = await this.storage.listSegmentProfileByProjekt(projekt.id);
         await this._renderProjektliste();
-        await this._renderTimeline();
+        await this._renderTimeline({ resolveKoordinaten: false, hydrateSegmentMetriken: false });
+        void this._renderTimeline().catch((error) => {
+          console.warn("Timeline konnte nicht vollständig nachgeladen werden.", error);
+        });
         this._aktualisiereHauptReiter();
         this.elemente.eintragFehler.textContent = "";
         this.elemente.ausgabeFehler.textContent = "";
@@ -6845,13 +7043,17 @@ ${"</ht"+"ml>"}
       }
 
       _zeigeLeeresProjekt() {
+        this.timelineRenderVersion += 1;
         this._beendeEintragBearbeiten();
+        this._resetAusgabeDialogState();
         this._aktualisiereHauptReiter();
         this._resetTimelineBildVorschauen();
         this.timelineGalerieAuswahlByEintrag = {};
         this.segmentProfileByKey = {};
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
+        this.kostenAusgabenTagFilterValue = "all";
+        this.kostenAusgabenKategorieFilterValue = "all";
         if (this.elemente.timelineTypFilter) {
           this.elemente.timelineTypFilter.innerHTML = "";
           this.elemente.timelineTypFilter.hidden = true;
@@ -6867,6 +7069,20 @@ ${"</ht"+"ml>"}
         this.elemente.kostenGesamtListe.innerHTML = "";
         this.elemente.kostenKategorieListe.innerHTML = "";
         this.elemente.kostenTagListe.innerHTML = "";
+        if (this.elemente.kostenAusgabenListe) {
+          this.elemente.kostenAusgabenListe.innerHTML = "";
+        }
+        if (this.elemente.kostenAusgabenTagFilter) {
+          this.elemente.kostenAusgabenTagFilter.innerHTML = "";
+          this.elemente.kostenAusgabenTagFilter.hidden = true;
+        }
+        if (this.elemente.kostenAusgabenKategorieFilter) {
+          this.elemente.kostenAusgabenKategorieFilter.innerHTML = "";
+          this.elemente.kostenAusgabenKategorieFilter.hidden = true;
+        }
+        if (this.elemente.kostenAusgabenFilterZeile) {
+          this.elemente.kostenAusgabenFilterZeile.hidden = true;
+        }
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this.elemente.dateienListe.innerHTML = "";
         this.map?.clear();
@@ -6943,15 +7159,22 @@ ${"</ht"+"ml>"}
         });
       }
 
-      async _renderTimeline() {
+      async _renderTimeline({ resolveKoordinaten = true, hydrateSegmentMetriken = true } = {}) {
         if (!this.aktivesProjekt) {
           this._zeigeLeeresProjekt();
           return;
         }
+        const renderVersion = this.timelineRenderVersion + 1;
+        this.timelineRenderVersion = renderVersion;
         this._resetTimelineBildVorschauen();
         const projektId = this.aktivesProjekt.id;
         const timelineEintraege = await this.storage.listTimelineEintraege(projektId);
-        const eintraege = await this._resolveTimelineKoordinaten(timelineEintraege);
+        const eintraege = resolveKoordinaten
+          ? await this._resolveTimelineKoordinaten(timelineEintraege)
+          : timelineEintraege;
+        if (renderVersion !== this.timelineRenderVersion || projektId !== this.aktivesProjekt?.id) {
+          return;
+        }
         this._renderTimelineTypFilter(eintraege);
         const tagOptionen = this._collectTimelineTagOptionen(eintraege);
         this._renderTimelineTagFilter(tagOptionen);
@@ -6979,6 +7202,7 @@ ${"</ht"+"ml>"}
 
         const timelineKey = (eintrag) => `${eintrag.typ}:${eintrag?.eintrag?.id || ""}`;
         const segmentKey = (fromEintrag, toEintrag) => `${timelineKey(fromEintrag)}->${timelineKey(toEintrag)}`;
+        const segmentHydrationJobs = [];
         let listHtml = "";
         for (let index = 0; index < gefilterteEintraege.length; index += 1) {
             const eintrag = gefilterteEintraege[index];
@@ -7068,7 +7292,11 @@ ${"</ht"+"ml>"}
             if (hasCurrentAndNext) {
               const key = segmentKey(eintrag, nextEintrag);
               const activeProfile = normalizeProfile(this.segmentProfileByKey[key] || PROFILE_DEFAULT);
-              const segmentMetrik = await this._resolveTimelineSegmentRoute(eintrag, nextEintrag, activeProfile);
+              const fromLat = Number(eintrag?.eintrag?.lat);
+              const fromLon = Number(eintrag?.eintrag?.lon);
+              const toLat = Number(nextEintrag?.eintrag?.lat);
+              const toLon = Number(nextEintrag?.eintrag?.lon);
+              const segmentMetrik = this._berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, activeProfile);
               const segmentDauerText = Number.isFinite(Number(segmentMetrik?.durationMin)) && Number(segmentMetrik.durationMin) > 0
                 ? formatDurationMinutes(segmentMetrik.durationMin)
                 : "-";
@@ -7076,10 +7304,6 @@ ${"</ht"+"ml>"}
                 ? formatDistanzKm(segmentMetrik.distanceKm)
                 : "-";
               const segmentInfoHtml = `<div class="timeline-segment-info"><span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span></div>`;
-              const fromLat = Number(eintrag?.eintrag?.lat);
-              const fromLon = Number(eintrag?.eintrag?.lon);
-              const toLat = Number(nextEintrag?.eintrag?.lat);
-              const toLon = Number(nextEintrag?.eintrag?.lon);
               const fromLatAttr = Number.isFinite(fromLat) ? String(fromLat) : "";
               const fromLonAttr = Number.isFinite(fromLon) ? String(fromLon) : "";
               const toLatAttr = Number.isFinite(toLat) ? String(toLat) : "";
@@ -7089,10 +7313,97 @@ ${"</ht"+"ml>"}
                 return `<button type="button" class="timeline-segment-btn ${aktiv}" data-segment-key="${escapeHtml(key)}" data-segment-profile="${escapeHtml(option.key)}" aria-label="${escapeHtml(option.label)}" title="${escapeHtml(option.label)}">${option.icon}</button>`;
               }).join("");
               listHtml += `<li class="timeline-segment-steuerung" data-segment-key="${escapeHtml(key)}" data-segment-from-lat="${escapeHtml(fromLatAttr)}" data-segment-from-lon="${escapeHtml(fromLonAttr)}" data-segment-to-lat="${escapeHtml(toLatAttr)}" data-segment-to-lon="${escapeHtml(toLonAttr)}"><div class="timeline-segment-inhalt">${segmentInfoHtml}${profileButtons}</div></li>`;
+              if (hydrateSegmentMetriken) {
+                segmentHydrationJobs.push({
+                  key,
+                  fromLat,
+                  fromLon,
+                  toLat,
+                  toLon,
+                  profile: activeProfile,
+                });
+              }
             }
         }
 
         this.elemente.timelineListe.innerHTML = `${listHtml}${plusEintrag}`;
+        if (hydrateSegmentMetriken && segmentHydrationJobs.length) {
+          void this._hydrateTimelineSegmentMetriken(segmentHydrationJobs, { renderVersion, projektId });
+        }
+      }
+
+      _berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT) {
+        if (!Number.isFinite(Number(fromLat))
+          || !Number.isFinite(Number(fromLon))
+          || !Number.isFinite(Number(toLat))
+          || !Number.isFinite(Number(toLon))) {
+          return { distanceKm: 0, durationMin: 0 };
+        }
+        const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
+        const routeCoords = [
+          [Number(fromLat), Number(fromLon)],
+          [Number(toLat), Number(toLon)],
+        ];
+        const distanceKm = berechneDistanz(routeCoords);
+        const durationMin = estimateDurationMinutes(distanceKm, normalizedProfile);
+        return { distanceKm, durationMin };
+      }
+
+      async _hydrateTimelineSegmentMetriken(jobs, { renderVersion, projektId }) {
+        const liste = Array.isArray(jobs) ? jobs : [];
+        if (!liste.length || !this.elemente?.timelineListe) {
+          return;
+        }
+
+        const infoByKey = new Map(
+          Array.from(this.elemente.timelineListe.querySelectorAll(".timeline-segment-steuerung[data-segment-key]"))
+            .map((row) => [String(row.dataset.segmentKey || ""), row.querySelector(".timeline-segment-info")]),
+        );
+        const workerCount = Math.max(1, Math.min(4, liste.length));
+        let index = 0;
+        const nextJob = () => {
+          if (index >= liste.length) {
+            return null;
+          }
+          const job = liste[index];
+          index += 1;
+          return job;
+        };
+
+        const runWorker = async () => {
+          while (true) {
+            if (renderVersion !== this.timelineRenderVersion || projektId !== String(this.aktivesProjekt?.id || "")) {
+              return;
+            }
+            const job = nextJob();
+            if (!job) {
+              return;
+            }
+            const infoElement = infoByKey.get(String(job.key || ""));
+            if (!infoElement) {
+              continue;
+            }
+            const metriken = await this._resolveTimelineSegmentRouteByCoords(
+              job.fromLat,
+              job.fromLon,
+              job.toLat,
+              job.toLon,
+              job.profile,
+            );
+            if (renderVersion !== this.timelineRenderVersion || projektId !== String(this.aktivesProjekt?.id || "")) {
+              return;
+            }
+            const segmentDauerText = Number.isFinite(Number(metriken?.durationMin)) && Number(metriken.durationMin) > 0
+              ? formatDurationMinutes(metriken.durationMin)
+              : "-";
+            const segmentDistanzText = Number.isFinite(Number(metriken?.distanceKm)) && Number(metriken.distanceKm) > 0
+              ? formatDistanzKm(metriken.distanceKm)
+              : "-";
+            infoElement.innerHTML = `<span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span>`;
+          }
+        };
+
+        await Promise.all(Array.from({ length: workerCount }, () => runWorker()));
       }
 
       _collectTimelineTagOptionen(eintraege) {
@@ -7443,9 +7754,10 @@ ${"</ht"+"ml>"}
         }
 
         const formData = new FormData(this.elemente.ausgabeForm);
+        const istBearbeiten = Boolean(this.bearbeiteAusgabeId);
 
         try {
-          const ausgabe = await this.storage.createAusgabe({
+          const payload = {
             projektId: this.aktivesProjekt.id,
             datum: formData.get("datum"),
             betrag: formData.get("betrag"),
@@ -7453,18 +7765,31 @@ ${"</ht"+"ml>"}
             kategorie: formData.get("kategorie"),
             titel: formData.get("titel"),
             notizen: formData.get("notizen"),
-          });
-          await this._speichereEintragDatei(formData, { typ: "ausgabe", id: ausgabe.id });
+          };
+          let ausgabeId = "";
+          if (istBearbeiten) {
+            const bestehendeAusgabe = await this.storage.getAusgabe(this.bearbeiteAusgabeId);
+            if (!bestehendeAusgabe || bestehendeAusgabe.projektId !== this.aktivesProjekt.id) {
+              throw new Error("Ausgabe nicht gefunden.");
+            }
+            const ausgabe = await this.storage.updateAusgabe(this.bearbeiteAusgabeId, payload);
+            ausgabeId = String(ausgabe?.id || this.bearbeiteAusgabeId);
+          } else {
+            const ausgabe = await this.storage.createAusgabe(payload);
+            ausgabeId = String(ausgabe?.id || "");
+          }
+          await this._speichereEintragDatei(formData, { typ: "ausgabe", id: ausgabeId });
 
           this.elemente.ausgabeFehler.textContent = "";
-          this.elemente.ausgabeForm.reset();
-          this.elemente.ausgabeForm.querySelector("#ausgabe-waehrung").value = "EUR";
+          this._resetAusgabeDialogState();
           this._schliesseKostenDialog();
+          await this._aktualisiereWaehrungsAuswahl();
           await this._renderKostenUebersicht();
-          this._setStatus("Ausgabe gespeichert.");
+          await this._renderDateiAblage();
+          this._setStatus(istBearbeiten ? "Ausgabe aktualisiert." : "Ausgabe gespeichert.");
         } catch (error) {
           this.elemente.ausgabeFehler.textContent = error.message || "Ausgabe konnte nicht gespeichert werden.";
-          this._setStatus("Fehler beim Speichern der Ausgabe.");
+          this._setStatus(istBearbeiten ? "Fehler beim Aktualisieren der Ausgabe." : "Fehler beim Speichern der Ausgabe.");
         }
       }
 
@@ -7522,12 +7847,21 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const statistik = await this.storage.getKostenStatistiken(this.aktivesProjekt.id);
+        const [statistik, ausgaben] = await Promise.all([
+          this.storage.getKostenStatistiken(this.aktivesProjekt.id),
+          this.storage.listAusgabenByProjekt(this.aktivesProjekt.id),
+        ]);
 
         if (!statistik.anzahl) {
           this.elemente.kostenGesamtListe.innerHTML = '<li class="timeline-leer">Noch keine Kosten vorhanden.</li>';
           this.elemente.kostenKategorieListe.innerHTML = '<p class="timeline-leer">Noch keine Kategorien vorhanden.</p>';
           this.elemente.kostenTagListe.innerHTML = '<p class="timeline-leer">Noch keine Tageswerte vorhanden.</p>';
+          this._renderKostenAusgabenTagFilter([]);
+          this._renderKostenAusgabenKategorieFilter([]);
+          this._syncKostenAusgabenFilterZeile();
+          if (this.elemente.kostenAusgabenListe) {
+            this.elemente.kostenAusgabenListe.innerHTML = '<li class="timeline-leer">Noch keine Kostenposten vorhanden.</li>';
+          }
           return;
         }
 
@@ -7551,12 +7885,22 @@ ${"</ht"+"ml>"}
         ${statistik.proKategorieGesamt.length
             ? statistik.proKategorieGesamt
               .map(
-                (eintrag) => `
+                (eintrag) => {
+                  const kategorieName = String(eintrag?.name || "").trim();
+                  const key = kategorieName.toLowerCase();
+                  const typFilter = key === "unterkunft"
+                    ? "unterkunft"
+                    : (key === "aktivität" || key === "aktivitaet" ? "aktivitaet" : "");
+                  const labelHtml = typFilter
+                    ? `<button type="button" class="kosten-filter-link" data-kosten-nav-action="typ" data-kosten-typ="${escapeHtml(typFilter)}" title="Zur Tagesansicht mit Filter">${escapeHtml(kategorieName)}</button>`
+                    : `<button type="button" class="kosten-filter-link" data-kosten-nav-action="ausgaben-kategorie" data-kosten-kategorie="${escapeHtml(kategorieName)}" title="Zu Weitere Kostenposten mit Filter">${escapeHtml(kategorieName)}</button>`;
+                  return `
                     <li class="kennzahl-zeile">
-                      <span class="kennzahl-label">${escapeHtml(eintrag.name)}</span>
+                      ${labelHtml}
                       <span class="kennzahl-wert">${escapeHtml(formatBetrag(eintrag.summe, "EUR"))}</span>
                     </li>
-                  `,
+                  `;
+                },
               )
               .join("")
             : '<li class="kennzahl-zeile"><span class="kennzahl-label">Keine Daten</span><span class="kennzahl-wert">-</span></li>'
@@ -7569,19 +7913,223 @@ ${"</ht"+"ml>"}
         ${statistik.proTagGesamt.length
             ? statistik.proTagGesamt
               .map(
-                (eintrag) => `
+                (eintrag) => {
+                  const timelineTag = this._mapKostenTagZuTimelineTag(eintrag?.tag);
+                  return `
                     <li class="kennzahl-zeile">
-                      <span class="kennzahl-label">${escapeHtml(formatTag(eintrag.tag))}</span>
+                      <button type="button" class="kosten-filter-link" data-kosten-nav-action="tag" data-kosten-tag="${escapeHtml(timelineTag)}" title="Zur Tagesansicht mit Filter">${escapeHtml(formatTag(eintrag.tag))}</button>
                       <span class="kennzahl-wert">${escapeHtml(formatBetrag(eintrag.summe, "EUR"))}</span>
                     </li>
-                  `,
+                  `;
+                },
               )
               .join("")
             : '<li class="kennzahl-zeile"><span class="kennzahl-label">Keine Daten</span><span class="kennzahl-wert">-</span></li>'
           }
       </ul>
     `;
+        const kostenAusgabenTagOptionen = this._collectKostenAusgabenTagOptionen(ausgaben);
+        const kostenAusgabenKategorieOptionen = this._collectKostenAusgabenKategorieOptionen(ausgaben);
+        this._renderKostenAusgabenTagFilter(kostenAusgabenTagOptionen);
+        this._renderKostenAusgabenKategorieFilter(kostenAusgabenKategorieOptionen);
+        this._syncKostenAusgabenFilterZeile();
+        const ausgabenNachKategorie = this._filterKostenAusgabenByKategorie(ausgaben, this.kostenAusgabenKategorieFilterValue);
+        const gefilterteAusgaben = this._filterKostenAusgabenByTag(ausgabenNachKategorie, this.kostenAusgabenTagFilterValue);
+        this._renderKostenAusgabenListe(gefilterteAusgaben);
         this._setAktiverKostenTab(this.aktiverKostenTab);
+      }
+
+      _mapAusgabeDatumZuFilterKey(datum) {
+        const value = String(datum || "").trim();
+        if (!value) {
+          return "ohne-datum";
+        }
+        const normalized = normalizeKostenTag(value);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+          return normalized;
+        }
+        return "ohne-datum";
+      }
+
+      _collectKostenAusgabenTagOptionen(ausgaben) {
+        const liste = Array.isArray(ausgaben) ? ausgaben : [];
+        const optionen = Array.from(new Set(liste.map((ausgabe) => this._mapAusgabeDatumZuFilterKey(ausgabe?.datum))));
+        const datumsOptionen = optionen
+          .filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(key))
+          .sort((a, b) => a.localeCompare(b));
+        const hatOhneDatum = optionen.includes("ohne-datum");
+        return hatOhneDatum ? [...datumsOptionen, "ohne-datum"] : datumsOptionen;
+      }
+
+      _collectKostenAusgabenKategorieOptionen(ausgaben) {
+        const liste = Array.isArray(ausgaben) ? ausgaben : [];
+        const standardKategorien = this._getStandardAusgabenKategorien();
+        const dynamischeKategorien = Array.from(
+          new Set(
+            liste
+              .map((ausgabe) => String(ausgabe?.kategorie || "Sonstiges").trim() || "Sonstiges")
+              .filter(Boolean),
+          ),
+        ).sort((a, b) => a.localeCompare(b, "de"));
+
+        const optionen = Array.from(new Set([...standardKategorien, ...dynamischeKategorien]));
+        if (this.kostenAusgabenKategorieFilterValue && this.kostenAusgabenKategorieFilterValue !== "all") {
+          optionen.push(this.kostenAusgabenKategorieFilterValue);
+        }
+        return Array.from(new Set(optionen));
+      }
+
+      _getStandardAusgabenKategorien() {
+        const optionen = Array.from(document.querySelectorAll("#kategorien option"))
+          .map((option) => String(option?.value || "").trim())
+          .filter(Boolean);
+        if (optionen.length) {
+          return optionen;
+        }
+        return ["Transport", "Verpflegung", "Tickets", "Sonstiges"];
+      }
+
+      _renderKostenAusgabenTagFilter(optionen) {
+        if (!this.elemente.kostenAusgabenTagFilter) {
+          return;
+        }
+        const list = Array.isArray(optionen) ? optionen : [];
+        if (!list.length) {
+          this.kostenAusgabenTagFilterValue = "all";
+          this.elemente.kostenAusgabenTagFilter.innerHTML = "";
+          this.elemente.kostenAusgabenTagFilter.hidden = true;
+          return;
+        }
+
+        const erlaubteWerte = new Set(["all", ...list]);
+        if (!erlaubteWerte.has(this.kostenAusgabenTagFilterValue)) {
+          this.kostenAusgabenTagFilterValue = "all";
+        }
+
+        this.elemente.kostenAusgabenTagFilter.innerHTML = list
+          .map((tag) => {
+            const label = tag === "ohne-datum" ? "Ohne Datum" : formatTimelineTagLabel(tag);
+            const aktiv = this.kostenAusgabenTagFilterValue === tag ? " aktiv" : "";
+            return `<button type="button" class="timeline-tag-btn${aktiv}" data-kosten-ausgaben-tag="${escapeHtml(tag)}" title="Nochmal klicken zum Deselektieren">${escapeHtml(label)}</button>`;
+          })
+          .join("");
+        this.elemente.kostenAusgabenTagFilter.hidden = false;
+      }
+
+      _renderKostenAusgabenKategorieFilter(optionen) {
+        if (!this.elemente.kostenAusgabenKategorieFilter) {
+          return;
+        }
+        const list = Array.isArray(optionen) ? optionen : [];
+        if (!list.length) {
+          this.kostenAusgabenKategorieFilterValue = "all";
+          this.elemente.kostenAusgabenKategorieFilter.innerHTML = "";
+          this.elemente.kostenAusgabenKategorieFilter.hidden = true;
+          return;
+        }
+
+        const erlaubteWerte = new Set(["all", ...list]);
+        if (!erlaubteWerte.has(this.kostenAusgabenKategorieFilterValue)) {
+          this.kostenAusgabenKategorieFilterValue = "all";
+        }
+
+        this.elemente.kostenAusgabenKategorieFilter.innerHTML = list
+          .map((kategorie) => {
+            const aktiv = this.kostenAusgabenKategorieFilterValue === kategorie ? " aktiv" : "";
+            return `<button type="button" class="timeline-typ-btn${aktiv}" data-kosten-ausgaben-kategorie="${escapeHtml(kategorie)}" title="Nochmal klicken zum Deselektieren">${escapeHtml(kategorie)}</button>`;
+          })
+          .join("");
+        this.elemente.kostenAusgabenKategorieFilter.hidden = false;
+      }
+
+      _syncKostenAusgabenFilterZeile() {
+        if (!this.elemente.kostenAusgabenFilterZeile) {
+          return;
+        }
+        const tagHidden = this.elemente.kostenAusgabenTagFilter?.hidden !== false;
+        const kategorieHidden = this.elemente.kostenAusgabenKategorieFilter?.hidden !== false;
+        this.elemente.kostenAusgabenFilterZeile.hidden = tagHidden && kategorieHidden;
+      }
+
+      _filterKostenAusgabenByTag(ausgaben, tagFilter) {
+        const liste = Array.isArray(ausgaben) ? ausgaben : [];
+        const key = String(tagFilter || "all").trim();
+        if (!key || key === "all") {
+          return liste;
+        }
+        return liste.filter((ausgabe) => this._mapAusgabeDatumZuFilterKey(ausgabe?.datum) === key);
+      }
+
+      _filterKostenAusgabenByKategorie(ausgaben, kategorieFilter) {
+        const liste = Array.isArray(ausgaben) ? ausgaben : [];
+        const key = String(kategorieFilter || "all").trim();
+        if (!key || key === "all") {
+          return liste;
+        }
+        return liste.filter((ausgabe) => String(ausgabe?.kategorie || "Sonstiges").trim() === key);
+      }
+
+      _mapKostenTagZuTimelineTag(tag) {
+        const value = String(tag || "").trim();
+        if (!value || value === "Ohne Datum") {
+          return "ohne-datum";
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          return value;
+        }
+        const normalized = normalizeKostenTag(value);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+          return normalized;
+        }
+        return "ohne-datum";
+      }
+
+      async _oeffneTimelineMitKostenFilter({ tag = "", typ = "" } = {}) {
+        if (!this.aktivesProjekt) {
+          return;
+        }
+
+        const typKey = String(typ || "").trim();
+        const tagKey = String(tag || "").trim();
+
+        if (tagKey) {
+          this.timelineTagFilterValue = tagKey;
+          this.timelineTypFilterValue = "all";
+        } else if (["unterkunft", "aktivitaet"].includes(typKey)) {
+          this.timelineTypFilterValue = typKey;
+          this.timelineTagFilterValue = "all";
+        }
+
+        this._setAktiverHauptReiter("timeline");
+        await this._renderTimeline();
+      }
+
+      _renderKostenAusgabenListe(ausgaben) {
+        if (!this.elemente.kostenAusgabenListe) {
+          return;
+        }
+        const liste = Array.isArray(ausgaben) ? ausgaben : [];
+        if (!liste.length) {
+          this.elemente.kostenAusgabenListe.innerHTML = '<li class="timeline-leer">Noch keine Kostenposten vorhanden.</li>';
+          return;
+        }
+
+        this.elemente.kostenAusgabenListe.innerHTML = liste
+          .map((ausgabe) => {
+            const ausgabeId = String(ausgabe?.id || "").trim();
+            if (!ausgabeId) {
+              return "";
+            }
+            const titel = String(ausgabe?.titel || "").trim() || "Ausgabe";
+            const kategorie = String(ausgabe?.kategorie || "").trim() || "Sonstiges";
+            const datum = ausgabe?.datum ? formatTag(ausgabe.datum) : "Ohne Datum";
+            const notiz = String(ausgabe?.notizen || "").trim();
+            const meta = `${datum} · ${kategorie}`;
+            const betragText = formatBetrag(ausgabe?.betrag || 0, ausgabe?.waehrung || "EUR");
+            const notizHtml = notiz ? `<p class="listen-meta">${escapeHtml(notiz)}</p>` : "";
+            return `<li class="listen-eintrag kostenposten-kachel"><h3>${escapeHtml(titel)}</h3><p class="listen-meta">${escapeHtml(meta)}</p><p class="listen-meta"><strong>${escapeHtml(betragText)}</strong></p>${notizHtml}<div class="listen-aktionen"><button type="button" class="sekundaer" data-action="bearbeiten" data-ausgabe-action="bearbeiten" data-ausgabe-id="${escapeHtml(ausgabeId)}" aria-label="Ausgabe bearbeiten" title="Bearbeiten">✏️</button><button type="button" class="gefahr" data-action="loeschen" data-ausgabe-action="loeschen" data-ausgabe-id="${escapeHtml(ausgabeId)}" aria-label="Ausgabe löschen" title="Löschen">🗑️</button></div></li>`;
+          })
+          .join("");
       }
 
       _renderDbDateiStatus() {
@@ -7592,7 +8140,7 @@ ${"</ht"+"ml>"}
         const name = String(this.storage.getDbDateiName() || "").trim();
         this.elemente.jsonDbStatus.textContent = name
           ? `Aktive Datei: ${name}`
-          : "Keine JSON-Datei verbunden.";
+          : "Keine Datenbank-Datei verbunden.";
         if (this.elemente.jsonExportBtn) {
           this.elemente.jsonExportBtn.disabled = !dbReady;
         }
@@ -8399,12 +8947,95 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        this.elemente.ausgabeFehler.textContent = "";
+        this._resetAusgabeDialogState();
         this._oeffneDialog(this.elemente.kostenDialog);
       }
 
       _schliesseKostenDialog() {
         this._schliesseDialog(this.elemente.kostenDialog);
+      }
+
+      _setAusgabeDialogModus(istBearbeiten) {
+        const bearbeiten = Boolean(istBearbeiten);
+        if (this.elemente.kostenDialogTitel) {
+          this.elemente.kostenDialogTitel.textContent = bearbeiten ? "Kostenposten bearbeiten" : "Kostenposten";
+        }
+        if (this.elemente.ausgabeSubmitBtn) {
+          this.elemente.ausgabeSubmitBtn.textContent = bearbeiten ? "Änderungen speichern" : "Ausgabe hinzufügen";
+        }
+      }
+
+      _resetAusgabeDialogState() {
+        this.bearbeiteAusgabeId = null;
+        if (this.elemente.ausgabeForm) {
+          this.elemente.ausgabeForm.reset();
+          const waehrungSelect = this.elemente.ausgabeForm.querySelector("#ausgabe-waehrung");
+          if (waehrungSelect) {
+            waehrungSelect.value = "EUR";
+          }
+          const dateiInput = this.elemente.ausgabeForm.querySelector("#ausgabe-datei");
+          if (dateiInput) {
+            dateiInput.value = "";
+          }
+        }
+        if (this.elemente.ausgabeFehler) {
+          this.elemente.ausgabeFehler.textContent = "";
+        }
+        this._setAusgabeDialogModus(false);
+      }
+
+      async _starteAusgabeBearbeiten(ausgabeId) {
+        if (!this.aktivesProjekt || !ausgabeId) {
+          return;
+        }
+        const ausgabe = await this.storage.getAusgabe(ausgabeId);
+        if (!ausgabe || ausgabe.projektId !== this.aktivesProjekt.id) {
+          return;
+        }
+
+        this.bearbeiteAusgabeId = ausgabe.id;
+        this._setAusgabeDialogModus(true);
+        this.elemente.ausgabeFehler.textContent = "";
+
+        const form = this.elemente.ausgabeForm;
+        form.querySelector("#ausgabe-kategorie").value = ausgabe.kategorie || "";
+        form.querySelector("#ausgabe-datum").value = ausgabe.datum || "";
+        form.querySelector("#ausgabe-betrag").value = ausgabe.betrag ?? "";
+        form.querySelector("#ausgabe-waehrung").value = normalizeWaehrung(ausgabe.waehrung || "EUR");
+        form.querySelector("#ausgabe-titel").value = ausgabe.titel || "";
+        form.querySelector("#ausgabe-notizen").value = ausgabe.notizen || "";
+        form.querySelector("#ausgabe-datei").value = "";
+
+        this._oeffneDialog(this.elemente.kostenDialog);
+        window.requestAnimationFrame(() => {
+          form.querySelector("#ausgabe-titel")?.focus();
+        });
+      }
+
+      async _handleAusgabeLoeschen(ausgabeId) {
+        if (!this.aktivesProjekt || !ausgabeId) {
+          return;
+        }
+        const ausgabe = await this.storage.getAusgabe(ausgabeId);
+        if (!ausgabe || ausgabe.projektId !== this.aktivesProjekt.id) {
+          return;
+        }
+
+        const bestaetigt = window.confirm(`Ausgabe „${ausgabe.titel || "Ausgabe"}“ wirklich löschen?`);
+        if (!bestaetigt) {
+          return;
+        }
+
+        const dateien = await this.storage.listDateienByEintrag(this.aktivesProjekt.id, "ausgabe", ausgabeId);
+        await Promise.all(dateien.map((datei) => this.storage.deleteDatei(datei.id)));
+        await this.storage.deleteAusgabe(ausgabeId);
+        if (this.bearbeiteAusgabeId === ausgabeId) {
+          this._schliesseKostenDialog();
+        }
+        await this._aktualisiereWaehrungsAuswahl();
+        await this._renderKostenUebersicht();
+        await this._renderDateiAblage();
+        this._setStatus("Ausgabe gelöscht.");
       }
 
       _oeffneEinstellungenDialog() {
@@ -8477,7 +9108,7 @@ ${"</ht"+"ml>"}
           return;
         }
         const version = await leseServiceWorkerVersion();
-        this.elemente.appVersionAnzeige.textContent = version ? `Version: ${version}` : "Version: -";
+        this.elemente.appVersionAnzeige.textContent = version || "-";
       }
 
       async _ladeAnzeigemodusAusDatenbank() {
