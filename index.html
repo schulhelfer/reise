@@ -268,6 +268,14 @@
       line-height: 1.2;
     }
 
+    .wiederanzeigen-buttons button:disabled {
+      background: linear-gradient(160deg, #d1d5db, #9ca3af);
+      border: 1px solid #c4ccd8;
+      color: #4b5563;
+      box-shadow: none;
+      opacity: 1;
+    }
+
     .einstellungen-inhalt .karte {
       animation: none;
     }
@@ -410,6 +418,13 @@
       box-shadow: 0 14px 28px rgba(15, 23, 42, 0.2);
     }
 
+    .eintrag-datei-dropzone-menue {
+      position: fixed;
+      z-index: 2650;
+      min-width: 150px;
+      max-width: min(220px, calc(100vw - 16px));
+    }
+
     .eintrag-datei-optionen-aktionen {
       display: grid;
       gap: 0.28rem;
@@ -472,6 +487,17 @@
       cursor: pointer;
       touch-action: manipulation;
       transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    button,
+    [role="button"],
+    .timeline-warnung,
+    .kosten-filter-link,
+    .timeline-ort-link {
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     button:hover {
@@ -1296,6 +1322,39 @@
       margin: 0.35rem 0 0.15rem;
     }
 
+    .eintrag-timezone-bereich {
+      display: none;
+      margin: 0.65rem 0 0.25rem;
+      padding: 0.65rem 0.75rem 0.75rem;
+      border: 1px solid #d6e1f7;
+      border-radius: 12px;
+      background: #f8fbff;
+    }
+
+    .eintrag-timezone-bereich[data-visible="true"] {
+      display: block;
+    }
+
+    .eintrag-timezone-zeile {
+      display: grid;
+      grid-template-columns: 142px minmax(0, 1fr);
+      gap: 0.55rem;
+      align-items: end;
+    }
+
+    .eintrag-timezone-zeile label {
+      margin-top: 0.45rem;
+    }
+
+    .eintrag-timezone-zeile input,
+    .eintrag-timezone-zeile select {
+      margin-top: 0;
+    }
+
+    .eintrag-timezone-hinweis {
+      margin: 0.55rem 0 0;
+    }
+
     #eintrag-form.eintrag-form-unterkunft .eintrag-unterkunft-option {
       display: inline-flex;
       align-items: center;
@@ -1369,6 +1428,23 @@
       justify-content: center;
       font-size: 2rem;
       line-height: 1;
+    }
+
+    .daten-aktionen button.db-auswahl-puls {
+      position: relative;
+      border: 2px solid #f59e0b;
+    }
+
+    .daten-aktionen button.db-auswahl-puls::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 16px;
+      border: 2px solid rgba(245, 158, 11, 0.62);
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.98);
+      animation: dbAuswahlPuls 1.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
     .visuell-versteckt {
@@ -1661,6 +1737,10 @@
 
     .app-dialog-aktionen button {
       margin-top: 0;
+    }
+
+    .tz-fallback-hinweis {
+      margin: 0.25rem 0 0;
     }
 
     #app-dialog-abbrechen[hidden] + #app-dialog-bestaetigen {
@@ -2408,7 +2488,7 @@
 
     #checkliste-liste {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
       gap: 0.8rem;
       align-items: start;
       user-select: none;
@@ -2418,13 +2498,19 @@
     .checkliste-gruppe {
       display: grid;
       gap: 0.45rem;
+      align-content: start;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.55rem;
+      background: var(--surface);
       padding-top: 0.15rem;
     }
 
     .checkliste-gruppe-titel {
-      margin: 0;
-      font-size: 0.84rem;
-      font-weight: 700;
+      margin: 0.2rem 0 0.45rem;
+      font-size: 1rem;
+      font-weight: 800;
+      text-align: center;
       color: var(--text-muted);
     }
 
@@ -2432,10 +2518,9 @@
       list-style: none;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: flex-start;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.42rem;
     }
 
     .checkliste-item {
@@ -2443,10 +2528,10 @@
       border-radius: 12px;
       background: var(--surface);
       padding: 0.5rem 0.62rem;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      width: fit-content;
-      max-width: 100%;
+      width: 100%;
+      min-width: 0;
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
@@ -2458,6 +2543,8 @@
       align-items: center;
       gap: 0.55rem;
       margin: 0;
+      width: 100%;
+      min-width: 0;
       font-size: 0.92rem;
       font-weight: 600;
       cursor: pointer;
@@ -2581,6 +2668,104 @@
       flex-wrap: wrap;
       margin-top: 0.35rem;
       margin-bottom: 0.35rem;
+    }
+
+    .segment-metrik-route-liste {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .segment-route-btn {
+      width: 100%;
+      margin-top: 0;
+      padding: 0.58rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid #cfdcf8;
+      background: #eef3ff;
+      color: #1f3f86;
+      box-shadow: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: left;
+      justify-content: flex-start;
+      transform: none;
+    }
+
+    .segment-route-btn.aktiv {
+      background: linear-gradient(160deg, #64748b, #334155);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .segment-waypoint-bereich {
+      margin-top: 0.35rem;
+      border: 1px solid #d8e2f2;
+      border-radius: 12px;
+      background: #f8fbff;
+      padding: 0.7rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .segment-waypoint-bereich[hidden] {
+      display: none;
+    }
+
+    .segment-waypoint-liste {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.42rem;
+    }
+
+    .segment-waypoint-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.48rem 0.55rem;
+      border-radius: 10px;
+      border: 1px solid #d8e2f2;
+      background: #fff;
+    }
+
+    .segment-waypoint-label {
+      font-size: 0.86rem;
+      color: #1e293b;
+      overflow-wrap: anywhere;
+    }
+
+    .segment-waypoint-eingabe {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.45rem;
+      align-items: end;
+    }
+
+    .segment-waypoint-eingabe input {
+      margin-top: 0;
+    }
+
+    .segment-waypoint-aktionen {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .segment-waypoint-remove-btn {
+      width: auto;
+      margin-top: 0;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.84rem;
+      line-height: 1;
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: #991b1b;
+      box-shadow: none;
+      transform: none;
     }
 
     #segment-metrik-form .bereich-aktionen {
@@ -2897,6 +3082,38 @@
       color: #bfdbfe;
     }
 
+    body[data-theme="dark"] .segment-route-btn {
+      border-color: #334155;
+      background: #1e293b;
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .segment-route-btn.aktiv {
+      border-color: #93c5fd;
+      background: linear-gradient(160deg, #1d4ed8, #1e3a8a);
+      color: #dbeafe;
+    }
+
+    body[data-theme="dark"] .segment-waypoint-bereich {
+      border-color: #334155;
+      background: #0f172a;
+    }
+
+    body[data-theme="dark"] .segment-waypoint-item {
+      border-color: #334155;
+      background: #111827;
+    }
+
+    body[data-theme="dark"] .segment-waypoint-label {
+      color: #dbeafe;
+    }
+
+    body[data-theme="dark"] .segment-waypoint-remove-btn {
+      background: #7f1d1d;
+      border-color: #991b1b;
+      color: #fecaca;
+    }
+
     body[data-theme="dark"] .timeline-segment-info {
       border-color: #334155;
       background: #0f172a;
@@ -2998,6 +3215,20 @@
       border: 1px solid #475569;
     }
 
+    body[data-theme="dark"] .daten-aktionen button.db-auswahl-puls {
+      border-color: #fbbf24;
+    }
+
+    body[data-theme="dark"] .daten-aktionen button.db-auswahl-puls::after {
+      border-color: rgba(251, 191, 36, 0.68);
+    }
+
+    body[data-theme="dark"] .wiederanzeigen-buttons button:disabled {
+      background: linear-gradient(160deg, #334155, #1f2937);
+      border: 1px solid #475569;
+      color: #94a3b8;
+    }
+
     body[data-theme="dark"] .reiter.aktiv,
     body[data-theme="dark"] .tab.aktiv {
       box-shadow: none;
@@ -3027,6 +3258,11 @@
     body[data-theme="dark"] .status-slider-track {
       border-color: #475569;
       background: linear-gradient(160deg, #334155, #1e293b);
+    }
+
+    body[data-theme="dark"] .eintrag-timezone-bereich {
+      border-color: #334155;
+      background: #0f172a;
     }
 
     body[data-theme="dark"] .status-slider-track::after {
@@ -3183,6 +3419,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .eintrag-timezone-zeile {
+        grid-template-columns: 1fr;
+      }
+
       .bereich-kopf {
         align-items: flex-start;
         flex-direction: column;
@@ -3246,6 +3486,10 @@
     }
 
     @media (max-width: 640px) {
+      #checkliste-liste {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+      }
+
       .zweispaltig {
         grid-template-columns: 1fr;
         gap: 0;
@@ -3288,6 +3532,21 @@
 
       to {
         opacity: 1;
+      }
+    }
+
+    @keyframes dbAuswahlPuls {
+      0%,
+      100% {
+        opacity: 0.08;
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), 0 0 10px rgba(245, 158, 11, 0.14);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.02);
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.32), 0 0 24px rgba(245, 158, 11, 0.5);
       }
     }
   </style>
@@ -3473,6 +3732,25 @@
     </div>
   </dialog>
 
+  <dialog id="tz-fallback-dialog" class="dialog">
+    <div class="dialog-kopf">
+      <h2>Projekt-Zeitzone wählen</h2>
+      <button id="tz-fallback-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
+    </div>
+    <div class="dialog-inhalt">
+      <p class="meta-text tz-fallback-hinweis">Für dieses Projekt ist noch keine Zeitzone verfügbar. Bitte einmalig eine Fallback-Zeitzone auswählen.</p>
+      <form id="tz-fallback-form" autocomplete="off">
+        <label for="tz-fallback-select">Zeitzone</label>
+        <select id="tz-fallback-select" name="timeZone" required autocomplete="off"></select>
+        <p id="tz-fallback-fehler" class="fehler"></p>
+        <div class="app-dialog-aktionen">
+          <button id="tz-fallback-abbrechen" type="button" class="sekundaer">Später</button>
+          <button id="tz-fallback-speichern" type="submit">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
   <dialog id="neue-reise-dialog" class="dialog">
     <div class="dialog-kopf">
       <h2 id="projekt-dialog-titel">Neue Reise</h2>
@@ -3553,6 +3831,22 @@
         <label id="eintrag-adresse-label" for="eintrag-adresse">Ort / Adresse</label>
         <input id="eintrag-adresse" name="adresse" type="text" maxlength="200" autocomplete="street-address" />
 
+        <div id="eintrag-timezone-bereich" class="eintrag-timezone-bereich" data-visible="false" hidden>
+          <div class="eintrag-timezone-zeile">
+            <label for="eintrag-timezone-source">Zeitzone</label>
+            <select id="eintrag-timezone-source" name="timeZoneSource" autocomplete="off">
+              <option value="auto">Automatisch</option>
+              <option value="manual">Manuell</option>
+            </select>
+          </div>
+          <div class="eintrag-timezone-zeile">
+            <label for="eintrag-timezone">IANA-Zeitzone</label>
+            <input id="eintrag-timezone" name="timeZone" type="text" maxlength="80" list="iana-timezones"
+              placeholder="z. B. Europe/Berlin" autocomplete="off" />
+          </div>
+          <p id="eintrag-timezone-hinweis" class="meta-text eintrag-timezone-hinweis"></p>
+        </div>
+
         <label id="eintrag-kosten-label" for="eintrag-kosten">Kosten</label>
         <div class="kosten-eingabe">
           <input id="eintrag-kosten" name="kosten" type="number" step="0.01" min="0" autocomplete="off" />
@@ -3579,10 +3873,15 @@
           <div class="datei-dropzone-kopf">
             <div>
               <p class="datei-dropzone-titel">Datei ablegen oder auswählen</p>
-              <p class="datei-dropzone-hinweis">Drag & Drop, Klick oder Rechtsklick zum Einfügen</p>
+              <p class="datei-dropzone-hinweis">Drag & Drop, Klick oder Rechtsklick/Longtap > Einfügen</p>
             </div>
           </div>
           <input id="eintrag-datei" name="datei" class="visuell-versteckt" type="file" autocomplete="off" />
+        </div>
+        <div id="eintrag-datei-dropzone-menue" class="eintrag-datei-optionen eintrag-datei-dropzone-menue" hidden>
+          <div class="eintrag-datei-optionen-aktionen">
+            <button id="eintrag-datei-dropzone-einfuegen-btn" type="button" class="sekundaer">Einfügen</button>
+          </div>
         </div>
         <div id="eintrag-dateien-bereich" class="eintrag-dateien-bereich" hidden>
           <p class="datei-dropzone-hinweis">Gespeicherte Dateien</p>
@@ -3602,6 +3901,8 @@
     </div>
   </dialog>
 
+  <datalist id="iana-timezones"></datalist>
+
   <dialog id="segment-metrik-dialog" class="dialog">
     <div class="dialog-kopf">
       <h2>Fortbewegung</h2>
@@ -3617,6 +3918,21 @@
           <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="walking" data-segment-profile="walking" aria-label="Zu Fuß" title="Zu Fuß">🚶</button>
           <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="flight" data-segment-profile="flight" aria-label="Flugzeug" title="Flugzeug">✈️</button>
           <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="ship" data-segment-profile="ship" aria-label="Schiff" title="Schiff">🚢</button>
+        </div>
+        <label>Route</label>
+        <div id="segment-route-alternativen" class="segment-metrik-route-liste" role="group" aria-label="Routenalternativen"></div>
+        <p id="segment-route-hinweis" class="meta-text"></p>
+        <div id="segment-waypoint-bereich" class="segment-waypoint-bereich" hidden>
+          <label for="segment-waypoint-adresse">Zwischenstopps</label>
+          <ul id="segment-waypoint-liste" class="segment-waypoint-liste"></ul>
+          <div class="segment-waypoint-eingabe">
+            <input id="segment-waypoint-adresse" type="text" placeholder="Adresse / Ort" autocomplete="off" />
+            <button id="segment-waypoint-adresse-add-btn" type="button" class="sekundaer">Hinzufügen</button>
+          </div>
+          <div class="segment-waypoint-aktionen">
+            <button id="segment-waypoint-map-pick-btn" type="button" class="sekundaer">Per Kartenklick setzen</button>
+          </div>
+          <p id="segment-waypoint-hinweis" class="meta-text"></p>
         </div>
         <label for="segment-manual-distance">Strecke (km)</label>
         <input id="segment-manual-distance" name="manualDistanceKm" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Automatisch" autocomplete="off" />
@@ -4011,6 +4327,9 @@
           link: String(unterkunft.link || "").trim(),
           countryCode: String(unterkunft.countryCode || "").toUpperCase(),
           fruehstueckInklusive: Boolean(unterkunft.fruehstueckInklusive),
+          timeZone: normalizeTimeZoneId(unterkunft.timeZone || ""),
+          timeZoneSource: normalizeTimeZoneSource(unterkunft.timeZoneSource || "auto"),
+          timeZoneUpdatedAt: normalizeIsoDateTime(unterkunft.timeZoneUpdatedAt || ""),
         };
       }
 
@@ -4035,6 +4354,9 @@
           notizen: String(aktivitaet.notizen || "").trim(),
           link: String(aktivitaet.link || "").trim(),
           countryCode: String(aktivitaet.countryCode || "").toUpperCase(),
+          timeZone: normalizeTimeZoneId(aktivitaet.timeZone || ""),
+          timeZoneSource: normalizeTimeZoneSource(aktivitaet.timeZoneSource || "auto"),
+          timeZoneUpdatedAt: normalizeIsoDateTime(aktivitaet.timeZoneUpdatedAt || ""),
         };
       }
 
@@ -4217,6 +4539,7 @@
     const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
     const RESTCOUNTRIES_URL = "https://restcountries.com/v3.1/alpha/";
     const FX_API_URL = "https://api.frankfurter.app/latest";
+    const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 
     function neueId() {
       if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -4230,6 +4553,7 @@
       constructor(db) {
         this.db = db;
         this.geocodeInFlight = new Map();
+        this.timeZoneInFlight = new Map();
         this.geocodeChain = Promise.resolve();
       }
 
@@ -4318,6 +4642,44 @@
 
       async loescheZuletztBearbeitetesProjektId() {
         await this.db.delete(STORE_NAMES.appSettings, "zuletztBearbeitetesProjektId");
+      }
+
+      _projektFallbackTimeZoneKey(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        return cleanProjektId ? `projektFallbackTimeZone:${cleanProjektId}` : "";
+      }
+
+      async leseProjektFallbackTimeZone(projektId) {
+        const key = this._projektFallbackTimeZoneKey(projektId);
+        if (!key) {
+          return "";
+        }
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, key);
+        return normalizeTimeZoneId(eintrag?.value || "");
+      }
+
+      async speichereProjektFallbackTimeZone(projektId, timeZone) {
+        const key = this._projektFallbackTimeZoneKey(projektId);
+        if (!key) {
+          return;
+        }
+        const normalized = normalizeTimeZoneId(timeZone);
+        if (!normalized) {
+          await this.db.delete(STORE_NAMES.appSettings, key);
+          return;
+        }
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: key,
+          value: normalized,
+        });
+      }
+
+      async loescheProjektFallbackTimeZone(projektId) {
+        const key = this._projektFallbackTimeZoneKey(projektId);
+        if (!key) {
+          return;
+        }
+        await this.db.delete(STORE_NAMES.appSettings, key);
       }
 
       async leseChecklisteStatus(projektId) {
@@ -4501,6 +4863,7 @@
         }
 
         await this.db.delete(STORE_NAMES.projekte, projektId);
+        await this.loescheProjektFallbackTimeZone(projektId);
       }
 
       async listStopsByProjekt(projektId) {
@@ -4542,6 +4905,72 @@
         return ["aktivitaet", "unterkunft"].includes(normalizedTyp) ? normalizedTyp : "";
       }
 
+      _waehleMehrheitsZeitzoneAusEintraegen(eintraege) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const stat = new Map();
+        for (const eintrag of list) {
+          const zone = normalizeTimeZoneId(eintrag?.timeZone || "");
+          if (!zone) {
+            continue;
+          }
+          if (!stat.has(zone)) {
+            stat.set(zone, { count: 0, latestMs: 0 });
+          }
+          const info = stat.get(zone);
+          info.count += 1;
+          const updatedAtMs = new Date(normalizeIsoDateTime(eintrag?.timeZoneUpdatedAt || "") || 0).getTime();
+          if (Number.isFinite(updatedAtMs) && updatedAtMs >= info.latestMs) {
+            info.latestMs = updatedAtMs;
+          }
+        }
+        if (!stat.size) {
+          return "";
+        }
+        return Array.from(stat.entries())
+          .sort((a, b) => {
+            if (b[1].count !== a[1].count) {
+              return b[1].count - a[1].count;
+            }
+            if (b[1].latestMs !== a[1].latestMs) {
+              return b[1].latestMs - a[1].latestMs;
+            }
+            return a[0].localeCompare(b[0]);
+          })[0][0];
+      }
+
+      async ermittleProjektTimeZoneKontext(projektId, eintraegeOverride = null) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return { projectDefaultTimeZone: "", hasEntryTimeZones: false };
+        }
+        const eintraege = Array.isArray(eintraegeOverride)
+          ? eintraegeOverride
+          : await this.db.getAllByIndex(STORE_NAMES.eintraege, "projektId", cleanProjektId);
+        const mehrheit = this._waehleMehrheitsZeitzoneAusEintraegen(eintraege);
+        if (mehrheit) {
+          return { projectDefaultTimeZone: mehrheit, hasEntryTimeZones: true };
+        }
+        const fallback = await this.leseProjektFallbackTimeZone(cleanProjektId);
+        return { projectDefaultTimeZone: fallback, hasEntryTimeZones: false };
+      }
+
+      _resolveEintragTimeZone(eintrag, projectDefaultTimeZone = "") {
+        const entryZone = normalizeTimeZoneId(eintrag?.timeZone || "");
+        if (entryZone) {
+          return entryZone;
+        }
+        return normalizeTimeZoneId(projectDefaultTimeZone || "");
+      }
+
+      _toTimelineUtcMs(localDateTime, timeZone) {
+        const converted = localDateTimeToUtcEpochMs(localDateTime, timeZone);
+        if (Number.isFinite(converted)) {
+          return converted;
+        }
+        const parsed = new Date(localDateTime || "").getTime();
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
       _toEintragRecord({
         id,
         projektId,
@@ -4559,6 +4988,9 @@
         link,
         countryCode,
         fruehstueckInklusive,
+        timeZone,
+        timeZoneSource,
+        timeZoneUpdatedAt,
       }) {
         return {
           id: id || neueId(),
@@ -4577,6 +5009,9 @@
           link: String(link || "").trim(),
           countryCode: String(countryCode || "").toUpperCase(),
           fruehstueckInklusive: Boolean(fruehstueckInklusive),
+          timeZone: normalizeTimeZoneId(timeZone || ""),
+          timeZoneSource: normalizeTimeZoneSource(timeZoneSource || "auto"),
+          timeZoneUpdatedAt: normalizeIsoDateTime(timeZoneUpdatedAt || ""),
         };
       }
 
@@ -4601,6 +5036,9 @@
           link: eintrag.link || "",
           countryCode: String(eintrag.countryCode || "").toUpperCase(),
           fruehstueckInklusive: Boolean(eintrag.fruehstueckInklusive),
+          timeZone: normalizeTimeZoneId(eintrag.timeZone || ""),
+          timeZoneSource: normalizeTimeZoneSource(eintrag.timeZoneSource || "auto"),
+          timeZoneUpdatedAt: normalizeIsoDateTime(eintrag.timeZoneUpdatedAt || ""),
         };
       }
 
@@ -4624,6 +5062,9 @@
           notizen: eintrag.notizen || "",
           link: eintrag.link || "",
           countryCode: String(eintrag.countryCode || "").toUpperCase(),
+          timeZone: normalizeTimeZoneId(eintrag.timeZone || ""),
+          timeZoneSource: normalizeTimeZoneSource(eintrag.timeZoneSource || "auto"),
+          timeZoneUpdatedAt: normalizeIsoDateTime(eintrag.timeZoneUpdatedAt || ""),
         };
       }
 
@@ -4802,13 +5243,34 @@
         return aktualisierterStop;
       }
 
-      async createUnterkunft({ projektId, checkIn, checkOut, name, buchungsstatus, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
+      async createUnterkunft({
+        projektId,
+        checkIn,
+        checkOut,
+        name,
+        buchungsstatus,
+        adresse,
+        lat,
+        lon,
+        preis,
+        waehrung,
+        notizen,
+        link,
+        fruehstueckInklusive,
+        timeZone,
+        timeZoneSource,
+      }) {
         const bereinigterName = (name || "").trim();
         if (!projektId) {
           throw new Error("Projekt fehlt.");
         }
         if (!bereinigterName) {
           throw new Error("Titel ist erforderlich.");
+        }
+        const normalizedTimeZoneSource = normalizeTimeZoneSource(timeZoneSource || "auto");
+        const normalizedTimeZone = normalizeTimeZoneId(timeZone || "");
+        if (normalizedTimeZoneSource === "manual" && !normalizedTimeZone) {
+          throw new Error("Bitte eine gueltige IANA-Zeitzone angeben (z. B. Europe/Berlin).");
         }
 
         const eintrag = this._toEintragRecord({
@@ -4827,6 +5289,9 @@
           notizen,
           link,
           fruehstueckInklusive,
+          timeZone: normalizedTimeZoneSource === "manual" ? normalizedTimeZone : "",
+          timeZoneSource: normalizedTimeZoneSource,
+          timeZoneUpdatedAt: normalizedTimeZoneSource === "manual" ? new Date().toISOString() : "",
         });
 
         await this.db.add(STORE_NAMES.eintraege, eintrag);
@@ -4838,7 +5303,23 @@
         return this._toUnterkunftView(eintrag);
       }
 
-      async updateUnterkunft(unterkunftId, { projektId, checkIn, checkOut, name, buchungsstatus, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
+      async updateUnterkunft(unterkunftId, {
+        projektId,
+        checkIn,
+        checkOut,
+        name,
+        buchungsstatus,
+        adresse,
+        lat,
+        lon,
+        preis,
+        waehrung,
+        notizen,
+        link,
+        fruehstueckInklusive,
+        timeZone,
+        timeZoneSource,
+      }) {
         if (!unterkunftId) {
           throw new Error("Unterkunft fehlt.");
         }
@@ -4852,6 +5333,35 @@
         if (!bereinigterName) {
           throw new Error("Titel ist erforderlich.");
         }
+        const cleanAdresse = String(adresse || "").trim();
+        const adresseGeaendert = normalizeAddress(cleanAdresse) !== normalizeAddress(bestehenderEintrag.adresse || "");
+        const angefragteQuelle = normalizeTimeZoneSource(timeZoneSource || bestehenderEintrag.timeZoneSource || "auto");
+        const angefragteTimeZone = normalizeTimeZoneId(timeZone || "");
+        let nextTimeZone = normalizeTimeZoneId(bestehenderEintrag.timeZone || "");
+        let nextTimeZoneSource = normalizeTimeZoneSource(bestehenderEintrag.timeZoneSource || "auto");
+        let nextTimeZoneUpdatedAt = normalizeIsoDateTime(bestehenderEintrag.timeZoneUpdatedAt || "");
+        if (adresseGeaendert) {
+          nextTimeZone = "";
+          nextTimeZoneSource = "auto";
+          nextTimeZoneUpdatedAt = new Date().toISOString();
+        } else if (angefragteQuelle === "manual") {
+          if (!angefragteTimeZone) {
+            throw new Error("Bitte eine gueltige IANA-Zeitzone angeben (z. B. Europe/Berlin).");
+          }
+          nextTimeZone = angefragteTimeZone;
+          if (nextTimeZoneSource !== "manual"
+            || nextTimeZone !== normalizeTimeZoneId(bestehenderEintrag.timeZone || "")
+            || !nextTimeZoneUpdatedAt) {
+            nextTimeZoneUpdatedAt = new Date().toISOString();
+          }
+          nextTimeZoneSource = "manual";
+        } else {
+          nextTimeZoneSource = "auto";
+          if (normalizeTimeZoneSource(bestehenderEintrag.timeZoneSource || "auto") === "manual") {
+            nextTimeZone = "";
+            nextTimeZoneUpdatedAt = new Date().toISOString();
+          }
+        }
 
         const eintrag = this._toEintragRecord({
           ...bestehenderEintrag,
@@ -4861,7 +5371,7 @@
           endZeit: checkOut || "",
           titel: bereinigterName,
           buchungsstatus,
-          adresse,
+          adresse: cleanAdresse,
           lat,
           lon,
           kosten: preis,
@@ -4870,6 +5380,9 @@
           link,
           countryCode: bestehenderEintrag.countryCode || "",
           fruehstueckInklusive,
+          timeZone: nextTimeZone,
+          timeZoneSource: nextTimeZoneSource,
+          timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
         });
 
         await this.db.put(STORE_NAMES.eintraege, eintrag);
@@ -4885,42 +5398,105 @@
       }
 
       async _resolveUnterkunftKoordinaten(unterkunft) {
-        if (!unterkunft || hasCoordinates(unterkunft) || !normalizeAddress(unterkunft.adresse)) {
-          return unterkunft;
-        }
-
-        const result = await this._geocodeAddress(unterkunft.adresse);
-        if (!result) {
-          return unterkunft;
-        }
-
         const eintrag = await this._getEintragByTypAndId(unterkunft.id, "unterkunft");
+        const basis = eintrag || unterkunft;
+        if (!basis) {
+          return unterkunft;
+        }
+        const cleanAdresse = normalizeAddress(basis.adresse || "");
+        let nextLat = Number.isFinite(Number(basis.lat)) ? Number(basis.lat) : null;
+        let nextLon = Number.isFinite(Number(basis.lon)) ? Number(basis.lon) : null;
+        let nextCountryCode = String(basis.countryCode || "").toUpperCase();
+        let autoTimeZone = "";
+
+        if (cleanAdresse && (nextLat === null || nextLon === null)) {
+          const result = await this._geocodeAddress(cleanAdresse);
+          if (result) {
+            nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
+            nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
+            nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
+            autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+          }
+        }
+
+        let nextTimeZone = normalizeTimeZoneId(basis.timeZone || "");
+        let nextTimeZoneSource = normalizeTimeZoneSource(basis.timeZoneSource || "auto");
+        let nextTimeZoneUpdatedAt = normalizeIsoDateTime(basis.timeZoneUpdatedAt || "");
+
+        if (nextTimeZoneSource !== "manual") {
+          if (!autoTimeZone && Number.isFinite(nextLat) && Number.isFinite(nextLon)) {
+            autoTimeZone = await this._resolveTimeZoneByCoordinates(nextLat, nextLon);
+          }
+          if (autoTimeZone) {
+            if (nextTimeZone !== autoTimeZone || nextTimeZoneSource !== "auto" || !nextTimeZoneUpdatedAt) {
+              nextTimeZoneUpdatedAt = new Date().toISOString();
+            }
+            nextTimeZone = autoTimeZone;
+            nextTimeZoneSource = "auto";
+          }
+        }
+
+        const aktualisiert = {
+          ...basis,
+          lat: nextLat,
+          lon: nextLon,
+          countryCode: nextCountryCode,
+          timeZone: nextTimeZone,
+          timeZoneSource: nextTimeZoneSource,
+          timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
+        };
+
         if (!eintrag) {
           return {
             ...unterkunft,
-            lat: result.lat,
-            lon: result.lon,
-            countryCode: result.countryCode || unterkunft.countryCode || "",
+            lat: nextLat,
+            lon: nextLon,
+            countryCode: nextCountryCode,
+            timeZone: nextTimeZone,
+            timeZoneSource: nextTimeZoneSource,
+            timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
           };
         }
 
-        const aktualisierterEintrag = {
-          ...eintrag,
-          lat: result.lat,
-          lon: result.lon,
-          countryCode: result.countryCode || eintrag.countryCode || "",
-        };
-        await this.db.put(STORE_NAMES.eintraege, aktualisierterEintrag);
-        return this._toUnterkunftView(aktualisierterEintrag);
+        const hatAenderung = toNumberOrNull(eintrag.lat) !== toNumberOrNull(nextLat)
+          || toNumberOrNull(eintrag.lon) !== toNumberOrNull(nextLon)
+          || String(eintrag.countryCode || "").toUpperCase() !== nextCountryCode
+          || normalizeTimeZoneId(eintrag.timeZone || "") !== nextTimeZone
+          || normalizeTimeZoneSource(eintrag.timeZoneSource || "auto") !== nextTimeZoneSource
+          || normalizeIsoDateTime(eintrag.timeZoneUpdatedAt || "") !== nextTimeZoneUpdatedAt;
+        if (hatAenderung) {
+          await this.db.put(STORE_NAMES.eintraege, this._toEintragRecord(aktualisiert));
+        }
+        return this._toUnterkunftView(this._toEintragRecord(aktualisiert));
       }
 
-      async createAktivitaet({ projektId, startZeit, endZeit, titel, buchungsstatus, ort, lat, lon, kosten, waehrung, notizen, link }) {
+      async createAktivitaet({
+        projektId,
+        startZeit,
+        endZeit,
+        titel,
+        buchungsstatus,
+        ort,
+        lat,
+        lon,
+        kosten,
+        waehrung,
+        notizen,
+        link,
+        timeZone,
+        timeZoneSource,
+      }) {
         const bereinigterTitel = (titel || "").trim();
         if (!projektId) {
           throw new Error("Projekt fehlt.");
         }
         if (!bereinigterTitel) {
           throw new Error("Titel ist erforderlich.");
+        }
+        const normalizedTimeZoneSource = normalizeTimeZoneSource(timeZoneSource || "auto");
+        const normalizedTimeZone = normalizeTimeZoneId(timeZone || "");
+        if (normalizedTimeZoneSource === "manual" && !normalizedTimeZone) {
+          throw new Error("Bitte eine gueltige IANA-Zeitzone angeben (z. B. Europe/Berlin).");
         }
 
         const eintrag = this._toEintragRecord({
@@ -4938,6 +5514,9 @@
           waehrung,
           notizen,
           link,
+          timeZone: normalizedTimeZoneSource === "manual" ? normalizedTimeZone : "",
+          timeZoneSource: normalizedTimeZoneSource,
+          timeZoneUpdatedAt: normalizedTimeZoneSource === "manual" ? new Date().toISOString() : "",
         });
 
         await this.db.add(STORE_NAMES.eintraege, eintrag);
@@ -4949,7 +5528,22 @@
         return this._toAktivitaetView(eintrag);
       }
 
-      async updateAktivitaet(aktivitaetId, { projektId, startZeit, endZeit, titel, buchungsstatus, ort, lat, lon, kosten, waehrung, notizen, link }) {
+      async updateAktivitaet(aktivitaetId, {
+        projektId,
+        startZeit,
+        endZeit,
+        titel,
+        buchungsstatus,
+        ort,
+        lat,
+        lon,
+        kosten,
+        waehrung,
+        notizen,
+        link,
+        timeZone,
+        timeZoneSource,
+      }) {
         if (!aktivitaetId) {
           throw new Error("Aktivität fehlt.");
         }
@@ -4963,6 +5557,35 @@
         if (!bereinigterTitel) {
           throw new Error("Titel ist erforderlich.");
         }
+        const cleanOrt = String(ort || "").trim();
+        const adresseGeaendert = normalizeAddress(cleanOrt) !== normalizeAddress(bestehenderEintrag.adresse || "");
+        const angefragteQuelle = normalizeTimeZoneSource(timeZoneSource || bestehenderEintrag.timeZoneSource || "auto");
+        const angefragteTimeZone = normalizeTimeZoneId(timeZone || "");
+        let nextTimeZone = normalizeTimeZoneId(bestehenderEintrag.timeZone || "");
+        let nextTimeZoneSource = normalizeTimeZoneSource(bestehenderEintrag.timeZoneSource || "auto");
+        let nextTimeZoneUpdatedAt = normalizeIsoDateTime(bestehenderEintrag.timeZoneUpdatedAt || "");
+        if (adresseGeaendert) {
+          nextTimeZone = "";
+          nextTimeZoneSource = "auto";
+          nextTimeZoneUpdatedAt = new Date().toISOString();
+        } else if (angefragteQuelle === "manual") {
+          if (!angefragteTimeZone) {
+            throw new Error("Bitte eine gueltige IANA-Zeitzone angeben (z. B. Europe/Berlin).");
+          }
+          nextTimeZone = angefragteTimeZone;
+          if (nextTimeZoneSource !== "manual"
+            || nextTimeZone !== normalizeTimeZoneId(bestehenderEintrag.timeZone || "")
+            || !nextTimeZoneUpdatedAt) {
+            nextTimeZoneUpdatedAt = new Date().toISOString();
+          }
+          nextTimeZoneSource = "manual";
+        } else {
+          nextTimeZoneSource = "auto";
+          if (normalizeTimeZoneSource(bestehenderEintrag.timeZoneSource || "auto") === "manual") {
+            nextTimeZone = "";
+            nextTimeZoneUpdatedAt = new Date().toISOString();
+          }
+        }
 
         const eintrag = this._toEintragRecord({
           ...bestehenderEintrag,
@@ -4972,7 +5595,7 @@
           endZeit: endZeit || "",
           titel: bereinigterTitel,
           buchungsstatus,
-          adresse: ort,
+          adresse: cleanOrt,
           lat,
           lon,
           kosten,
@@ -4980,6 +5603,9 @@
           notizen,
           link,
           countryCode: bestehenderEintrag.countryCode || "",
+          timeZone: nextTimeZone,
+          timeZoneSource: nextTimeZoneSource,
+          timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
         });
 
         await this.db.put(STORE_NAMES.eintraege, eintrag);
@@ -4995,33 +5621,76 @@
       }
 
       async _resolveAktivitaetKoordinaten(aktivitaet) {
-        if (!aktivitaet || hasCoordinates(aktivitaet) || !normalizeAddress(aktivitaet.ort)) {
-          return aktivitaet;
-        }
-
-        const result = await this._geocodeAddress(aktivitaet.ort);
-        if (!result) {
-          return aktivitaet;
-        }
-
         const eintrag = await this._getEintragByTypAndId(aktivitaet.id, "aktivitaet");
+        const basis = eintrag || aktivitaet;
+        if (!basis) {
+          return aktivitaet;
+        }
+        const cleanOrt = normalizeAddress((basis.adresse || basis.ort || ""));
+        let nextLat = Number.isFinite(Number(basis.lat)) ? Number(basis.lat) : null;
+        let nextLon = Number.isFinite(Number(basis.lon)) ? Number(basis.lon) : null;
+        let nextCountryCode = String(basis.countryCode || "").toUpperCase();
+        let autoTimeZone = "";
+
+        if (cleanOrt && (nextLat === null || nextLon === null)) {
+          const result = await this._geocodeAddress(cleanOrt);
+          if (result) {
+            nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
+            nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
+            nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
+            autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+          }
+        }
+
+        let nextTimeZone = normalizeTimeZoneId(basis.timeZone || "");
+        let nextTimeZoneSource = normalizeTimeZoneSource(basis.timeZoneSource || "auto");
+        let nextTimeZoneUpdatedAt = normalizeIsoDateTime(basis.timeZoneUpdatedAt || "");
+
+        if (nextTimeZoneSource !== "manual") {
+          if (!autoTimeZone && Number.isFinite(nextLat) && Number.isFinite(nextLon)) {
+            autoTimeZone = await this._resolveTimeZoneByCoordinates(nextLat, nextLon);
+          }
+          if (autoTimeZone) {
+            if (nextTimeZone !== autoTimeZone || nextTimeZoneSource !== "auto" || !nextTimeZoneUpdatedAt) {
+              nextTimeZoneUpdatedAt = new Date().toISOString();
+            }
+            nextTimeZone = autoTimeZone;
+            nextTimeZoneSource = "auto";
+          }
+        }
+
+        const aktualisiert = {
+          ...basis,
+          lat: nextLat,
+          lon: nextLon,
+          countryCode: nextCountryCode,
+          timeZone: nextTimeZone,
+          timeZoneSource: nextTimeZoneSource,
+          timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
+        };
+
         if (!eintrag) {
           return {
             ...aktivitaet,
-            lat: result.lat,
-            lon: result.lon,
-            countryCode: result.countryCode || aktivitaet.countryCode || "",
+            lat: nextLat,
+            lon: nextLon,
+            countryCode: nextCountryCode,
+            timeZone: nextTimeZone,
+            timeZoneSource: nextTimeZoneSource,
+            timeZoneUpdatedAt: nextTimeZoneUpdatedAt,
           };
         }
 
-        const aktualisierterEintrag = {
-          ...eintrag,
-          lat: result.lat,
-          lon: result.lon,
-          countryCode: result.countryCode || eintrag.countryCode || "",
-        };
-        await this.db.put(STORE_NAMES.eintraege, aktualisierterEintrag);
-        return this._toAktivitaetView(aktualisierterEintrag);
+        const hatAenderung = toNumberOrNull(eintrag.lat) !== toNumberOrNull(nextLat)
+          || toNumberOrNull(eintrag.lon) !== toNumberOrNull(nextLon)
+          || String(eintrag.countryCode || "").toUpperCase() !== nextCountryCode
+          || normalizeTimeZoneId(eintrag.timeZone || "") !== nextTimeZone
+          || normalizeTimeZoneSource(eintrag.timeZoneSource || "auto") !== nextTimeZoneSource
+          || normalizeIsoDateTime(eintrag.timeZoneUpdatedAt || "") !== nextTimeZoneUpdatedAt;
+        if (hatAenderung) {
+          await this.db.put(STORE_NAMES.eintraege, this._toEintragRecord(aktualisiert));
+        }
+        return this._toAktivitaetView(this._toEintragRecord(aktualisiert));
       }
 
       async listAusgabenByProjekt(projektId) {
@@ -5343,7 +6012,7 @@
         return result;
       }
 
-      async setSegmentConfig({ projektId, segmentKey, profile, manualDistanceKm, manualDurationMin }) {
+      async setSegmentConfig({ projektId, segmentKey, profile, manualDistanceKm, manualDurationMin, routeAlternativeIndex, manualWaypoints }) {
         const cleanProjektId = String(projektId || "").trim();
         const cleanSegmentKey = String(segmentKey || "").trim();
         if (!cleanProjektId || !cleanSegmentKey) {
@@ -5355,6 +6024,8 @@
         const hasProfile = profile !== undefined;
         const hasManualDistance = manualDistanceKm !== undefined;
         const hasManualDuration = manualDurationMin !== undefined;
+        const hasRouteAlternativeIndex = routeAlternativeIndex !== undefined;
+        const hasManualWaypoints = manualWaypoints !== undefined;
         await this.db.put(STORE_NAMES.segmentProfiles, {
           id,
           projektId: cleanProjektId,
@@ -5366,6 +6037,12 @@
           manualDurationMin: hasManualDuration
             ? normalizeManualDurationMin(manualDurationMin)
             : normalizedExisting.manualDurationMin,
+          routeAlternativeIndex: hasRouteAlternativeIndex
+            ? normalizeRouteAlternativeIndex(routeAlternativeIndex)
+            : normalizedExisting.routeAlternativeIndex,
+          manualWaypoints: hasManualWaypoints
+            ? normalizeManualWaypoints(manualWaypoints)
+            : normalizedExisting.manualWaypoints,
           updatedAt: new Date().toISOString(),
         });
       }
@@ -5374,12 +6051,20 @@
         await this.setSegmentConfig({ projektId, segmentKey, profile });
       }
 
-      async listTimelineEintraege(projektId) {
+      async listTimelineEintraege(projektId, { projectDefaultTimeZone = "" } = {}) {
         const [unterkuenfte, aktivitaeten, dateien] = await Promise.all([
           this.listUnterkuenfteByProjekt(projektId),
           this.listAktivitaetenByProjekt(projektId),
           this.listDateienByProjekt(projektId),
         ]);
+        const mehrheitsTimeZone = this._waehleMehrheitsZeitzoneAusEintraegen([
+          ...unterkuenfte,
+          ...aktivitaeten,
+        ]);
+        const fallbackTimeZone = await this.leseProjektFallbackTimeZone(projektId);
+        const resolvedProjectDefaultTimeZone = normalizeTimeZoneId(projectDefaultTimeZone || "")
+          || normalizeTimeZoneId(mehrheitsTimeZone || "")
+          || normalizeTimeZoneId(fallbackTimeZone || "");
         const anhaengeMap = new Map();
         for (const datei of dateien) {
           const key = `${datei.eintragTyp || ""}:${datei.eintragId || ""}`;
@@ -5390,27 +6075,58 @@
         }
 
         const timeline = [
-          ...unterkuenfte.map((unterkunft) => ({
-            typ: "unterkunft",
-            zeitpunkt: unterkunft.checkIn || "",
-            titel: unterkunft.name,
-            untertitel: unterkunft.adresse || "Ohne Adresse",
-            details: unterkunft.notizen || "",
-            eintrag: unterkunft,
-            anhaenge: anhaengeMap.get(`unterkunft:${unterkunft.id}`) || [],
-          })),
-          ...aktivitaeten.map((aktivitaet) => ({
-            typ: "aktivitaet",
-            zeitpunkt: aktivitaet.startZeit || "",
-            titel: aktivitaet.titel,
-            untertitel: aktivitaet.ort || "Ohne Ort",
-            details: aktivitaet.notizen || "",
-            eintrag: aktivitaet,
-            anhaenge: anhaengeMap.get(`aktivitaet:${aktivitaet.id}`) || [],
-          })),
+          ...unterkuenfte.map((unterkunft) => {
+            const eintragTimeZone = this._resolveEintragTimeZone(unterkunft, resolvedProjectDefaultTimeZone);
+            return {
+              typ: "unterkunft",
+              zeitpunkt: unterkunft.checkIn || "",
+              titel: unterkunft.name,
+              untertitel: unterkunft.adresse || "Ohne Adresse",
+              details: unterkunft.notizen || "",
+              eintrag: unterkunft,
+              zeitZone: eintragTimeZone,
+              utcStartMs: this._toTimelineUtcMs(unterkunft.checkIn || "", eintragTimeZone),
+              utcEndMs: this._toTimelineUtcMs(unterkunft.checkOut || "", eintragTimeZone),
+              anhaenge: anhaengeMap.get(`unterkunft:${unterkunft.id}`) || [],
+            };
+          }),
+          ...aktivitaeten.map((aktivitaet) => {
+            const eintragTimeZone = this._resolveEintragTimeZone(aktivitaet, resolvedProjectDefaultTimeZone);
+            return {
+              typ: "aktivitaet",
+              zeitpunkt: aktivitaet.startZeit || "",
+              titel: aktivitaet.titel,
+              untertitel: aktivitaet.ort || "Ohne Ort",
+              details: aktivitaet.notizen || "",
+              eintrag: aktivitaet,
+              zeitZone: eintragTimeZone,
+              utcStartMs: this._toTimelineUtcMs(aktivitaet.startZeit || "", eintragTimeZone),
+              utcEndMs: this._toTimelineUtcMs(aktivitaet.endZeit || "", eintragTimeZone),
+              anhaenge: anhaengeMap.get(`aktivitaet:${aktivitaet.id}`) || [],
+            };
+          }),
         ];
 
-        timeline.sort((a, b) => (a.zeitpunkt || "").localeCompare(b.zeitpunkt || ""));
+        timeline.sort((a, b) => {
+          const aUtc = Number(a?.utcStartMs);
+          const bUtc = Number(b?.utcStartMs);
+          const aHatUtc = Number.isFinite(aUtc);
+          const bHatUtc = Number.isFinite(bUtc);
+          if (aHatUtc && bHatUtc && aUtc !== bUtc) {
+            return aUtc - bUtc;
+          }
+          if (aHatUtc && !bHatUtc) {
+            return -1;
+          }
+          if (!aHatUtc && bHatUtc) {
+            return 1;
+          }
+          const zeitDiff = String(a?.zeitpunkt || "").localeCompare(String(b?.zeitpunkt || ""));
+          if (zeitDiff !== 0) {
+            return zeitDiff;
+          }
+          return String(a?.titel || "").localeCompare(String(b?.titel || ""));
+        });
         return timeline;
       }
 
@@ -5518,17 +6234,45 @@
         return request;
       }
 
+      async geocodeAdresse(address) {
+        const result = await this._geocodeAddress(address);
+        if (!result) {
+          return null;
+        }
+        const lat = Number(result.lat);
+        const lon = Number(result.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+          return null;
+        }
+        return {
+          lat,
+          lon,
+          countryCode: String(result.countryCode || "").toUpperCase(),
+        };
+      }
+
       async _geocodeAddressInner(normalized) {
         const cached = await this.db.get(STORE_NAMES.geocodeCache, normalized);
         if (cached && isFreshCache(cached.updatedAt, cached.failed ? GEOCODE_FAIL_CACHE_TTL_MS : GEOCODE_CACHE_TTL_MS)) {
           if (cached.failed) {
             return null;
           }
-
+          let cachedTimeZone = normalizeTimeZoneId(cached.timeZone || "");
+          if (!cachedTimeZone && Number.isFinite(Number(cached.lat)) && Number.isFinite(Number(cached.lon))) {
+            cachedTimeZone = await this._resolveTimeZoneByCoordinates(Number(cached.lat), Number(cached.lon));
+            if (cachedTimeZone) {
+              await this.db.put(STORE_NAMES.geocodeCache, {
+                ...cached,
+                timeZone: cachedTimeZone,
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
           return {
             lat: cached.lat,
             lon: cached.lon,
             countryCode: cached.countryCode || "",
+            timeZone: cachedTimeZone,
           };
         }
 
@@ -5539,13 +6283,17 @@
               query: normalized,
               lat: null,
               lon: null,
-              displayName: normalized,
-              countryCode: "",
-              failed: true,
-              updatedAt: new Date().toISOString(),
-            });
+                displayName: normalized,
+                countryCode: "",
+                timeZone: "",
+                failed: true,
+                updatedAt: new Date().toISOString(),
+              });
             return null;
           }
+
+          const resolvedTimeZone = normalizeTimeZoneId(result.timeZone || "")
+            || await this._resolveTimeZoneByCoordinates(result.lat, result.lon);
 
           await this.db.put(STORE_NAMES.geocodeCache, {
             query: normalized,
@@ -5553,21 +6301,70 @@
             lon: result.lon,
             displayName: String(result.displayName || normalized),
             countryCode: result.countryCode || "",
+            timeZone: resolvedTimeZone || "",
             failed: false,
             updatedAt: new Date().toISOString(),
           });
 
-          return { lat: result.lat, lon: result.lon, countryCode: result.countryCode || "" };
+          return {
+            lat: result.lat,
+            lon: result.lon,
+            countryCode: result.countryCode || "",
+            timeZone: resolvedTimeZone || "",
+          };
         } catch {
           if (cached && Number.isFinite(Number(cached.lat)) && Number.isFinite(Number(cached.lon))) {
+            let cachedTimeZone = normalizeTimeZoneId(cached.timeZone || "");
+            if (!cachedTimeZone) {
+              cachedTimeZone = await this._resolveTimeZoneByCoordinates(Number(cached.lat), Number(cached.lon));
+            }
             return {
               lat: Number(cached.lat),
               lon: Number(cached.lon),
               countryCode: cached.countryCode || "",
+              timeZone: cachedTimeZone,
             };
           }
           return null;
         }
+      }
+
+      async _resolveTimeZoneByCoordinates(lat, lon) {
+        const latNum = Number(lat);
+        const lonNum = Number(lon);
+        if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+          return "";
+        }
+        const key = `${latNum.toFixed(4)},${lonNum.toFixed(4)}`;
+        if (this.timeZoneInFlight.has(key)) {
+          return this.timeZoneInFlight.get(key);
+        }
+        const request = this._fetchTimeZoneViaOpenMeteo(latNum, lonNum)
+          .catch(() => "")
+          .finally(() => {
+            this.timeZoneInFlight.delete(key);
+          });
+        this.timeZoneInFlight.set(key, request);
+        return request;
+      }
+
+      async _fetchTimeZoneViaOpenMeteo(lat, lon) {
+        const latNum = Number(lat);
+        const lonNum = Number(lon);
+        if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+          return "";
+        }
+        const url = `${OPEN_METEO_FORECAST_URL}?latitude=${encodeURIComponent(latNum)}&longitude=${encodeURIComponent(lonNum)}&current=temperature_2m&timezone=auto`;
+        const response = await fetch(url, {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Timezone HTTP ${response.status}`);
+        }
+        const payload = await response.json();
+        return normalizeTimeZoneId(payload?.timezone || "");
       }
 
       async _runGeocodeRequest(address) {
@@ -5733,6 +6530,237 @@
     function normalizeAddress(value) {
       const text = String(value || "").trim().replace(/\s+/g, " ");
       return text.replace(/^adresse\s*:\s*/i, "").trim();
+    }
+
+    function normalizeTimeZoneId(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      try {
+        const formatter = new Intl.DateTimeFormat("en-US", { timeZone: text });
+        return String(formatter.resolvedOptions().timeZone || text).trim();
+      } catch {
+        return "";
+      }
+    }
+
+    function normalizeTimeZoneSource(value) {
+      return String(value || "").trim().toLowerCase() === "manual" ? "manual" : "auto";
+    }
+
+    function normalizeIsoDateTime(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const date = new Date(text);
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+      return date.toISOString();
+    }
+
+    function getSystemTimeZone() {
+      try {
+        const zone = String(Intl.DateTimeFormat().resolvedOptions().timeZone || "").trim();
+        return normalizeTimeZoneId(zone);
+      } catch {
+        return "UTC";
+      }
+    }
+
+    function listSupportedTimeZones() {
+      const zones = [];
+      if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function") {
+        try {
+          const supported = Intl.supportedValuesOf("timeZone");
+          supported.forEach((zone) => {
+            const normalized = normalizeTimeZoneId(zone);
+            if (normalized) {
+              zones.push(normalized);
+            }
+          });
+        } catch {
+        }
+      }
+      const fallbackZones = [
+        getSystemTimeZone(),
+        "UTC",
+        "Europe/Berlin",
+        "America/New_York",
+        "America/Los_Angeles",
+        "Asia/Tokyo",
+        "Australia/Sydney",
+      ];
+      fallbackZones.forEach((zone) => {
+        const normalized = normalizeTimeZoneId(zone);
+        if (normalized) {
+          zones.push(normalized);
+        }
+      });
+      return Array.from(new Set(zones)).sort((a, b) => a.localeCompare(b));
+    }
+
+    const TIME_ZONE_PARTS_FORMATTER_CACHE = new Map();
+
+    function getTimeZonePartsFormatter(timeZone) {
+      const normalized = normalizeTimeZoneId(timeZone);
+      if (!normalized) {
+        return null;
+      }
+      if (!TIME_ZONE_PARTS_FORMATTER_CACHE.has(normalized)) {
+        TIME_ZONE_PARTS_FORMATTER_CACHE.set(
+          normalized,
+          new Intl.DateTimeFormat("en-CA", {
+            timeZone: normalized,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hourCycle: "h23",
+          }),
+        );
+      }
+      return TIME_ZONE_PARTS_FORMATTER_CACHE.get(normalized);
+    }
+
+    function parseLocalDateTime(value) {
+      const text = String(value || "").trim();
+      const match = text.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (!match) {
+        return null;
+      }
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const hour = Number(match[4]);
+      const minute = Number(match[5]);
+      const second = Number(match[6] || "0");
+      if (!Number.isInteger(year)
+        || !Number.isInteger(month)
+        || !Number.isInteger(day)
+        || !Number.isInteger(hour)
+        || !Number.isInteger(minute)
+        || !Number.isInteger(second)) {
+        return null;
+      }
+      if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+        return null;
+      }
+      const probe = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+      if (probe.getUTCFullYear() !== year
+        || probe.getUTCMonth() !== month - 1
+        || probe.getUTCDate() !== day
+        || probe.getUTCHours() !== hour
+        || probe.getUTCMinutes() !== minute
+        || probe.getUTCSeconds() !== second) {
+        return null;
+      }
+      return { year, month, day, hour, minute, second };
+    }
+
+    function getTimeZoneLocalPartsAtUtc(utcMs, timeZone) {
+      const formatter = getTimeZonePartsFormatter(timeZone);
+      if (!formatter || !Number.isFinite(utcMs)) {
+        return null;
+      }
+      const parts = formatter.formatToParts(new Date(utcMs));
+      const map = {};
+      for (const part of parts) {
+        if (part?.type && part.type !== "literal") {
+          map[part.type] = part.value;
+        }
+      }
+      const year = Number(map.year);
+      const month = Number(map.month);
+      const day = Number(map.day);
+      const hour = Number(map.hour);
+      const minute = Number(map.minute);
+      const second = Number(map.second);
+      if (![year, month, day, hour, minute, second].every((value) => Number.isInteger(value))) {
+        return null;
+      }
+      return { year, month, day, hour, minute, second };
+    }
+
+    function getTimeZoneOffsetMsAtUtc(utcMs, timeZone) {
+      const local = getTimeZoneLocalPartsAtUtc(utcMs, timeZone);
+      if (!local) {
+        return null;
+      }
+      const localAsUtc = Date.UTC(local.year, local.month - 1, local.day, local.hour, local.minute, local.second);
+      return localAsUtc - utcMs;
+    }
+
+    function localDateTimeKey(parts) {
+      if (!parts) {
+        return "";
+      }
+      const pad = (value) => String(value).padStart(2, "0");
+      return `${String(parts.year).padStart(4, "0")}${pad(parts.month)}${pad(parts.day)}${pad(parts.hour)}${pad(parts.minute)}`;
+    }
+
+    function doesUtcMatchLocalDateTime(utcMs, timeZone, targetParts) {
+      const local = getTimeZoneLocalPartsAtUtc(utcMs, timeZone);
+      if (!local || !targetParts) {
+        return false;
+      }
+      return local.year === targetParts.year
+        && local.month === targetParts.month
+        && local.day === targetParts.day
+        && local.hour === targetParts.hour
+        && local.minute === targetParts.minute;
+    }
+
+    function localDateTimeToUtcEpochMs(localDateTime, timeZone) {
+      const zone = normalizeTimeZoneId(timeZone);
+      const parts = parseLocalDateTime(localDateTime);
+      if (!zone || !parts) {
+        return null;
+      }
+      const targetAsUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second || 0);
+      let candidate = targetAsUtc;
+      for (let i = 0; i < 5; i += 1) {
+        const offset = getTimeZoneOffsetMsAtUtc(candidate, zone);
+        if (!Number.isFinite(offset)) {
+          return null;
+        }
+        const next = targetAsUtc - offset;
+        if (Math.abs(next - candidate) < 1000) {
+          candidate = next;
+          break;
+        }
+        candidate = next;
+      }
+
+      const oneHourEarlier = candidate - 3600000;
+      if (doesUtcMatchLocalDateTime(oneHourEarlier, zone, parts)) {
+        candidate = oneHourEarlier;
+      }
+      if (doesUtcMatchLocalDateTime(candidate, zone, parts)) {
+        return candidate;
+      }
+
+      const targetKey = localDateTimeKey(parts);
+      for (let minute = 1; minute <= 180; minute += 1) {
+        const probe = candidate + minute * 60000;
+        const probeLocal = getTimeZoneLocalPartsAtUtc(probe, zone);
+        if (!probeLocal) {
+          continue;
+        }
+        const probeKey = localDateTimeKey(probeLocal);
+        if (probeKey === targetKey) {
+          return probe;
+        }
+        if (probeKey > targetKey) {
+          return probe;
+        }
+      }
+
+      return candidate;
     }
 
     function normalizeKostenTag(value) {
@@ -5955,6 +6983,8 @@
     const TILE_SERVER_URL_TEMPLATE = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
     const TILE_SUBDOMAINS = ["a", "b", "c"];
     const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1";
+    const OSRM_MAX_SEGMENT_ALTERNATIVES = 3;
+    const SEGMENT_MAX_MANUAL_WAYPOINTS = 3;
     const PROFILE_DEFAULT = "driving";
     const SEGMENT_PROFILE_OPTIONS = [
       { key: "driving", icon: "🚗", label: "Auto" },
@@ -6577,8 +7607,44 @@
         };
       }
 
-      async _resolveRoute(routeCoords, profile) {
+      _selectRouteAlternative(routeAlternatives, requestedAlternativeIndex = 0, profile = PROFILE_DEFAULT) {
         const normalizedProfile = normalizeProfile(profile);
+        const alternatives = (Array.isArray(routeAlternatives) ? routeAlternatives : [])
+          .map((route, index) => ({
+            lineCoords: Array.isArray(route?.lineCoords) ? route.lineCoords : [],
+            distanceKm: Number(route?.distanceKm || 0),
+            durationMin: Number(route?.durationMin || 0),
+            profile: normalizedProfile,
+            routeType: String(route?.routeType || "").trim() || "fallback",
+            alternativeIndex: index,
+          }));
+        if (!alternatives.length) {
+          return {
+            lineCoords: [],
+            distanceKm: 0,
+            durationMin: 0,
+            profile: normalizedProfile,
+            routeType: "none",
+            alternativeIndex: 0,
+            routeAlternatives: [],
+          };
+        }
+        const clampedIndex = Math.min(
+          normalizeRouteAlternativeIndex(requestedAlternativeIndex),
+          alternatives.length - 1,
+        );
+        const selected = alternatives[clampedIndex] || alternatives[0];
+        return {
+          ...selected,
+          profile: normalizedProfile,
+          alternativeIndex: clampedIndex,
+          routeAlternatives: alternatives,
+        };
+      }
+
+      async _resolveRoute(routeCoords, profile, options = {}) {
+        const normalizedProfile = normalizeProfile(profile);
+        const requestedAlternativeIndex = normalizeRouteAlternativeIndex(options?.alternativeIndex);
         const routeProfile = normalizeProfile(PROFILE_ROUTE_BASE[normalizedProfile] || normalizedProfile);
         if (!Array.isArray(routeCoords) || routeCoords.length < 2) {
           return {
@@ -6587,73 +7653,92 @@
             durationMin: 0,
             profile: normalizedProfile,
             routeType: "none",
+            alternativeIndex: 0,
+            routeAlternatives: [],
           };
         }
 
         const coordsKey = routeCoords
           .map(([lat, lon]) => `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`)
           .join("|");
-        const cacheKey = `${normalizedProfile}:${routeProfile}:${coordsKey}`;
+        const cacheKey = `${normalizedProfile}:${routeProfile}:${coordsKey}:alts-${OSRM_MAX_SEGMENT_ALTERNATIVES}`;
         if (this.routeCache.has(cacheKey)) {
-          return this.routeCache.get(cacheKey);
+          const cached = this.routeCache.get(cacheKey);
+          return this._selectRouteAlternative(cached?.routeAlternatives || [], requestedAlternativeIndex, normalizedProfile);
         }
 
         const fallbackDistanceKm = berechneDistanz(routeCoords);
         const isRoadProfile = OSRM_ROUTING_PROFILES.includes(routeProfile);
-        const fallback = {
+        const fallbackAlternatives = [{
           lineCoords: routeCoords,
           distanceKm: fallbackDistanceKm,
           durationMin: estimateDurationMinutes(fallbackDistanceKm, normalizedProfile),
           profile: normalizedProfile,
           routeType: isRoadProfile ? "fallback" : "direct",
-        };
+          alternativeIndex: 0,
+        }];
 
         try {
           if (!isRoadProfile) {
-            this.routeCache.set(cacheKey, fallback);
-            return fallback;
+            this.routeCache.set(cacheKey, {
+              routeAlternatives: fallbackAlternatives,
+            });
+            return this._selectRouteAlternative(fallbackAlternatives, requestedAlternativeIndex, normalizedProfile);
           }
 
           const coordText = routeCoords.map(([lat, lon]) => `${lon},${lat}`).join(";");
-          const url = `${OSRM_BASE_URL}/${routeProfile}/${coordText}?overview=full&geometries=geojson`;
+          const url = `${OSRM_BASE_URL}/${routeProfile}/${coordText}?overview=full&geometries=geojson&alternatives=true`;
           const response = await fetch(url, { headers: { Accept: "application/json" } });
           if (!response.ok) {
             throw new Error(`OSRM ${response.status}`);
           }
 
           const payload = await response.json();
-          const route = Array.isArray(payload?.routes) ? payload.routes[0] : null;
-          const geometry = route?.geometry?.coordinates;
-          if (!Array.isArray(geometry) || geometry.length < 2) {
-            throw new Error("OSRM route missing geometry");
-          }
+          const routes = Array.isArray(payload?.routes) ? payload.routes.slice(0, OSRM_MAX_SEGMENT_ALTERNATIVES) : [];
+          const parsedAlternatives = routes
+            .map((route, index) => {
+              const geometry = route?.geometry?.coordinates;
+              if (!Array.isArray(geometry) || geometry.length < 2) {
+                return null;
+              }
+              const lineCoords = geometry
+                .map((coord) => [Number(coord[1]), Number(coord[0])])
+                .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
+              if (lineCoords.length < 2) {
+                return null;
+              }
+              const distMeters = Number(route?.distance);
+              const durationSeconds = Number(route?.duration);
+              const distanceKm = Number.isFinite(distMeters)
+                ? Math.round((distMeters / 1000) * 10) / 10
+                : berechneDistanz(lineCoords);
+              const useApiDuration = normalizedProfile === "driving" && Number.isFinite(durationSeconds);
+              const durationMin = useApiDuration
+                ? Math.max(1, Math.round(durationSeconds / 60))
+                : estimateDurationMinutes(distanceKm, normalizedProfile);
+              return {
+                lineCoords,
+                distanceKm,
+                durationMin,
+                profile: normalizedProfile,
+                routeType: "road",
+                alternativeIndex: index,
+              };
+            })
+            .filter((route) => route && Array.isArray(route.lineCoords) && route.lineCoords.length >= 2);
 
-          const lineCoords = geometry
-            .map((coord) => [Number(coord[1]), Number(coord[0])])
-            .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
-          if (lineCoords.length < 2) {
-            throw new Error("OSRM route invalid geometry");
-          }
-
-          const distMeters = Number(route?.distance);
-          const durationSeconds = Number(route?.duration);
-          const distanceKm = Number.isFinite(distMeters) ? Math.round((distMeters / 1000) * 10) / 10 : berechneDistanz(lineCoords);
-          const useApiDuration = normalizedProfile === "driving" && Number.isFinite(durationSeconds);
-          const durationMin = useApiDuration
-            ? Math.max(1, Math.round(durationSeconds / 60))
-            : estimateDurationMinutes(distanceKm, normalizedProfile);
-          const result = {
-            lineCoords,
-            distanceKm,
-            durationMin,
-            profile: normalizedProfile,
-            routeType: "road",
-          };
-          this.routeCache.set(cacheKey, result);
-          return result;
+          const routeAlternatives = parsedAlternatives.length
+            ? parsedAlternatives
+            : fallbackAlternatives;
+          this.routeCache.set(cacheKey, {
+            routeAlternatives,
+          });
+          return this._selectRouteAlternative(routeAlternatives, requestedAlternativeIndex, normalizedProfile);
         } catch {
-          this.routeCache.set(cacheKey, fallback);
-          return fallback;
+          this.routeCache.set(cacheKey, {
+            routeAlternatives: fallbackAlternatives,
+          });
+          return this._selectRouteAlternative(fallbackAlternatives, requestedAlternativeIndex, normalizedProfile);
         }
       }
 
@@ -6689,9 +7774,16 @@
           const segmentKey = `${routeKeys[i - 1]}->${routeKeys[i]}`;
           const segmentConfig = normalizeSegmentConfig(segmentConfigMap?.[segmentKey] || {});
           const segmentProfile = normalizeProfile(segmentConfig.profile || normalizedDefault);
+          const routeAlternativeIndex = normalizeRouteAlternativeIndex(segmentConfig.routeAlternativeIndex);
+          const manualWaypoints = normalizeManualWaypoints(segmentConfig.manualWaypoints);
+          const builtSegmentRoute = buildSegmentRouteCoords(from, to, segmentProfile, manualWaypoints);
+          const segmentRouteCoords = builtSegmentRoute.coords;
+          const appliedWaypoints = builtSegmentRoute.appliedWaypoints;
           usedProfiles.add(segmentProfile);
 
-          const autoSegment = await this._resolveRoute([from, to], segmentProfile);
+          const autoSegment = await this._resolveRoute(segmentRouteCoords, segmentProfile, {
+            alternativeIndex: routeAlternativeIndex,
+          });
           if (autoSegment.routeType === "fallback") {
             hadFallback = true;
           }
@@ -6727,12 +7819,53 @@
                   interactive: true,
                 });
               }
+              appliedWaypoints.forEach((waypoint, waypointIndex) => {
+                const lat = Number(waypoint.lat);
+                const lon = Number(waypoint.lon);
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                  return;
+                }
+                const marker = window.L.circleMarker([lat, lon], {
+                  radius: 4,
+                  color: "#0f172a",
+                  weight: 1,
+                  fillColor: "#fbbf24",
+                  fillOpacity: 0.95,
+                });
+                marker.bindTooltip(
+                  escapeHtml(String(waypointIndex + 1)),
+                  {
+                    permanent: true,
+                    direction: "top",
+                    offset: [0, -8],
+                    opacity: 0.92,
+                    className: "segment-sprechblase",
+                  },
+                );
+                marker.addTo(this.routeLayerGroup);
+              });
               if (onSegmentClick) {
                 const segmentMeta = {
                   segmentKey,
                   fromLabel: String(routeLabels?.[i - 1] || "Eintrag"),
                   toLabel: String(routeLabels?.[i] || "Eintrag"),
+                  source: "map",
                   profile: segmentProfile,
+                  routeAlternativeIndex: autoSegment.alternativeIndex,
+                  routeAlternatives: Array.isArray(autoSegment.routeAlternatives)
+                    ? autoSegment.routeAlternatives.map((route) => ({
+                      alternativeIndex: normalizeRouteAlternativeIndex(route?.alternativeIndex),
+                      distanceKm: Number(route?.distanceKm || 0),
+                      durationMin: Number(route?.durationMin || 0),
+                      routeType: String(route?.routeType || "").trim() || "road",
+                    }))
+                    : [],
+                  manualWaypoints,
+                  appliedWaypoints,
+                  fromLat: Number(from[0]),
+                  fromLon: Number(from[1]),
+                  toLat: Number(to[0]),
+                  toLon: Number(to[1]),
                   distanceKm: segment.distanceKm,
                   durationMin: segment.durationMin,
                   manualDistanceKm: segmentConfig.manualDistanceKm,
@@ -6796,18 +7929,105 @@
       return Math.round(parsed);
     }
 
+    function normalizeRouteAlternativeIndex(value) {
+      if (value === null || value === undefined || String(value).trim() === "") {
+        return 0;
+      }
+      const parsed = Number(String(value).replace(",", "."));
+      if (!Number.isFinite(parsed)) {
+        return 0;
+      }
+      return Math.max(0, Math.floor(parsed));
+    }
+
+    function profileSupportsRoadRouting(profile) {
+      const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
+      const routeProfile = normalizeProfile(PROFILE_ROUTE_BASE[normalizedProfile] || normalizedProfile);
+      return OSRM_ROUTING_PROFILES.includes(routeProfile);
+    }
+
+    function normalizeManualWaypoint(value) {
+      const lat = Number(value?.lat);
+      const lon = Number(value?.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        return null;
+      }
+      const label = String(value?.label || "").trim();
+      const source = String(value?.source || "").trim().toLowerCase();
+      return {
+        lat: Number(lat),
+        lon: Number(lon),
+        label,
+        source: source === "map" ? "map" : "address",
+      };
+    }
+
+    function normalizeManualWaypoints(value) {
+      if (!Array.isArray(value)) {
+        return [];
+      }
+      const result = [];
+      for (const waypoint of value) {
+        if (result.length >= SEGMENT_MAX_MANUAL_WAYPOINTS) {
+          break;
+        }
+        const normalized = normalizeManualWaypoint(waypoint);
+        if (!normalized) {
+          continue;
+        }
+        result.push(normalized);
+      }
+      return result;
+    }
+
+    function resolveAppliedSegmentWaypoints(profile, manualWaypoints = []) {
+      if (!profileSupportsRoadRouting(profile)) {
+        return [];
+      }
+      return normalizeManualWaypoints(manualWaypoints);
+    }
+
+    function buildSegmentRouteCoords(fromCoord, toCoord, profile, manualWaypoints = []) {
+      const fromLat = Number(fromCoord?.[0]);
+      const fromLon = Number(fromCoord?.[1]);
+      const toLat = Number(toCoord?.[0]);
+      const toLon = Number(toCoord?.[1]);
+      if (!Number.isFinite(fromLat)
+        || !Number.isFinite(fromLon)
+        || !Number.isFinite(toLat)
+        || !Number.isFinite(toLon)) {
+        return {
+          coords: [],
+          appliedWaypoints: [],
+        };
+      }
+      const appliedWaypoints = resolveAppliedSegmentWaypoints(profile, manualWaypoints);
+      return {
+        coords: [
+          [fromLat, fromLon],
+          ...appliedWaypoints.map((waypoint) => [Number(waypoint.lat), Number(waypoint.lon)]),
+          [toLat, toLon],
+        ],
+        appliedWaypoints,
+      };
+    }
+
     function normalizeSegmentConfig(value) {
       if (typeof value === "string") {
         return {
           profile: normalizeProfile(value),
           manualDistanceKm: null,
           manualDurationMin: null,
+          routeAlternativeIndex: 0,
+          manualWaypoints: [],
         };
       }
       return {
         profile: normalizeProfile(value?.profile),
         manualDistanceKm: normalizeManualDistanceKm(value?.manualDistanceKm),
         manualDurationMin: normalizeManualDurationMin(value?.manualDurationMin),
+        routeAlternativeIndex: normalizeRouteAlternativeIndex(value?.routeAlternativeIndex),
+        manualWaypoints: normalizeManualWaypoints(value?.manualWaypoints),
       };
     }
 
@@ -6937,6 +8157,8 @@
         this.aktiverHauptReiter = "timeline";
         this.segmentConfigByKey = {};
         this.aktivesSegmentMetrik = null;
+        this.segmentRouteAlternativenRequestId = 0;
+        this.segmentWaypointMapPickHandler = null;
         this.zeigeSegmentSprechblasen = true;
         this.anzeigemodus = detectSystemAnzeigemodus();
         this.aktiverKostenTab = "kategorie";
@@ -6945,6 +8167,7 @@
         this.timelineGalerieAuswahlByEintrag = {};
         this.timelineRenderVersion = 0;
         this.aktiveEintragDateiOption = null;
+        this.aktiveEintragDateiDropzoneKontext = null;
         this.bearbeiteAusgabeId = null;
         this.projektBildDataUrlDraft = "";
         this.timelineTagFilterValue = "all";
@@ -6960,8 +8183,10 @@
         this.checklisteLongTapStart = null;
         this.suppressChecklisteChangeUntil = 0;
         this.dismissedTimelineWarnungIds = new Set();
+        this.abgebrocheneProjektFallbackTimeZoneDialoge = new Set();
         this.preloadProjektIdInFlight = "";
         this.preloadProjektIdDone = "";
+        this.verfuegbareTimeZones = [];
         this.elemente = null;
       }
 
@@ -7033,6 +8258,8 @@
           eintragDateiOptionOeffnen: document.querySelector("#eintrag-datei-option-oeffnen"),
           eintragDateiOptionVorschau: document.querySelector("#eintrag-datei-option-vorschau"),
           eintragDateiOptionLoeschen: document.querySelector("#eintrag-datei-option-loeschen"),
+          eintragDateiDropzoneMenue: document.querySelector("#eintrag-datei-dropzone-menue"),
+          eintragDateiDropzoneEinfuegenBtn: document.querySelector("#eintrag-datei-dropzone-einfuegen-btn"),
           eintragTypInput: document.querySelector("#eintrag-typ"),
           eintragTypButtons: Array.from(document.querySelectorAll("#eintrag-typ-buttons [data-eintrag-typ]")),
           eintragLoeschenBtn: document.querySelector("#eintrag-loeschen-btn"),
@@ -7047,11 +8274,22 @@
           eintragBuchungsstatusInput: document.querySelector("#eintrag-buchungsstatus"),
           eintragBuchungsstatusToggle: document.querySelector("#eintrag-buchungsstatus-toggle"),
           eintragBuchungsstatusWrap: document.querySelector("#eintrag-buchungsstatus-wrap"),
+          eintragTimeZoneBereich: document.querySelector("#eintrag-timezone-bereich"),
+          eintragTimeZoneSource: document.querySelector("#eintrag-timezone-source"),
+          eintragTimeZoneInput: document.querySelector("#eintrag-timezone"),
+          eintragTimeZoneHinweis: document.querySelector("#eintrag-timezone-hinweis"),
+          ianaTimeZonesDatalist: document.querySelector("#iana-timezones"),
           eintragWaehrungSelect: document.querySelector("#eintrag-waehrung"),
           ausgabeWaehrungSelect: document.querySelector("#ausgabe-waehrung"),
           einstellungenDialog: document.querySelector("#einstellungen-dialog"),
           einstellungenDialogOeffnen: document.querySelector("#einstellungen-dialog-oeffnen"),
           einstellungenDialogSchliessen: document.querySelector("#einstellungen-dialog-schliessen"),
+          tzFallbackDialog: document.querySelector("#tz-fallback-dialog"),
+          tzFallbackDialogSchliessen: document.querySelector("#tz-fallback-dialog-schliessen"),
+          tzFallbackForm: document.querySelector("#tz-fallback-form"),
+          tzFallbackSelect: document.querySelector("#tz-fallback-select"),
+          tzFallbackAbbrechen: document.querySelector("#tz-fallback-abbrechen"),
+          tzFallbackFehler: document.querySelector("#tz-fallback-fehler"),
           neueReiseDialog: document.querySelector("#neue-reise-dialog"),
           dialogSchliessen: document.querySelector("#dialog-schliessen"),
           zeitplanDialog: document.querySelector("#zeitplan-dialog"),
@@ -7062,6 +8300,14 @@
           segmentMetrikForm: document.querySelector("#segment-metrik-form"),
           segmentMetrikKontext: document.querySelector("#segment-metrik-kontext"),
           segmentMetrikProfileButtons: Array.from(document.querySelectorAll("#segment-metrik-profile-liste [data-segment-metrik-profile]")),
+          segmentRouteAlternativen: document.querySelector("#segment-route-alternativen"),
+          segmentRouteHinweis: document.querySelector("#segment-route-hinweis"),
+          segmentWaypointBereich: document.querySelector("#segment-waypoint-bereich"),
+          segmentWaypointListe: document.querySelector("#segment-waypoint-liste"),
+          segmentWaypointAdresseInput: document.querySelector("#segment-waypoint-adresse"),
+          segmentWaypointAdresseAddBtn: document.querySelector("#segment-waypoint-adresse-add-btn"),
+          segmentWaypointMapPickBtn: document.querySelector("#segment-waypoint-map-pick-btn"),
+          segmentWaypointHinweis: document.querySelector("#segment-waypoint-hinweis"),
           segmentMetrikDistanceInput: document.querySelector("#segment-manual-distance"),
           segmentMetrikDurationInput: document.querySelector("#segment-manual-duration"),
           segmentMetrikResetBtn: document.querySelector("#segment-metrik-reset-btn"),
@@ -7077,6 +8323,7 @@
         this._setEintragBuchungsstatus("geplant");
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this._setAnzeigemodus(this.anzeigemodus, { persist: false });
+        this._initTimeZoneOptionen();
         this._renderDbDateiStatus();
         if (this.elemente.appVersionAnzeige) {
           this.elemente.appVersionAnzeige.textContent = "-";
@@ -7508,6 +8755,15 @@
           const status = this.elemente.eintragBuchungsstatusToggle?.checked ? "gebucht" : "geplant";
           this._setEintragBuchungsstatus(status);
         });
+        this.elemente.eintragTimeZoneSource?.addEventListener("change", () => {
+          this._syncEintragTimeZoneEditorState();
+        });
+        this.elemente.eintragTimeZoneInput?.addEventListener("blur", () => {
+          const normalized = normalizeTimeZoneId(this.elemente.eintragTimeZoneInput?.value || "");
+          if (normalized) {
+            this.elemente.eintragTimeZoneInput.value = normalized;
+          }
+        });
         this.elemente.eintragLoeschenBtn?.addEventListener("click", async () => {
           if (!this.bearbeiteEintrag?.id || !this.bearbeiteEintrag?.typ) {
             return;
@@ -7586,6 +8842,15 @@
           await this._renderEintragDateienImDialog();
           await this._renderTimeline();
         });
+        this.elemente.eintragDateiDropzoneEinfuegenBtn?.addEventListener("click", async () => {
+          const input = this.aktiveEintragDateiDropzoneKontext?.input;
+          const zone = this.aktiveEintragDateiDropzoneKontext?.zone;
+          this._versteckeEintragDateiDropzoneKontextmenue();
+          if (!(input instanceof HTMLInputElement)) {
+            return;
+          }
+          await this._pasteDateienAusZwischenablage(input, zone instanceof HTMLElement ? zone : null);
+        });
         this.elemente.eintragDateienListe?.addEventListener("contextmenu", async (event) => {
           const button = event.target.closest("button[data-eintrag-datei-action='optionen']");
           if (!button) {
@@ -7607,25 +8872,28 @@
           });
         });
         document.addEventListener("click", (event) => {
-          if (this.elemente.eintragDateiOptionen?.hidden) {
-            return;
-          }
-          const target = event.target;
-          if (target instanceof Element) {
-            if (target.closest("#eintrag-datei-optionen")) {
+          const target = event.target instanceof Element ? event.target : null;
+          if (!this.elemente.eintragDateiOptionen?.hidden) {
+            if (target && (target.closest("#eintrag-datei-optionen")
+              || target.closest("button[data-eintrag-datei-action='optionen']"))) {
               return;
             }
-            if (target.closest("button[data-eintrag-datei-action='optionen']")) {
+            this._versteckeEintragDateiOptionen();
+          }
+          if (!this.elemente.eintragDateiDropzoneMenue?.hidden) {
+            if (target && (target.closest("#eintrag-datei-dropzone-menue")
+              || target.closest("#eintrag-datei-dropzone"))) {
               return;
             }
+            this._versteckeEintragDateiDropzoneKontextmenue();
           }
-          this._versteckeEintragDateiOptionen();
         });
         document.addEventListener("keydown", (event) => {
           if (event.key !== "Escape") {
             return;
           }
           this._versteckeEintragDateiOptionen();
+          this._versteckeEintragDateiDropzoneKontextmenue();
         });
 
         this.elemente.timelineListe.addEventListener("click", async (event) => {
@@ -7860,6 +9128,35 @@
             this._setSegmentMetrikProfile(profile);
           });
         });
+        this.elemente.segmentRouteAlternativen?.addEventListener("click", (event) => {
+          const button = event.target.closest("button[data-segment-route-index]");
+          if (!button) {
+            return;
+          }
+          const routeIndex = normalizeRouteAlternativeIndex(button.dataset.segmentRouteIndex);
+          this._setSegmentMetrikRouteAlternative(routeIndex);
+        });
+        this.elemente.segmentWaypointAdresseAddBtn?.addEventListener("click", async () => {
+          await this._handleSegmentWaypointAdresseHinzufuegen();
+        });
+        this.elemente.segmentWaypointAdresseInput?.addEventListener("keydown", async (event) => {
+          if (event.key !== "Enter") {
+            return;
+          }
+          event.preventDefault();
+          await this._handleSegmentWaypointAdresseHinzufuegen();
+        });
+        this.elemente.segmentWaypointMapPickBtn?.addEventListener("click", () => {
+          this._toggleSegmentWaypointMapPick();
+        });
+        this.elemente.segmentWaypointListe?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-segment-waypoint-remove-index]");
+          if (!button) {
+            return;
+          }
+          const index = Number(button.dataset.segmentWaypointRemoveIndex);
+          await this._handleSegmentWaypointEntfernen(index);
+        });
         this.elemente.segmentMetrikResetBtn?.addEventListener("click", async () => {
           await this._handleSegmentMetrikReset();
         });
@@ -7914,6 +9211,19 @@
           this._syncDialogBodyState();
         });
 
+        this.elemente.tzFallbackDialogSchliessen?.addEventListener("click", () => {
+          this._schliesseDialog(this.elemente.tzFallbackDialog);
+        });
+        this.elemente.tzFallbackAbbrechen?.addEventListener("click", () => {
+          this._schliesseDialog(this.elemente.tzFallbackDialog);
+        });
+        this.elemente.tzFallbackDialog?.addEventListener("close", () => {
+          this._syncDialogBodyState();
+        });
+        this.elemente.tzFallbackDialog?.addEventListener("cancel", () => {
+          this._syncDialogBodyState();
+        });
+
         this.elemente.segmentMetrikDialog?.addEventListener("close", () => {
           this._resetSegmentMetrikDialogState();
           this._syncDialogBodyState();
@@ -7950,6 +9260,7 @@
           ? document.querySelector(`[data-file-dropzone-for="${input.id}"]`)
           : null;
         const zone = dropzone instanceof HTMLElement ? dropzone : input;
+        const istEintragDateiDropzone = input.id === "eintrag-datei";
         const aktivieren = () => {
           input.classList.add("drag-over");
           if (zone !== input) {
@@ -7973,7 +9284,26 @@
         };
 
         if (zone !== input) {
+          const LONG_TAP_MS = 560;
+          const LONG_TAP_MOVE_THRESHOLD_PX = 12;
+          let longTapTimer = 0;
+          let longTapStart = null;
+          let longTapReady = false;
+          let suppressClickUntil = 0;
+          const clearLongTapTimer = () => {
+            if (longTapTimer) {
+              window.clearTimeout(longTapTimer);
+              longTapTimer = 0;
+            }
+            longTapStart = null;
+            longTapReady = false;
+          };
+
           zone.addEventListener("click", (event) => {
+            if (Date.now() < suppressClickUntil) {
+              event.preventDefault();
+              return;
+            }
             if (event.target === input) {
               return;
             }
@@ -7981,6 +9311,15 @@
           });
           zone.addEventListener("contextmenu", async (event) => {
             event.preventDefault();
+            if (istEintragDateiDropzone) {
+              this._zeigeEintragDateiDropzoneKontextmenue({
+                input,
+                zone,
+                x: event.clientX,
+                y: event.clientY,
+              });
+              return;
+            }
             await this._pasteDateienAusZwischenablage(input, zone);
           });
 
@@ -7990,6 +9329,65 @@
             }
             event.preventDefault();
             input.click();
+          });
+
+          zone.addEventListener("touchstart", (event) => {
+            const touch = event.touches?.[0];
+            if (!touch || event.touches.length !== 1) {
+              clearLongTapTimer();
+              return;
+            }
+            clearLongTapTimer();
+            longTapStart = { x: touch.clientX, y: touch.clientY };
+            longTapTimer = window.setTimeout(() => {
+              longTapTimer = 0;
+              longTapReady = true;
+            }, LONG_TAP_MS);
+          });
+
+          zone.addEventListener("touchmove", (event) => {
+            if (!longTapTimer || !longTapStart) {
+              return;
+            }
+            const touch = event.touches?.[0];
+            if (!touch) {
+              clearLongTapTimer();
+              return;
+            }
+            const deltaX = Math.abs(touch.clientX - longTapStart.x);
+            const deltaY = Math.abs(touch.clientY - longTapStart.y);
+            if (deltaX > LONG_TAP_MOVE_THRESHOLD_PX || deltaY > LONG_TAP_MOVE_THRESHOLD_PX) {
+              clearLongTapTimer();
+            }
+          });
+
+          zone.addEventListener("touchend", (event) => {
+            if (longTapTimer) {
+              clearLongTapTimer();
+              return;
+            }
+            if (!longTapReady) {
+              return;
+            }
+            const position = longTapStart ? { x: longTapStart.x, y: longTapStart.y } : null;
+            longTapReady = false;
+            longTapStart = null;
+            suppressClickUntil = Date.now() + 650;
+            event.preventDefault();
+            if (istEintragDateiDropzone) {
+              this._zeigeEintragDateiDropzoneKontextmenue({
+                input,
+                zone,
+                x: Number(position?.x) || 0,
+                y: Number(position?.y) || 0,
+              });
+              return;
+            }
+            void this._pasteDateienAusZwischenablage(input, zone);
+          });
+
+          zone.addEventListener("touchcancel", () => {
+            clearLongTapTimer();
           });
         }
 
@@ -8189,6 +9587,7 @@
           this.aktivesProjekt = null;
           this._zeigeLeeresProjekt();
         }
+        this.abgebrocheneProjektFallbackTimeZoneDialoge.delete(String(projektId || ""));
 
         await this._renderProjektliste();
         if (!this.aktivesProjekt) {
@@ -8204,14 +9603,21 @@
           return;
         }
 
-        const [timelineRaw, kosten, dateien, segmentConfigByKey, checklisteStatusById] = await Promise.all([
-          this.storage.listTimelineEintraege(projektId),
+        const [kosten, dateien, segmentConfigByKey, checklisteStatusById] = await Promise.all([
           this.storage.getKostenStatistiken(projektId),
           this.storage.listDateienByProjekt(projektId),
           this.storage.listSegmentConfigByProjekt(projektId),
           this.storage.leseChecklisteStatus(projektId),
         ]);
-        const timeline = await this._resolveTimelineKoordinaten(timelineRaw);
+        let timeZoneKontext = await this.storage.ermittleProjektTimeZoneKontext(projektId);
+        const timelineRaw = await this.storage.listTimelineEintraege(projektId, {
+          projectDefaultTimeZone: timeZoneKontext.projectDefaultTimeZone,
+        });
+        await this._resolveTimelineKoordinaten(timelineRaw);
+        timeZoneKontext = await this.storage.ermittleProjektTimeZoneKontext(projektId);
+        const timeline = await this.storage.listTimelineEintraege(projektId, {
+          projectDefaultTimeZone: timeZoneKontext.projectDefaultTimeZone,
+        });
         const warnungen = this._collectTimelineWarnungen(timeline, segmentConfigByKey);
         const timelineKey = (eintrag) => this._timelineEintragKey(eintrag);
         const isPlanEintrag = (eintrag) => eintrag?.typ === "aktivitaet" || eintrag?.typ === "unterkunft";
@@ -8219,6 +9625,8 @@
         const resolveSegmentMetrik = async ({ key, fromLat, fromLon, toLat, toLon, profile }) => {
           const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
           const config = normalizeSegmentConfig(segmentConfigByKey?.[key] || {});
+          const routeAlternativeIndex = normalizeRouteAlternativeIndex(config.routeAlternativeIndex);
+          const manualWaypoints = normalizeManualWaypoints(config.manualWaypoints);
           const fromLatNum = Number(fromLat);
           const fromLonNum = Number(fromLon);
           const toLatNum = Number(toLat);
@@ -8229,15 +9637,27 @@
             || !Number.isFinite(toLonNum)) {
             return {
               profile: normalizedProfile,
+              routeAlternativeIndex,
               distanceKm: config.manualDistanceKm !== null ? config.manualDistanceKm : 0,
               durationMin: config.manualDurationMin !== null ? config.manualDurationMin : 0,
             };
           }
 
-          const routeCoords = [
+          const builtSegmentRoute = buildSegmentRouteCoords(
             [fromLatNum, fromLonNum],
             [toLatNum, toLonNum],
-          ];
+            normalizedProfile,
+            manualWaypoints,
+          );
+          const routeCoords = builtSegmentRoute.coords;
+          if (!routeCoords.length) {
+            return {
+              profile: normalizedProfile,
+              routeAlternativeIndex,
+              distanceKm: config.manualDistanceKm !== null ? config.manualDistanceKm : 0,
+              durationMin: config.manualDurationMin !== null ? config.manualDurationMin : 0,
+            };
+          }
           const fallbackDistanceKm = berechneDistanz(routeCoords);
           const fallbackDurationMin = estimateDurationMinutes(fallbackDistanceKm, normalizedProfile);
           let distanceKm = fallbackDistanceKm;
@@ -8245,7 +9665,9 @@
 
           if (this.map && typeof this.map._resolveRoute === "function") {
             try {
-              const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile);
+              const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile, {
+                alternativeIndex: routeAlternativeIndex,
+              });
               const routeDistance = Number(routeResult?.distanceKm);
               const routeDuration = Number(routeResult?.durationMin);
               if (Number.isFinite(routeDistance) && routeDistance >= 0) {
@@ -8267,6 +9689,7 @@
 
           return {
             profile: normalizedProfile,
+            routeAlternativeIndex,
             distanceKm,
             durationMin,
           };
@@ -8307,6 +9730,7 @@
             fromLabel: String(fromEintrag?.titel || "Eintrag").trim() || "Eintrag",
             toLabel: String(toEintrag?.titel || "Eintrag").trim() || "Eintrag",
             profile: metriken.profile,
+            routeAlternativeIndex: metriken.routeAlternativeIndex,
             durationMin: Number(metriken.durationMin || 0),
             distanceKm: Number(metriken.distanceKm || 0),
             warnungen: segmentWarnungen,
@@ -8319,7 +9743,7 @@
               const durationText = segment.durationMin > 0 ? formatDurationMinutes(segment.durationMin) : "-";
               const distanceText = segment.distanceKm > 0 ? formatDistanzKm(segment.distanceKm) : "-";
               const warnungText = segment.warnungen.length ? segment.warnungen.join(" | ") : "-";
-              return `<tr><td>${escapeHtml(segment.fromLabel)}</td><td>${escapeHtml(segment.toLabel)}</td><td>${escapeHtml(profilLabel(segment.profile))}</td><td>${escapeHtml(durationText)}</td><td>${escapeHtml(distanceText)}</td><td class="warn-col">${escapeHtml(warnungText)}</td></tr>`;
+              return `<tr><td>${escapeHtml(segment.fromLabel)}</td><td>${escapeHtml(segment.toLabel)}</td><td>${escapeHtml(profilLabelMitRoute(segment.profile, segment.routeAlternativeIndex))}</td><td>${escapeHtml(durationText)}</td><td>${escapeHtml(distanceText)}</td><td class="warn-col">${escapeHtml(warnungText)}</td></tr>`;
             })
             .join("")
           : '<tr><td colspan="6">Keine Segmente</td></tr>';
@@ -8437,6 +9861,7 @@ ${"</ht"+"ml>"}
         }
 
         this.aktivesProjekt = projekt;
+        this.abgebrocheneProjektFallbackTimeZoneDialoge.delete(String(projekt.id || ""));
         this.aktiverHauptReiter = "timeline";
         this.bearbeiteEintrag = null;
         this.timelineGalerieAuswahlByEintrag = {};
@@ -8465,6 +9890,7 @@ ${"</ht"+"ml>"}
         this.suppressChecklisteChangeUntil = 0;
         this.dismissedTimelineWarnungIds = new Set(ausgeblendeteWarnungen);
         this.aktivesSegmentMetrik = null;
+        this._beendeSegmentWaypointMapPick();
         void this.storage.speichereZuletztBearbeitetesProjektId(projekt.id).catch(() => null);
         await this._renderProjektliste();
         await this._renderTimeline({ resolveKoordinaten: false, hydrateSegmentMetriken: false });
@@ -8504,6 +9930,13 @@ ${"</ht"+"ml>"}
           const startZeit = combineDateAndTime(formData.get("startDate"), formData.get("startTime"));
           const endZeit = combineDateAndTime(formData.get("endDate"), formData.get("endTime"));
           const adresse = String(formData.get("adresse") || "").trim();
+          const timeZoneSource = normalizeTimeZoneSource(formData.get("timeZoneSource"));
+          const timeZoneRaw = String(formData.get("timeZone") || "").trim();
+          const timeZone = normalizeTimeZoneId(timeZoneRaw);
+          if (istBearbeiten && timeZoneSource === "manual" && !timeZone) {
+            this.elemente.eintragFehler.textContent = "Bitte eine gueltige IANA-Zeitzone angeben (z. B. Europe/Berlin).";
+            return;
+          }
           const fehlendeAngaben = [];
           const startLabel = "Starttermin";
           const endLabel = "Endtermin";
@@ -8544,6 +9977,8 @@ ${"</ht"+"ml>"}
               notizen: formData.get("notizen"),
               link: formData.get("link"),
               fruehstueckInklusive: formData.has("fruehstueckInklusive"),
+              timeZone: istBearbeiten ? timeZone : "",
+              timeZoneSource: istBearbeiten ? timeZoneSource : "auto",
             };
 
             if (istBearbeiten) {
@@ -8567,6 +10002,8 @@ ${"</ht"+"ml>"}
               waehrung: formData.get("waehrung"),
               notizen: formData.get("notizen"),
               link: formData.get("link"),
+              timeZone: istBearbeiten ? timeZone : "",
+              timeZoneSource: istBearbeiten ? timeZoneSource : "auto",
             };
 
             if (istBearbeiten) {
@@ -8652,6 +10089,7 @@ ${"</ht"+"ml>"}
         this.timelineGalerieAuswahlByEintrag = {};
         this.segmentConfigByKey = {};
         this.aktivesSegmentMetrik = null;
+        this._beendeSegmentWaypointMapPick();
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
         this.kostenAusgabenTagFilterValue = "all";
@@ -8797,11 +10235,13 @@ ${"</ht"+"ml>"}
         const endeRaw = eintrag?.typ === "unterkunft"
           ? eintrag?.eintrag?.checkOut
           : eintrag?.eintrag?.endZeit;
-        const start = startRaw ? new Date(startRaw) : null;
-        const ende = endeRaw ? new Date(endeRaw) : null;
+        const startUtcMs = Number(eintrag?.utcStartMs);
+        const endeUtcMs = Number(eintrag?.utcEndMs);
+        const parsedStart = startRaw ? new Date(startRaw).getTime() : NaN;
+        const parsedEnde = endeRaw ? new Date(endeRaw).getTime() : NaN;
         return {
-          start: start && !Number.isNaN(start.getTime()) ? start : null,
-          ende: ende && !Number.isNaN(ende.getTime()) ? ende : null,
+          startUtcMs: Number.isFinite(startUtcMs) ? startUtcMs : (Number.isFinite(parsedStart) ? parsedStart : null),
+          endeUtcMs: Number.isFinite(endeUtcMs) ? endeUtcMs : (Number.isFinite(parsedEnde) ? parsedEnde : null),
         };
       }
 
@@ -8842,8 +10282,8 @@ ${"</ht"+"ml>"}
           const currentZeit = this._timelineEintragZeitbereich(current);
           const nextZeit = this._timelineEintragZeitbereich(next);
 
-          if (currentZeit.ende && nextZeit.start && nextZeit.start < currentZeit.ende) {
-            const overlapMin = Math.max(1, Math.round((currentZeit.ende.getTime() - nextZeit.start.getTime()) / 60000));
+          if (currentZeit.endeUtcMs !== null && nextZeit.startUtcMs !== null && nextZeit.startUtcMs < currentZeit.endeUtcMs) {
+            const overlapMin = Math.max(1, Math.round((currentZeit.endeUtcMs - nextZeit.startUtcMs) / 60000));
             const overlapText = `⚠️ Überschneidung mit ${next.titel || "nächstem Eintrag"} (${overlapMin} min).`;
             const overlapTextPrev = `⚠️ Überschneidung mit ${current.titel || "vorigem Eintrag"} (${overlapMin} min).`;
             this._addTimelineWarnung(eintragWarnungenByKey, currentKey, overlapText);
@@ -8852,11 +10292,11 @@ ${"</ht"+"ml>"}
             continue;
           }
 
-          if (!currentZeit.ende || !nextZeit.start) {
+          if (currentZeit.endeUtcMs === null || nextZeit.startUtcMs === null) {
             continue;
           }
 
-          const lueckeMin = Math.round((nextZeit.start.getTime() - currentZeit.ende.getTime()) / 60000);
+          const lueckeMin = Math.round((nextZeit.startUtcMs - currentZeit.endeUtcMs) / 60000);
           if (!Number.isFinite(lueckeMin) || lueckeMin < 0) {
             continue;
           }
@@ -8912,10 +10352,23 @@ ${"</ht"+"ml>"}
         this.timelineRenderVersion = renderVersion;
         this._resetTimelineBildVorschauen();
         const projektId = this.aktivesProjekt.id;
-        const timelineEintraege = await this.storage.listTimelineEintraege(projektId);
-        const eintraege = resolveKoordinaten
-          ? await this._resolveTimelineKoordinaten(timelineEintraege)
-          : timelineEintraege;
+        let timeZoneKontext = await this.storage.ermittleProjektTimeZoneKontext(projektId);
+        if (resolveKoordinaten && !timeZoneKontext.projectDefaultTimeZone && !timeZoneKontext.hasEntryTimeZones) {
+          const fallbackTimeZone = await this._ensureProjektFallbackTimeZone(projektId);
+          if (fallbackTimeZone) {
+            timeZoneKontext = await this.storage.ermittleProjektTimeZoneKontext(projektId);
+          }
+        }
+        let eintraege = await this.storage.listTimelineEintraege(projektId, {
+          projectDefaultTimeZone: timeZoneKontext.projectDefaultTimeZone,
+        });
+        if (resolveKoordinaten) {
+          await this._resolveTimelineKoordinaten(eintraege);
+          timeZoneKontext = await this.storage.ermittleProjektTimeZoneKontext(projektId);
+          eintraege = await this.storage.listTimelineEintraege(projektId, {
+            projectDefaultTimeZone: timeZoneKontext.projectDefaultTimeZone,
+          });
+        }
         if (renderVersion !== this.timelineRenderVersion || projektId !== this.aktivesProjekt?.id) {
           return;
         }
@@ -9113,10 +10566,18 @@ ${"</ht"+"ml>"}
           return { distanceKm: 0, durationMin: 0 };
         }
         const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
-        const routeCoords = [
+        const segmentConfig = this._getSegmentConfig(segmentKey);
+        const manualWaypoints = normalizeManualWaypoints(segmentConfig.manualWaypoints);
+        const builtSegmentRoute = buildSegmentRouteCoords(
           [Number(fromLat), Number(fromLon)],
           [Number(toLat), Number(toLon)],
-        ];
+          normalizedProfile,
+          manualWaypoints,
+        );
+        const routeCoords = builtSegmentRoute.coords;
+        if (!routeCoords.length) {
+          return { distanceKm: 0, durationMin: 0 };
+        }
         const distanceKm = berechneDistanz(routeCoords);
         const durationMin = estimateDurationMinutes(distanceKm, normalizedProfile);
         return this._applySegmentManualMetriken({
@@ -9600,10 +11061,19 @@ ${"</ht"+"ml>"}
         }
 
         const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
-        const routeCoords = [
+        const segmentConfig = this._getSegmentConfig(segmentKey);
+        const routeAlternativeIndex = normalizeRouteAlternativeIndex(segmentConfig.routeAlternativeIndex);
+        const manualWaypoints = normalizeManualWaypoints(segmentConfig.manualWaypoints);
+        const builtSegmentRoute = buildSegmentRouteCoords(
           [Number(fromLat), Number(fromLon)],
           [Number(toLat), Number(toLon)],
-        ];
+          normalizedProfile,
+          manualWaypoints,
+        );
+        const routeCoords = builtSegmentRoute.coords;
+        if (!routeCoords.length) {
+          return { distanceKm: 0, durationMin: 0 };
+        }
         const fallbackDistanceKm = berechneDistanz(routeCoords);
         const fallbackDurationMin = estimateDurationMinutes(fallbackDistanceKm, normalizedProfile);
 
@@ -9615,7 +11085,9 @@ ${"</ht"+"ml>"}
         }
 
         try {
-          const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile);
+          const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile, {
+            alternativeIndex: routeAlternativeIndex,
+          });
           const distanceKm = Number(routeResult?.distanceKm);
           const durationMin = Number(routeResult?.durationMin);
           return this._applySegmentManualMetriken({
@@ -10089,6 +11561,7 @@ ${"</ht"+"ml>"}
           return;
         }
         const dbReady = this.storage.isDbReady();
+        const brauchtDbDatei = !dbReady;
         const name = String(this.storage.getDbDateiName() || "").trim();
         this.elemente.jsonDbStatus.textContent = name
           ? `Aktive Datei: ${name}`
@@ -10096,6 +11569,18 @@ ${"</ht"+"ml>"}
         if (this.elemente.jsonExportBtn) {
           this.elemente.jsonExportBtn.disabled = !dbReady;
         }
+        if (this.elemente.warnungenResetBtn) {
+          this.elemente.warnungenResetBtn.disabled = brauchtDbDatei;
+        }
+        if (this.elemente.checklisteAusblendungenResetBtn) {
+          this.elemente.checklisteAusblendungenResetBtn.disabled = brauchtDbDatei;
+        }
+        [this.elemente.jsonDbOpenBtn, this.elemente.jsonDbCreateBtn].forEach((button) => {
+          if (!button) {
+            return;
+          }
+          button.classList.toggle("db-auswahl-puls", brauchtDbDatei);
+        });
       }
 
       _setJsonDbAuswahlPending(pending) {
@@ -10136,6 +11621,7 @@ ${"</ht"+"ml>"}
           this._renderDbDateiStatus();
           this.bearbeiteEintrag = null;
           this.bearbeiteProjektId = null;
+          this.abgebrocheneProjektFallbackTimeZoneDialoge.clear();
 
           await this._renderProjektliste();
           this.aktivesProjekt = null;
@@ -10285,6 +11771,7 @@ ${"</ht"+"ml>"}
           this.elemente.eintragDateienBereich.hidden = true;
           this.elemente.eintragDateienListe.innerHTML = "";
           this._versteckeEintragDateiOptionen();
+          this._versteckeEintragDateiDropzoneKontextmenue();
           return;
         }
         const dateien = await this.storage.listDateienByEintrag(
@@ -10296,6 +11783,7 @@ ${"</ht"+"ml>"}
           this.elemente.eintragDateienBereich.hidden = true;
           this.elemente.eintragDateienListe.innerHTML = "";
           this._versteckeEintragDateiOptionen();
+          this._versteckeEintragDateiDropzoneKontextmenue();
           return;
         }
         this.elemente.eintragDateienBereich.hidden = false;
@@ -10322,6 +11810,7 @@ ${"</ht"+"ml>"}
           || !this.elemente.eintragDateiOptionVorschau) {
           return;
         }
+        this._versteckeEintragDateiDropzoneKontextmenue();
         const hasValueCoord = (value) => Number.isFinite(value) && Number(value) > 0;
         const posX = hasValueCoord(position?.x) ? Number(position.x) : Number(this.aktiveEintragDateiOption?.x);
         const posY = hasValueCoord(position?.y) ? Number(position.y) : Number(this.aktiveEintragDateiOption?.y);
@@ -10388,6 +11877,47 @@ ${"</ht"+"ml>"}
           this.elemente.eintragDateiOptionen.style.left = "";
           this.elemente.eintragDateiOptionen.style.top = "";
         }
+      }
+
+      _zeigeEintragDateiDropzoneKontextmenue({ input, zone, x, y } = {}) {
+        if (!(input instanceof HTMLInputElement) || !this.elemente?.eintragDateiDropzoneMenue) {
+          return;
+        }
+        this._versteckeEintragDateiOptionen();
+        const menu = this.elemente.eintragDateiDropzoneMenue;
+        this.aktiveEintragDateiDropzoneKontext = {
+          input,
+          zone: zone instanceof HTMLElement ? zone : null,
+        };
+        menu.hidden = false;
+
+        const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+        const menuRect = menu.getBoundingClientRect();
+        const defaultX = zone instanceof HTMLElement ? zone.getBoundingClientRect().left + 12 : 12;
+        const defaultY = zone instanceof HTMLElement ? zone.getBoundingClientRect().bottom + 8 : 12;
+        let left = Number.isFinite(Number(x)) && Number(x) > 0 ? Number(x) + 6 : defaultX;
+        let top = Number.isFinite(Number(y)) && Number(y) > 0 ? Number(y) + 6 : defaultY;
+        const maxLeft = Math.max(8, viewportW - menuRect.width - 8);
+        const maxTop = Math.max(8, viewportH - menuRect.height - 8);
+        if (left > maxLeft) {
+          left = maxLeft;
+        }
+        if (top > maxTop) {
+          top = maxTop;
+        }
+        menu.style.left = `${Math.max(8, Math.round(left))}px`;
+        menu.style.top = `${Math.max(8, Math.round(top))}px`;
+      }
+
+      _versteckeEintragDateiDropzoneKontextmenue() {
+        this.aktiveEintragDateiDropzoneKontext = null;
+        if (!this.elemente?.eintragDateiDropzoneMenue) {
+          return;
+        }
+        this.elemente.eintragDateiDropzoneMenue.hidden = true;
+        this.elemente.eintragDateiDropzoneMenue.style.left = "";
+        this.elemente.eintragDateiDropzoneMenue.style.top = "";
       }
 
       _aktualisiereEintragTypTabs() {
@@ -10459,6 +11989,163 @@ ${"</ht"+"ml>"}
         }
       }
 
+      _initTimeZoneOptionen() {
+        this.verfuegbareTimeZones = listSupportedTimeZones();
+        if (this.elemente.ianaTimeZonesDatalist) {
+          this.elemente.ianaTimeZonesDatalist.innerHTML = this.verfuegbareTimeZones
+            .map((timeZone) => `<option value="${escapeHtml(timeZone)}"></option>`)
+            .join("");
+        }
+        if (this.elemente.tzFallbackSelect) {
+          const systemZone = getSystemTimeZone();
+          const optionen = Array.from(new Set([systemZone, ...this.verfuegbareTimeZones].filter(Boolean)));
+          this.elemente.tzFallbackSelect.innerHTML = optionen
+            .map((timeZone) => `<option value="${escapeHtml(timeZone)}">${escapeHtml(timeZone)}</option>`)
+            .join("");
+          if (optionen.includes(systemZone)) {
+            this.elemente.tzFallbackSelect.value = systemZone;
+          }
+        }
+      }
+
+      _setEintragTimeZoneEditorVisible(visible) {
+        const anzeigen = Boolean(visible);
+        if (!this.elemente.eintragTimeZoneBereich) {
+          return;
+        }
+        this.elemente.eintragTimeZoneBereich.hidden = !anzeigen;
+        this.elemente.eintragTimeZoneBereich.setAttribute("data-visible", anzeigen ? "true" : "false");
+      }
+
+      _setEintragTimeZoneEditorState({ visible = false, source = "auto", timeZone = "", hint = "" } = {}) {
+        this._setEintragTimeZoneEditorVisible(visible);
+        if (this.elemente.eintragTimeZoneSource) {
+          this.elemente.eintragTimeZoneSource.value = normalizeTimeZoneSource(source);
+        }
+        if (this.elemente.eintragTimeZoneInput) {
+          this.elemente.eintragTimeZoneInput.value = normalizeTimeZoneId(timeZone) || "";
+        }
+        this._syncEintragTimeZoneEditorState();
+        if (this.elemente.eintragTimeZoneHinweis && String(hint || "").trim()) {
+          this.elemente.eintragTimeZoneHinweis.textContent = String(hint || "").trim();
+        }
+      }
+
+      _syncEintragTimeZoneEditorState() {
+        const source = normalizeTimeZoneSource(this.elemente.eintragTimeZoneSource?.value || "auto");
+        const istManuell = source === "manual";
+        const input = this.elemente.eintragTimeZoneInput;
+        if (input) {
+          input.disabled = !istManuell;
+          input.required = istManuell;
+          if (!istManuell) {
+            input.setCustomValidity("");
+          }
+        }
+        if (this.elemente.eintragTimeZoneHinweis) {
+          if (istManuell) {
+            this.elemente.eintragTimeZoneHinweis.textContent = "Manuelle IANA-Zeitzone (z. B. Europe/Berlin).";
+          } else {
+            this.elemente.eintragTimeZoneHinweis.textContent = "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt.";
+          }
+        }
+      }
+
+      async _ensureProjektFallbackTimeZone(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return "";
+        }
+        const kontext = await this.storage.ermittleProjektTimeZoneKontext(cleanProjektId);
+        if (kontext.projectDefaultTimeZone || kontext.hasEntryTimeZones) {
+          this.abgebrocheneProjektFallbackTimeZoneDialoge.delete(cleanProjektId);
+          return kontext.projectDefaultTimeZone || "";
+        }
+        if (this.abgebrocheneProjektFallbackTimeZoneDialoge.has(cleanProjektId)) {
+          return "";
+        }
+        const ausgewaehlt = await this._frageProjektFallbackTimeZone(cleanProjektId);
+        if (!ausgewaehlt) {
+          this.abgebrocheneProjektFallbackTimeZoneDialoge.add(cleanProjektId);
+          return "";
+        }
+        await this.storage.speichereProjektFallbackTimeZone(cleanProjektId, ausgewaehlt);
+        this.abgebrocheneProjektFallbackTimeZoneDialoge.delete(cleanProjektId);
+        return ausgewaehlt;
+      }
+
+      async _frageProjektFallbackTimeZone(projektId) {
+        const dialog = this.elemente.tzFallbackDialog;
+        const form = this.elemente.tzFallbackForm;
+        const select = this.elemente.tzFallbackSelect;
+        const fehler = this.elemente.tzFallbackFehler;
+        if (!(dialog instanceof HTMLDialogElement)
+          || !(form instanceof HTMLFormElement)
+          || !(select instanceof HTMLSelectElement)) {
+          return "";
+        }
+        const gespeichert = await this.storage.leseProjektFallbackTimeZone(projektId);
+        const vorauswahl = normalizeTimeZoneId(gespeichert || getSystemTimeZone());
+        if (vorauswahl) {
+          const option = Array.from(select.options).find((entry) => String(entry.value || "") === vorauswahl);
+          if (!option) {
+            const newOption = document.createElement("option");
+            newOption.value = vorauswahl;
+            newOption.textContent = vorauswahl;
+            select.prepend(newOption);
+          }
+          select.value = vorauswahl;
+        }
+        if (fehler) {
+          fehler.textContent = "";
+        }
+
+        return new Promise((resolve) => {
+          let erledigt = false;
+          const finish = (value) => {
+            if (erledigt) {
+              return;
+            }
+            erledigt = true;
+            cleanup();
+            this._schliesseDialog(dialog);
+            resolve(normalizeTimeZoneId(value));
+          };
+          const onSubmit = (event) => {
+            event.preventDefault();
+            const timeZone = normalizeTimeZoneId(select.value || "");
+            if (!timeZone) {
+              if (fehler) {
+                fehler.textContent = "Bitte eine gueltige Zeitzone auswaehlen.";
+              }
+              return;
+            }
+            finish(timeZone);
+          };
+          const onCancel = (event) => {
+            if (event) {
+              event.preventDefault();
+            }
+            finish("");
+          };
+          const onClose = () => {
+            finish("");
+          };
+          const cleanup = () => {
+            form.removeEventListener("submit", onSubmit);
+            dialog.removeEventListener("cancel", onCancel);
+            dialog.removeEventListener("close", onClose);
+          };
+          form.addEventListener("submit", onSubmit);
+          dialog.addEventListener("cancel", onCancel);
+          dialog.addEventListener("close", onClose);
+          this._oeffneDialog(dialog);
+          window.requestAnimationFrame(() => {
+            select.focus();
+          });
+        });
+      }
+
       async _starteEintragBearbeiten(typ, eintragId) {
         if (!this.aktivesProjekt || !eintragId) {
           return;
@@ -10484,6 +12171,18 @@ ${"</ht"+"ml>"}
           this.elemente.eintragForm.querySelector("#eintrag-waehrung").value = aktivitaet.waehrung || "EUR";
           this.elemente.eintragForm.querySelector("#eintrag-link").value = aktivitaet.link || "";
           this.elemente.eintragForm.querySelector("#eintrag-notizen").value = aktivitaet.notizen || "";
+          const aktivitaetTimeZone = normalizeTimeZoneId(aktivitaet.timeZone || "");
+          const aktivitaetTimeZoneSource = normalizeTimeZoneSource(aktivitaet.timeZoneSource || "auto");
+          this._setEintragTimeZoneEditorState({
+            visible: true,
+            source: aktivitaetTimeZoneSource,
+            timeZone: aktivitaetTimeZone,
+            hint: aktivitaetTimeZoneSource === "manual"
+              ? "Manuell gesetzte Zeitzone."
+              : (aktivitaetTimeZone
+                ? `Automatisch erkannt: ${aktivitaetTimeZone}`
+                : "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt."),
+          });
           this.bearbeiteEintrag = { typ, id: eintragId };
           this._setEintragTypValue("aktivitaet");
           this._aktualisiereEintragTypTabs();
@@ -10515,6 +12214,18 @@ ${"</ht"+"ml>"}
           this.elemente.eintragForm.querySelector("#eintrag-waehrung").value = unterkunft.waehrung || "EUR";
           this.elemente.eintragForm.querySelector("#eintrag-link").value = unterkunft.link || "";
           this.elemente.eintragForm.querySelector("#eintrag-notizen").value = unterkunft.notizen || "";
+          const unterkunftTimeZone = normalizeTimeZoneId(unterkunft.timeZone || "");
+          const unterkunftTimeZoneSource = normalizeTimeZoneSource(unterkunft.timeZoneSource || "auto");
+          this._setEintragTimeZoneEditorState({
+            visible: true,
+            source: unterkunftTimeZoneSource,
+            timeZone: unterkunftTimeZone,
+            hint: unterkunftTimeZoneSource === "manual"
+              ? "Manuell gesetzte Zeitzone."
+              : (unterkunftTimeZone
+                ? `Automatisch erkannt: ${unterkunftTimeZone}`
+                : "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt."),
+          });
           const fruehstueckInput = this.elemente.eintragForm.querySelector("#eintrag-fruehstueck");
           if (fruehstueckInput) {
             fruehstueckInput.checked = Boolean(unterkunft.fruehstueckInklusive);
@@ -10644,7 +12355,7 @@ ${"</ht"+"ml>"}
 
       async _handleWarnungenWiedereinblenden() {
         if (!this.aktivesProjekt?.id) {
-          this._setWiederanzeigenHinweis("Keine aktive Reise ausgewählt.");
+          this._setWiederanzeigenHinweis("");
           return;
         }
         const hatteAusgeblendeteWarnungen = this.dismissedTimelineWarnungIds.size > 0;
@@ -10661,7 +12372,7 @@ ${"</ht"+"ml>"}
 
       async _handleChecklisteAusblendungenWiedereinblenden() {
         if (!this.aktivesProjekt?.id) {
-          this._setWiederanzeigenHinweis("Keine aktive Reise ausgewählt.");
+          this._setWiederanzeigenHinweis("");
           return;
         }
         const hatteAusgeblendeteItems = this.ausgeblendeteChecklisteItemIds.size > 0;
@@ -10943,12 +12654,21 @@ ${"</ht"+"ml>"}
         }
         const fromLabel = String(segmentContainer.dataset.segmentFromLabel || "Eintrag").trim() || "Eintrag";
         const toLabel = String(segmentContainer.dataset.segmentToLabel || "Eintrag").trim() || "Eintrag";
+        const fromLat = toNumberOrNull(segmentContainer.dataset.segmentFromLat);
+        const fromLon = toNumberOrNull(segmentContainer.dataset.segmentFromLon);
+        const toLat = toNumberOrNull(segmentContainer.dataset.segmentToLat);
+        const toLon = toNumberOrNull(segmentContainer.dataset.segmentToLon);
         const profile = this._getSegmentProfile(segmentKey, PROFILE_DEFAULT);
         this._oeffneSegmentMetrikDialog({
           segmentKey,
           fromLabel,
           toLabel,
+          source: "timeline",
           profile,
+          fromLat,
+          fromLon,
+          toLat,
+          toLon,
         });
       }
 
@@ -10961,11 +12681,30 @@ ${"</ht"+"ml>"}
         const profile = this._getSegmentProfile(segmentKey, segmentMeta?.profile || PROFILE_DEFAULT);
         const fromLabel = String(segmentMeta?.fromLabel || "Eintrag").trim() || "Eintrag";
         const toLabel = String(segmentMeta?.toLabel || "Eintrag").trim() || "Eintrag";
+        const source = String(segmentMeta?.source || "timeline").trim().toLowerCase() === "map" ? "map" : "timeline";
+        const fallbackRouteIndex = normalizeRouteAlternativeIndex(config.routeAlternativeIndex);
+        const routeAlternativeIndex = normalizeRouteAlternativeIndex(
+          segmentMeta?.routeAlternativeIndex ?? fallbackRouteIndex,
+        );
+        const routeAlternatives = this._normalizeSegmentRouteAlternativenForDialog(segmentMeta?.routeAlternatives || []);
+        const manualWaypoints = normalizeManualWaypoints(segmentMeta?.manualWaypoints ?? config.manualWaypoints);
+        const fromLat = toNumberOrNull(segmentMeta?.fromLat);
+        const fromLon = toNumberOrNull(segmentMeta?.fromLon);
+        const toLat = toNumberOrNull(segmentMeta?.toLat);
+        const toLon = toNumberOrNull(segmentMeta?.toLon);
         this.aktivesSegmentMetrik = {
           segmentKey,
           fromLabel,
           toLabel,
+          source,
           profile,
+          routeAlternativeIndex,
+          routeAlternatives,
+          manualWaypoints,
+          fromLat,
+          fromLon,
+          toLat,
+          toLon,
         };
         if (this.elemente.segmentMetrikKontext) {
           this.elemente.segmentMetrikKontext.textContent = `${fromLabel} → ${toLabel} · ${profilLabel(profile)}`;
@@ -10979,8 +12718,20 @@ ${"</ht"+"ml>"}
         if (this.elemente.segmentMetrikFehler) {
           this.elemente.segmentMetrikFehler.textContent = "";
         }
+        this._renderSegmentWaypointBereich();
+        this._renderSegmentRouteAlternativen(routeAlternatives, routeAlternativeIndex);
         this._setSegmentMetrikProfile(profile);
-        this._oeffneDialog(this.elemente.segmentMetrikDialog);
+        try {
+          if (typeof this.elemente.segmentMetrikDialog.show === "function") {
+            if (!this.elemente.segmentMetrikDialog.open) {
+              this.elemente.segmentMetrikDialog.show();
+            }
+          }
+        } catch {
+        }
+        if (!this.elemente.segmentMetrikDialog.open) {
+          this.elemente.segmentMetrikDialog.setAttribute("open", "");
+        }
       }
 
       _setSegmentMetrikProfile(profile) {
@@ -10998,6 +12749,403 @@ ${"</ht"+"ml>"}
           button.classList.toggle("aktiv", aktiv);
           button.setAttribute("aria-pressed", String(aktiv));
         });
+        this._renderSegmentWaypointBereich();
+        void this._ladeSegmentRouteAlternativenFuerDialog();
+      }
+
+      _normalizeSegmentRouteAlternativenForDialog(routeAlternatives = []) {
+        if (!Array.isArray(routeAlternatives)) {
+          return [];
+        }
+        const normalized = routeAlternatives
+          .map((route, index) => {
+            const alternativeIndex = normalizeRouteAlternativeIndex(route?.alternativeIndex ?? index);
+            const distanceKm = Number(route?.distanceKm);
+            const durationMin = Number(route?.durationMin);
+            return {
+              alternativeIndex,
+              distanceKm: Number.isFinite(distanceKm) && distanceKm >= 0 ? distanceKm : 0,
+              durationMin: Number.isFinite(durationMin) && durationMin >= 0 ? durationMin : 0,
+              routeType: String(route?.routeType || "").trim() || "road",
+            };
+          })
+          .sort((a, b) => a.alternativeIndex - b.alternativeIndex);
+        return normalized.map((route, index) => ({
+          ...route,
+          alternativeIndex: index,
+        }));
+      }
+
+      _segmentProfilHatAlternativen(profile) {
+        return profileSupportsRoadRouting(profile);
+      }
+
+      _setSegmentRouteHinweis(text = "") {
+        if (this.elemente.segmentRouteHinweis) {
+          this.elemente.segmentRouteHinweis.textContent = String(text || "");
+        }
+      }
+
+      _setSegmentWaypointHinweis(text = "") {
+        if (this.elemente.segmentWaypointHinweis) {
+          this.elemente.segmentWaypointHinweis.textContent = String(text || "");
+        }
+      }
+
+      _renderSegmentWaypointListe() {
+        if (!this.elemente.segmentWaypointListe) {
+          return;
+        }
+        const waypoints = normalizeManualWaypoints(this.aktivesSegmentMetrik?.manualWaypoints || []);
+        const source = String(this.aktivesSegmentMetrik?.source || "timeline").trim().toLowerCase();
+        const canEdit = source === "map";
+        if (!waypoints.length) {
+          this.elemente.segmentWaypointListe.innerHTML = '<li class="meta-text">Keine Zwischenstopps gesetzt.</li>';
+          return;
+        }
+        this.elemente.segmentWaypointListe.innerHTML = waypoints
+          .map((waypoint, index) => {
+            const labelText = waypoint.label || `${Number(waypoint.lat).toFixed(4)}, ${Number(waypoint.lon).toFixed(4)}`;
+            const sourceText = waypoint.source === "map" ? "Karte" : "Adresse";
+            return `<li class="segment-waypoint-item"><span class="segment-waypoint-label">${escapeHtml(`Zwischenstopp ${index + 1}: ${labelText} · ${sourceText}`)}</span><button type="button" class="segment-waypoint-remove-btn" data-segment-waypoint-remove-index="${index}"${canEdit ? "" : " disabled"}>Entfernen</button></li>`;
+          })
+          .join("");
+      }
+
+      _renderSegmentWaypointBereich() {
+        if (!this.elemente.segmentWaypointBereich) {
+          return;
+        }
+        if (!this.aktivesSegmentMetrik) {
+          this.elemente.segmentWaypointBereich.hidden = true;
+          return;
+        }
+        this.elemente.segmentWaypointBereich.hidden = false;
+        const source = String(this.aktivesSegmentMetrik.source || "timeline").trim().toLowerCase();
+        const isMapSource = source === "map";
+        const profile = normalizeProfile(this.aktivesSegmentMetrik.profile || PROFILE_DEFAULT);
+        const supportsWaypoints = profileSupportsRoadRouting(profile);
+        const waypoints = normalizeManualWaypoints(this.aktivesSegmentMetrik.manualWaypoints || []);
+        this.aktivesSegmentMetrik.manualWaypoints = waypoints;
+
+        if (this.elemente.segmentWaypointAdresseInput) {
+          if (!isMapSource) {
+            this.elemente.segmentWaypointAdresseInput.value = "";
+          }
+          this.elemente.segmentWaypointAdresseInput.disabled = !isMapSource;
+        }
+        if (this.elemente.segmentWaypointAdresseAddBtn) {
+          this.elemente.segmentWaypointAdresseAddBtn.disabled = !isMapSource;
+        }
+        if (this.elemente.segmentWaypointMapPickBtn) {
+          this.elemente.segmentWaypointMapPickBtn.disabled = !isMapSource;
+          this.elemente.segmentWaypointMapPickBtn.textContent = this.segmentWaypointMapPickHandler
+            ? "Klick auf Karte …"
+            : "Per Kartenklick setzen";
+        }
+        this._renderSegmentWaypointListe();
+
+        if (!isMapSource) {
+          this._setSegmentWaypointHinweis("Nur in der Kartenansicht bearbeitbar.");
+          this._beendeSegmentWaypointMapPick({ keepHint: true });
+          return;
+        }
+
+        if (!supportsWaypoints && waypoints.length) {
+          this._setSegmentWaypointHinweis("Zwischenstopps sind gespeichert, wirken aber nur für Auto/Bus/Zu Fuß.");
+          return;
+        }
+        if (!supportsWaypoints) {
+          this._setSegmentWaypointHinweis("Zwischenstopps wirken nur für Auto/Bus/Zu Fuß.");
+          return;
+        }
+        if (waypoints.length >= SEGMENT_MAX_MANUAL_WAYPOINTS) {
+          this._setSegmentWaypointHinweis(`Maximum erreicht (${SEGMENT_MAX_MANUAL_WAYPOINTS}).`);
+          return;
+        }
+        this._setSegmentWaypointHinweis("");
+      }
+
+      _beendeSegmentWaypointMapPick({ keepHint = false } = {}) {
+        const leafMap = this.map?.map;
+        if (leafMap && this.segmentWaypointMapPickHandler) {
+          leafMap.off("click", this.segmentWaypointMapPickHandler);
+        }
+        this.segmentWaypointMapPickHandler = null;
+        const mapContainer = leafMap?.getContainer?.();
+        if (mapContainer instanceof HTMLElement) {
+          mapContainer.style.cursor = "";
+        }
+        if (this.elemente.segmentWaypointMapPickBtn) {
+          this.elemente.segmentWaypointMapPickBtn.textContent = "Per Kartenklick setzen";
+        }
+        if (!keepHint) {
+          this._setSegmentWaypointHinweis("");
+        }
+      }
+
+      _buildAktivesSegmentRouteKoordinaten() {
+        if (!this.aktivesSegmentMetrik) {
+          return { coords: [], appliedWaypoints: [] };
+        }
+        return buildSegmentRouteCoords(
+          [toNumberOrNull(this.aktivesSegmentMetrik.fromLat), toNumberOrNull(this.aktivesSegmentMetrik.fromLon)],
+          [toNumberOrNull(this.aktivesSegmentMetrik.toLat), toNumberOrNull(this.aktivesSegmentMetrik.toLon)],
+          this.aktivesSegmentMetrik.profile || PROFILE_DEFAULT,
+          this.aktivesSegmentMetrik.manualWaypoints || [],
+        );
+      }
+
+      _toggleSegmentWaypointMapPick() {
+        if (!this.aktivesSegmentMetrik) {
+          return;
+        }
+        const source = String(this.aktivesSegmentMetrik.source || "timeline").trim().toLowerCase();
+        if (source !== "map") {
+          this._setSegmentWaypointHinweis("Nur in der Kartenansicht bearbeitbar.");
+          return;
+        }
+        if ((this.aktivesSegmentMetrik.manualWaypoints || []).length >= SEGMENT_MAX_MANUAL_WAYPOINTS) {
+          this._setSegmentWaypointHinweis(`Maximum erreicht (${SEGMENT_MAX_MANUAL_WAYPOINTS}).`);
+          return;
+        }
+        const leafMap = this.map?.map;
+        if (!leafMap) {
+          this._setSegmentWaypointHinweis("Kartenmodul nicht verfügbar.");
+          return;
+        }
+        if (this.segmentWaypointMapPickHandler) {
+          this._beendeSegmentWaypointMapPick({ keepHint: true });
+          this._setSegmentWaypointHinweis("Kartenklick-Auswahl beendet.");
+          return;
+        }
+        this.segmentWaypointMapPickHandler = async (event) => {
+          const lat = Number(event?.latlng?.lat);
+          const lon = Number(event?.latlng?.lng);
+          this._beendeSegmentWaypointMapPick({ keepHint: true });
+          if (!this.aktivesSegmentMetrik || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+            return;
+          }
+          const existing = normalizeManualWaypoints(this.aktivesSegmentMetrik.manualWaypoints || []);
+          if (existing.length >= SEGMENT_MAX_MANUAL_WAYPOINTS) {
+            this._setSegmentWaypointHinweis(`Maximum erreicht (${SEGMENT_MAX_MANUAL_WAYPOINTS}).`);
+            return;
+          }
+          const nextWaypoint = {
+            lat,
+            lon,
+            label: `Zwischenstopp ${existing.length + 1}`,
+            source: "map",
+          };
+          this.aktivesSegmentMetrik.manualWaypoints = normalizeManualWaypoints([...existing, nextWaypoint]);
+          this._renderSegmentWaypointBereich();
+          await this._ladeSegmentRouteAlternativenFuerDialog();
+          this._setSegmentWaypointHinweis("Zwischenstopp per Karte hinzugefügt.");
+        };
+        leafMap.on("click", this.segmentWaypointMapPickHandler);
+        const mapContainer = leafMap.getContainer?.();
+        if (mapContainer instanceof HTMLElement) {
+          mapContainer.style.cursor = "crosshair";
+        }
+        if (this.elemente.segmentWaypointMapPickBtn) {
+          this.elemente.segmentWaypointMapPickBtn.textContent = "Klick auf Karte …";
+        }
+        this._setSegmentWaypointHinweis("Nächsten Punkt auf der Karte anklicken.");
+      }
+
+      async _handleSegmentWaypointAdresseHinzufuegen() {
+        if (!this.aktivesSegmentMetrik) {
+          return;
+        }
+        const source = String(this.aktivesSegmentMetrik.source || "timeline").trim().toLowerCase();
+        if (source !== "map") {
+          this._setSegmentWaypointHinweis("Nur in der Kartenansicht bearbeitbar.");
+          return;
+        }
+        const rawAddress = String(this.elemente.segmentWaypointAdresseInput?.value || "").trim();
+        if (!rawAddress) {
+          this._setSegmentWaypointHinweis("Bitte eine Adresse eingeben.");
+          return;
+        }
+        const existing = normalizeManualWaypoints(this.aktivesSegmentMetrik.manualWaypoints || []);
+        if (existing.length >= SEGMENT_MAX_MANUAL_WAYPOINTS) {
+          this._setSegmentWaypointHinweis(`Maximum erreicht (${SEGMENT_MAX_MANUAL_WAYPOINTS}).`);
+          return;
+        }
+        this._setSegmentWaypointHinweis("Adresse wird gesucht …");
+        let geo = null;
+        try {
+          geo = await this.storage.geocodeAdresse(rawAddress);
+        } catch {
+          geo = null;
+        }
+        if (!geo) {
+          this._setSegmentWaypointHinweis("Adresse konnte nicht gefunden werden.");
+          return;
+        }
+        const nextWaypoint = {
+          lat: Number(geo.lat),
+          lon: Number(geo.lon),
+          label: rawAddress,
+          source: "address",
+        };
+        this.aktivesSegmentMetrik.manualWaypoints = normalizeManualWaypoints([...existing, nextWaypoint]);
+        if (this.elemente.segmentWaypointAdresseInput) {
+          this.elemente.segmentWaypointAdresseInput.value = "";
+        }
+        this._renderSegmentWaypointBereich();
+        await this._ladeSegmentRouteAlternativenFuerDialog();
+        this._setSegmentWaypointHinweis("Zwischenstopp hinzugefügt.");
+      }
+
+      async _handleSegmentWaypointEntfernen(index) {
+        if (!this.aktivesSegmentMetrik) {
+          return;
+        }
+        const source = String(this.aktivesSegmentMetrik.source || "timeline").trim().toLowerCase();
+        if (source !== "map") {
+          return;
+        }
+        const removeIndex = Number(index);
+        if (!Number.isInteger(removeIndex) || removeIndex < 0) {
+          return;
+        }
+        const existing = normalizeManualWaypoints(this.aktivesSegmentMetrik.manualWaypoints || []);
+        if (removeIndex >= existing.length) {
+          return;
+        }
+        existing.splice(removeIndex, 1);
+        this.aktivesSegmentMetrik.manualWaypoints = normalizeManualWaypoints(existing);
+        this._renderSegmentWaypointBereich();
+        await this._ladeSegmentRouteAlternativenFuerDialog();
+      }
+
+      _renderSegmentRouteAlternativen(routeAlternatives = [], selectedIndex = 0) {
+        if (!this.elemente.segmentRouteAlternativen) {
+          return;
+        }
+        const alternatives = this._normalizeSegmentRouteAlternativenForDialog(routeAlternatives);
+        if (!alternatives.length) {
+          this.elemente.segmentRouteAlternativen.innerHTML = "";
+          return;
+        }
+        const normalizedSelected = normalizeRouteAlternativeIndex(selectedIndex);
+        const clampedIndex = Math.min(normalizedSelected, alternatives.length - 1);
+        this.elemente.segmentRouteAlternativen.innerHTML = alternatives
+          .map((route) => {
+            const index = normalizeRouteAlternativeIndex(route.alternativeIndex);
+            const aktiv = index === clampedIndex;
+            const routeLabel = `Route ${index + 1}`;
+            const dauerText = Number(route.durationMin || 0) > 0 ? formatDurationMinutes(route.durationMin) : "-";
+            const distanzText = Number(route.distanceKm || 0) > 0 ? formatDistanzKm(route.distanceKm) : "-";
+            return `<button type="button" class="segment-route-btn${aktiv ? " aktiv" : ""}" data-segment-route-index="${index}" aria-pressed="${String(aktiv)}"><span>${escapeHtml(routeLabel)}</span> · <span>⏱ ${escapeHtml(dauerText)}</span> · <span>📏 ${escapeHtml(distanzText)}</span></button>`;
+          })
+          .join("");
+      }
+
+      _setSegmentMetrikRouteAlternative(routeAlternativeIndex) {
+        if (!this.aktivesSegmentMetrik) {
+          return;
+        }
+        const normalized = normalizeRouteAlternativeIndex(routeAlternativeIndex);
+        const alternatives = this._normalizeSegmentRouteAlternativenForDialog(this.aktivesSegmentMetrik.routeAlternatives || []);
+        const maxIndex = Math.max(0, alternatives.length - 1);
+        const clampedIndex = Math.min(normalized, maxIndex);
+        this.aktivesSegmentMetrik.routeAlternativeIndex = clampedIndex;
+        this._renderSegmentRouteAlternativen(alternatives, clampedIndex);
+      }
+
+      async _ladeSegmentRouteAlternativenFuerDialog() {
+        if (!this.aktivesSegmentMetrik) {
+          return;
+        }
+        const currentState = this.aktivesSegmentMetrik;
+        const profile = normalizeProfile(currentState.profile || PROFILE_DEFAULT);
+        const routeAlternativeIndex = normalizeRouteAlternativeIndex(currentState.routeAlternativeIndex);
+        const requestId = this.segmentRouteAlternativenRequestId + 1;
+        this.segmentRouteAlternativenRequestId = requestId;
+
+        if (!this._segmentProfilHatAlternativen(profile)) {
+          currentState.routeAlternatives = [];
+          currentState.routeAlternativeIndex = 0;
+          this._renderSegmentRouteAlternativen([], 0);
+          this._setSegmentRouteHinweis("Für dieses Verkehrsmittel sind keine Alternativrouten verfügbar.");
+          return;
+        }
+
+        const builtSegmentRoute = this._buildAktivesSegmentRouteKoordinaten();
+        const routeCoords = builtSegmentRoute.coords;
+        if (!Array.isArray(routeCoords) || routeCoords.length < 2) {
+          const fallbackAlternatives = [{
+            alternativeIndex: 0,
+            distanceKm: 0,
+            durationMin: 0,
+            routeType: "fallback",
+          }];
+          currentState.routeAlternatives = fallbackAlternatives;
+          currentState.routeAlternativeIndex = 0;
+          this._renderSegmentRouteAlternativen(fallbackAlternatives, 0);
+          this._setSegmentRouteHinweis("Für dieses Segment sind keine Koordinaten verfügbar.");
+          return;
+        }
+
+        this._setSegmentRouteHinweis("Routen werden geladen …");
+        try {
+          if (!this.map || typeof this.map._resolveRoute !== "function") {
+            throw new Error("Routing nicht verfügbar");
+          }
+          const routeResult = await this.map._resolveRoute(
+            routeCoords,
+            profile,
+            { alternativeIndex: routeAlternativeIndex },
+          );
+          if (!this.aktivesSegmentMetrik
+            || requestId !== this.segmentRouteAlternativenRequestId
+            || this.aktivesSegmentMetrik.segmentKey !== currentState.segmentKey) {
+            return;
+          }
+          const alternatives = this._normalizeSegmentRouteAlternativenForDialog(routeResult?.routeAlternatives || []);
+          const fallbackAlternatives = alternatives.length
+            ? alternatives
+            : [{
+              alternativeIndex: 0,
+              distanceKm: Number(routeResult?.distanceKm || 0),
+              durationMin: Number(routeResult?.durationMin || 0),
+              routeType: String(routeResult?.routeType || "fallback"),
+            }];
+          const preferredIndex = normalizeRouteAlternativeIndex(this.aktivesSegmentMetrik.routeAlternativeIndex);
+          const clampedIndex = Math.min(preferredIndex, Math.max(0, fallbackAlternatives.length - 1));
+          this.aktivesSegmentMetrik.routeAlternatives = fallbackAlternatives;
+          this.aktivesSegmentMetrik.routeAlternativeIndex = clampedIndex;
+          this._renderSegmentRouteAlternativen(fallbackAlternatives, clampedIndex);
+          this._setSegmentRouteHinweis(
+            fallbackAlternatives.length > 1
+              ? `${fallbackAlternatives.length} Routen verfügbar.`
+              : "Keine zusätzlichen Alternativrouten gefunden.",
+          );
+        } catch {
+          if (!this.aktivesSegmentMetrik
+            || requestId !== this.segmentRouteAlternativenRequestId
+            || this.aktivesSegmentMetrik.segmentKey !== currentState.segmentKey) {
+            return;
+          }
+          const fallbackAlternatives = this._normalizeSegmentRouteAlternativenForDialog(currentState.routeAlternatives || []);
+          const alternatives = fallbackAlternatives.length
+            ? fallbackAlternatives
+            : [{
+              alternativeIndex: 0,
+              distanceKm: 0,
+              durationMin: 0,
+              routeType: "fallback",
+            }];
+          this.aktivesSegmentMetrik.routeAlternatives = alternatives;
+          this.aktivesSegmentMetrik.routeAlternativeIndex = Math.min(
+            normalizeRouteAlternativeIndex(this.aktivesSegmentMetrik.routeAlternativeIndex),
+            Math.max(0, alternatives.length - 1),
+          );
+          this._renderSegmentRouteAlternativen(alternatives, this.aktivesSegmentMetrik.routeAlternativeIndex);
+          this._setSegmentRouteHinweis("Alternativrouten konnten nicht geladen werden.");
+        }
       }
 
       async _handleSegmentMetrikSpeichern() {
@@ -11022,17 +13170,27 @@ ${"</ht"+"ml>"}
         }
         const segmentKey = String(this.aktivesSegmentMetrik.segmentKey || "").trim();
         const profile = normalizeProfile(this.aktivesSegmentMetrik.profile || PROFILE_DEFAULT);
+        const alternatives = this._normalizeSegmentRouteAlternativenForDialog(this.aktivesSegmentMetrik.routeAlternatives || []);
+        const routeAlternativeIndex = Math.min(
+          normalizeRouteAlternativeIndex(this.aktivesSegmentMetrik.routeAlternativeIndex),
+          Math.max(0, alternatives.length - 1),
+        );
+        const manualWaypoints = normalizeManualWaypoints(this.aktivesSegmentMetrik.manualWaypoints || []);
         await this.storage.setSegmentConfig({
           projektId: this.aktivesProjekt.id,
           segmentKey,
           profile,
           manualDistanceKm,
           manualDurationMin,
+          routeAlternativeIndex,
+          manualWaypoints,
         });
         this.segmentConfigByKey[segmentKey] = {
           profile,
           manualDistanceKm,
           manualDurationMin,
+          routeAlternativeIndex,
+          manualWaypoints,
         };
         this._schliesseSegmentMetrikDialog();
         await this._renderTimeline();
@@ -11051,11 +13209,15 @@ ${"</ht"+"ml>"}
           profile,
           manualDistanceKm: null,
           manualDurationMin: null,
+          routeAlternativeIndex: 0,
+          manualWaypoints: [],
         });
         this.segmentConfigByKey[segmentKey] = {
           profile,
           manualDistanceKm: null,
           manualDurationMin: null,
+          routeAlternativeIndex: 0,
+          manualWaypoints: [],
         };
         this._schliesseSegmentMetrikDialog();
         await this._renderTimeline();
@@ -11063,11 +13225,14 @@ ${"</ht"+"ml>"}
       }
 
       _schliesseSegmentMetrikDialog() {
+        this._beendeSegmentWaypointMapPick();
         this._schliesseDialog(this.elemente.segmentMetrikDialog);
       }
 
       _resetSegmentMetrikDialogState() {
         this.aktivesSegmentMetrik = null;
+        this.segmentRouteAlternativenRequestId += 1;
+        this._beendeSegmentWaypointMapPick();
         if (this.elemente.segmentMetrikForm) {
           this.elemente.segmentMetrikForm.reset();
         }
@@ -11081,6 +13246,20 @@ ${"</ht"+"ml>"}
         if (this.elemente.segmentMetrikFehler) {
           this.elemente.segmentMetrikFehler.textContent = "";
         }
+        if (this.elemente.segmentRouteAlternativen) {
+          this.elemente.segmentRouteAlternativen.innerHTML = "";
+        }
+        this._setSegmentRouteHinweis("");
+        if (this.elemente.segmentWaypointListe) {
+          this.elemente.segmentWaypointListe.innerHTML = "";
+        }
+        if (this.elemente.segmentWaypointBereich) {
+          this.elemente.segmentWaypointBereich.hidden = true;
+        }
+        if (this.elemente.segmentWaypointAdresseInput) {
+          this.elemente.segmentWaypointAdresseInput.value = "";
+        }
+        this._setSegmentWaypointHinweis("");
       }
 
       _schliesseZeitplanDialog() {
@@ -11092,7 +13271,14 @@ ${"</ht"+"ml>"}
         this._beendeEintragBearbeiten();
         this.elemente.eintragForm?.reset();
         this._setEintragBuchungsstatus("geplant");
+        this._setEintragTimeZoneEditorState({
+          visible: false,
+          source: "auto",
+          timeZone: "",
+          hint: "",
+        });
         this._versteckeEintragDateiOptionen();
+        this._versteckeEintragDateiDropzoneKontextmenue();
         if (this.elemente.eintragDateienBereich) {
           this.elemente.eintragDateienBereich.hidden = true;
         }
@@ -11211,6 +13397,16 @@ ${"</ht"+"ml>"}
         this._renderDbDateiStatus();
         this._setWiederanzeigenHinweis("");
         this._oeffneDialog(this.elemente.einstellungenDialog);
+        window.requestAnimationFrame(() => {
+          const dialog = this.elemente.einstellungenDialog;
+          if (!(dialog instanceof HTMLDialogElement)) {
+            return;
+          }
+          const active = document.activeElement;
+          if (active instanceof HTMLElement && dialog.contains(active)) {
+            active.blur();
+          }
+        });
       }
 
       _schliesseEinstellungenDialog() {
@@ -11269,7 +13465,8 @@ ${"</ht"+"ml>"}
       }
 
       _syncDialogBodyState() {
-        const hatOffenenDialog = Boolean(document.querySelector("dialog[open]"));
+        const hatOffenenDialog = Array.from(document.querySelectorAll("dialog[open]"))
+          .some((dialog) => String(dialog?.id || "") !== "segment-metrik-dialog");
         document.body.classList.toggle("dialog-offen", hatOffenenDialog);
       }
 
@@ -11539,6 +13736,15 @@ ${"</ht"+"ml>"}
       return "Auto";
     }
 
+    function profilLabelMitRoute(profile, routeAlternativeIndex = 0) {
+      const baseLabel = profilLabel(profile);
+      const normalizedIndex = normalizeRouteAlternativeIndex(routeAlternativeIndex);
+      if (normalizedIndex <= 0) {
+        return baseLabel;
+      }
+      return `${baseLabel} (Route ${normalizedIndex + 1})`;
+    }
+
     function formatDateigroesse(bytes) {
       const size = Number(bytes || 0);
       if (size < 1024) {
@@ -11607,7 +13813,8 @@ ${"</ht"+"ml>"}
     }
 
     function syncGlobalDialogBodyState() {
-      const hatOffenenDialog = Boolean(document.querySelector("dialog[open]"));
+      const hatOffenenDialog = Array.from(document.querySelectorAll("dialog[open]"))
+        .some((dialog) => String(dialog?.id || "") !== "segment-metrik-dialog");
       document.body.classList.toggle("dialog-offen", hatOffenenDialog);
     }
 
