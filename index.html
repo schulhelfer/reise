@@ -3,11 +3,15 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#155dfc" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Reiseplaner" />
   <title>Reiseplaner</title>
   <link rel="icon" href="./icon-32x32.png" type="image/png" />
   <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icon-192x192.png" />
   <style>
     :root {
       color-scheme: light;
@@ -31,6 +35,10 @@
       --glass-button-bg: linear-gradient(160deg, rgba(56, 111, 204, 0.92), rgba(37, 88, 180, 0.94));
       --glass-button-border: rgba(246, 250, 255, 0.56);
       --glass-muted-bg: rgba(232, 239, 250, 0.76);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
     }
 
     body[data-theme="dark"] {
@@ -65,6 +73,7 @@
 
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: "IBM Plex Sans", "Avenir Next", "Nunito Sans", "Helvetica Neue", sans-serif;
       color: var(--text);
       background:
@@ -72,6 +81,7 @@
         radial-gradient(48rem 30rem at 90% 118%, rgba(141, 165, 194, 0.14), transparent 70%),
         linear-gradient(170deg, var(--bg-start) 0%, var(--bg-end) 45%);
       position: relative;
+      overflow-x: hidden;
     }
 
     .hintergrund-orb {
@@ -120,7 +130,7 @@
     }
 
     .kopfbereich {
-      padding: 1.8rem 1rem 0.9rem;
+      padding: calc(1.8rem + var(--safe-top)) calc(1rem + var(--safe-right)) 0.9rem calc(1rem + var(--safe-left));
       max-width: 1240px;
       margin: 0 auto;
       display: flex;
@@ -171,7 +181,7 @@
     .app-layout {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 0.5rem 1rem 1rem;
+      padding: 0.5rem calc(1rem + var(--safe-right)) calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: 1rem;
@@ -186,8 +196,76 @@
     .einstellungen-inhalt {
       display: grid;
       gap: 0.9rem;
-      max-height: min(74vh, 760px);
+      max-height: min(74vh, 760px, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 140px));
       overflow: auto;
+    }
+
+    #einstellungen-dialog {
+      width: min(560px, calc(100vw - var(--safe-left) - var(--safe-right) - 12px));
+      max-height: min(94vh, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 12px));
+      position: relative;
+      isolation: isolate;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+      overflow: visible;
+    }
+
+    #einstellungen-dialog .einstellungen-inhalt {
+      max-height: min(calc(94vh - 88px), calc(100dvh - var(--safe-top) - var(--safe-bottom) - 120px));
+      overflow: auto;
+      padding-right: 0.15rem;
+    }
+
+    #einstellungen-dialog .dialog-kopf,
+    #einstellungen-dialog .einstellungen-inhalt {
+      position: relative;
+      z-index: 1;
+    }
+
+    .einstellungen-hintergrund-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 100dvh;
+      transform: translate(-50%, -50%);
+      opacity: 0.2;
+      filter: blur(20px) saturate(1.06);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .einstellungen-hintergrund-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .einstellungen-dialog-titel-aussen {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, calc(-100% - 30px));
+      margin: 0;
+      font-size: clamp(2.05rem, 3.9vw, 2.8rem);
+      font-weight: 780;
+      color: #0f172a;
+      letter-spacing: 0.01em;
+      pointer-events: none;
+      text-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+      z-index: 2;
+    }
+
+    .wiederanzeigen-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem;
+      align-items: stretch;
+    }
+
+    .wiederanzeigen-buttons button {
+      margin-top: 0;
+      white-space: normal;
+      line-height: 1.2;
     }
 
     .einstellungen-inhalt .karte {
@@ -370,7 +448,7 @@
       border-color: #334155;
     }
 
-    input:focus,
+    input:not([type="checkbox"]):not([type="radio"]):focus,
     textarea:focus,
     select:focus {
       outline: none;
@@ -386,11 +464,13 @@
       border: 0;
       border-radius: 12px;
       margin-top: 0.9rem;
+      min-height: 44px;
       padding: 0.68rem 0.8rem;
       font-weight: 650;
       color: #fff;
       background: linear-gradient(160deg, var(--primary), #0f4cdc);
       cursor: pointer;
+      touch-action: manipulation;
       transition: transform 120ms ease, filter 120ms ease;
     }
 
@@ -641,6 +721,7 @@
 
     .timeline-filter-zeile {
       display: flex;
+      flex-wrap: wrap;
       align-items: flex-start;
       justify-content: space-between;
       gap: 0.7rem;
@@ -661,6 +742,12 @@
 
     .timeline-tag-filter[hidden] {
       display: none;
+    }
+
+    #checkliste-kategorie-filter {
+      flex-wrap: wrap;
+      overflow: visible;
+      row-gap: 0.4rem;
     }
 
     .timeline-tag-btn {
@@ -689,12 +776,20 @@
       display: flex;
       flex-wrap: nowrap;
       gap: 0.45rem;
-      margin: 0 0 0 auto;
+      margin: 0;
       justify-content: flex-end;
       overflow-x: auto;
     }
 
     .timeline-typ-filter[hidden] {
+      display: none;
+    }
+
+    .timeline-status-filter {
+      margin: 0 0 0 auto;
+    }
+
+    .timeline-status-filter[hidden] {
       display: none;
     }
 
@@ -791,6 +886,11 @@
       text-align: center;
     }
 
+    .leaflet-tooltip.segment-sprechblase.segment-sprechblase-clickable {
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
     .segment-sprechblase-zeile {
       display: block;
       white-space: nowrap;
@@ -824,6 +924,13 @@
       box-shadow: 0 4px 10px rgba(59, 130, 246, 0.18) !important;
     }
 
+    .leaflet-tooltip.segment-sprechblase-bus {
+      border-color: rgba(245, 158, 11, 0.56) !important;
+      background: rgba(245, 158, 11, 0.44) !important;
+      color: #7c2d12 !important;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2) !important;
+    }
+
     .leaflet-tooltip-top.segment-sprechblase-driving::before {
       border-top-color: rgba(100, 116, 139, 0.42) !important;
     }
@@ -838,6 +945,10 @@
 
     .leaflet-tooltip-top.segment-sprechblase-ship::before {
       border-top-color: rgba(59, 130, 246, 0.4) !important;
+    }
+
+    .leaflet-tooltip-top.segment-sprechblase-bus::before {
+      border-top-color: rgba(245, 158, 11, 0.44) !important;
     }
 
     .reiter-leiste {
@@ -1099,6 +1210,85 @@
       padding: 0.7rem 0.85rem;
       background: linear-gradient(160deg, #1e40af, #155dfc);
       box-shadow: 0 10px 24px rgba(21, 93, 252, 0.2);
+    }
+
+    .status-slider {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0.1rem 0 0.2rem;
+      padding: 0.38rem 0.5rem;
+      border: 1px solid #d6e1f7;
+      border-radius: 999px;
+      background: #f8fbff;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .status-slider-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+      user-select: none;
+    }
+
+    .status-slider-switch {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+    }
+
+    .status-slider-switch input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .status-slider-track {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid #94a3b8;
+      background: linear-gradient(160deg, #e2e8f0, #cbd5e1);
+      transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+      cursor: pointer;
+    }
+
+    .status-slider-track::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.22);
+      transition: transform 140ms ease;
+    }
+
+    .status-slider-switch input:checked + .status-slider-track {
+      border-color: #22c55e;
+      background: linear-gradient(160deg, #34d399, #16a34a);
+    }
+
+    .status-slider-switch input:checked + .status-slider-track::after {
+      transform: translateX(22px);
+    }
+
+    .status-slider-switch input:focus-visible + .status-slider-track {
+      box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.22);
+    }
+
+    .status-slider[data-status="geplant"] .status-slider-label:first-child {
+      color: #1e3a8a;
+    }
+
+    .status-slider[data-status="gebucht"] .status-slider-label:last-child {
+      color: #166534;
     }
 
     .eintrag-unterkunft-option {
@@ -1385,13 +1575,13 @@
     }
 
     .dialog {
-      width: min(560px, 92vw);
+      width: min(560px, calc(100vw - var(--safe-left) - var(--safe-right) - 12px));
       display: none;
       position: fixed;
       z-index: 2000;
       inset: 50% auto auto 50%;
       transform: translate(-50%, -50%);
-      max-height: 86vh;
+      max-height: min(86vh, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 12px));
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 18px;
@@ -1453,6 +1643,28 @@
 
     .dialog-inhalt .fehler {
       padding: 0;
+    }
+
+    .app-dialog-text {
+      margin: 0;
+      white-space: pre-line;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .app-dialog-aktionen {
+      margin-top: 0.95rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
+
+    .app-dialog-aktionen button {
+      margin-top: 0;
+    }
+
+    #app-dialog-abbrechen[hidden] + #app-dialog-bestaetigen {
+      grid-column: 1 / -1;
     }
 
     .timeline {
@@ -1598,6 +1810,16 @@
     .badge-unterkunft {
       background: #d8c4ff;
       color: #3f1d82;
+    }
+
+    .badge-buchungsstatus-geplant {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .badge-buchungsstatus-gebucht {
+      background: #bbf7d0;
+      color: #166534;
     }
 
     .timeline-meta,
@@ -2078,15 +2300,80 @@
     .timeline-segment-info {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.18rem 0.52rem;
-      border: 1px solid #d6e1f7;
+      gap: 0.65rem;
+      padding: 0.48rem 0.9rem;
+      border: 1px solid #bdd2f5;
       border-radius: 999px;
-      background: #f0f5ff;
-      color: #334155;
-      font-size: 0.78rem;
+      background: linear-gradient(160deg, #eef4ff, #e3edff);
+      color: #1e3a8a;
+      font-size: 0.92rem;
       font-weight: 700;
       line-height: 1.2;
+    }
+
+    .timeline-segment-info-btn {
+      margin-top: 0;
+      width: auto;
+      border: 1px solid #d6e1f7;
+      background: #f0f5ff;
+      color: #334155;
+      box-shadow: none;
+      transform: none;
+      cursor: pointer;
+      transition: box-shadow 140ms ease, transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
+    }
+
+    .timeline-segment-info-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.24), 0 14px 28px rgba(37, 99, 235, 0.2);
+    }
+
+    .timeline-segment-info-btn:hover {
+      transform: translateY(-1px) scale(1.02);
+      filter: none;
+      border-color: #87aef4;
+      background: linear-gradient(160deg, #dfeaff, #d0e0ff);
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.24);
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-driving {
+      border-color: rgba(100, 116, 139, 0.5);
+      background: rgba(100, 116, 139, 0.16);
+      color: #334155;
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-bus {
+      border-color: rgba(245, 158, 11, 0.56);
+      background: rgba(245, 158, 11, 0.2);
+      color: #9a3412;
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-walking {
+      border-color: rgba(34, 197, 94, 0.54);
+      background: rgba(34, 197, 94, 0.16);
+      color: #166534;
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-flight {
+      border-color: rgba(239, 68, 68, 0.52);
+      background: rgba(239, 68, 68, 0.16);
+      color: #991b1b;
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-ship {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: rgba(59, 130, 246, 0.16);
+      color: #1e3a8a;
+    }
+
+    .timeline-segment-info-btn.timeline-segment-info-driving:hover,
+    .timeline-segment-info-btn.timeline-segment-info-bus:hover,
+    .timeline-segment-info-btn.timeline-segment-info-walking:hover,
+    .timeline-segment-info-btn.timeline-segment-info-flight:hover,
+    .timeline-segment-info-btn.timeline-segment-info-ship:hover {
+      filter: brightness(0.98);
+      border-color: currentColor;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
     }
 
     .timeline-segment-info-item {
@@ -2094,6 +2381,138 @@
       align-items: center;
       gap: 0.2rem;
       white-space: nowrap;
+    }
+
+    .timeline-warnungen {
+      margin-top: 0.55rem;
+      display: grid;
+      gap: 0.35rem;
+      justify-items: start;
+    }
+
+    .timeline-warnung {
+      margin: 0;
+      padding: 0.42rem 0.56rem;
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.79rem;
+      line-height: 1.3;
+      font-weight: 650;
+      display: inline-flex;
+      width: fit-content;
+      max-width: 100%;
+      cursor: pointer;
+    }
+
+    #checkliste-liste {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+      align-items: start;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .checkliste-gruppe {
+      display: grid;
+      gap: 0.45rem;
+      padding-top: 0.15rem;
+    }
+
+    .checkliste-gruppe-titel {
+      margin: 0;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .checkliste-gruppe-items {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .checkliste-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      padding: 0.5rem 0.62rem;
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checkliste-item-label {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checkliste-item-checkbox {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      flex: 0 0 18px;
+      accent-color: #155dfc;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checkliste-item-checkbox:focus,
+    .checkliste-item-checkbox:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .checkliste-item-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checkliste-item-text::selection {
+      background: transparent;
+      color: inherit;
+    }
+
+    .checkliste-item.kontrolliert .checkliste-item-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .checkliste-item.kontrolliert {
+      background: #eef2f7;
+      border-color: #d7dee9;
+    }
+
+    .checkliste-item.kontrolliert .checkliste-item-checkbox {
+      opacity: 0.8;
     }
 
     .timeline-segment-pfeil {
@@ -2140,20 +2559,39 @@
 
     .timeline-segment-btn {
       margin-top: 0;
-      width: 40px;
-      height: 34px;
+      width: 48px;
+      height: 40px;
       padding: 0;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid #cfdcf8;
       box-shadow: none;
       background: #eef3ff;
       color: #24458f;
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: 700;
       transform: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .segment-metrik-profile-liste {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+
+    #segment-metrik-form .bereich-aktionen {
+      margin-top: 0.9rem;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    #segment-metrik-form .bereich-aktionen button {
+      min-width: 170px;
+      padding: 0.62rem 0.9rem;
     }
 
     .timeline-segment-btn.aktiv[data-segment-profile="driving"] {
@@ -2176,6 +2614,12 @@
 
     .timeline-segment-btn.aktiv[data-segment-profile="ship"] {
       background: linear-gradient(160deg, #3b82f6, #1e40af);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .timeline-segment-btn.aktiv[data-segment-profile="bus"] {
+      background: linear-gradient(160deg, #f59e0b, #d97706);
       color: #fff;
       border-color: transparent;
     }
@@ -2425,6 +2869,16 @@
       color: #ede9fe;
     }
 
+    body[data-theme="dark"] .badge-buchungsstatus-geplant {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    body[data-theme="dark"] .badge-buchungsstatus-gebucht {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+
     body[data-theme="dark"] .timeline-ort-link {
       color: #93c5fd;
     }
@@ -2447,6 +2901,73 @@
       border-color: #334155;
       background: #0f172a;
       color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn {
+      border-color: #334155;
+      background: #0f172a;
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn:hover {
+      border-color: #60a5fa;
+      background: linear-gradient(160deg, #1e3a8a, #1e293b);
+      box-shadow: 0 14px 28px rgba(30, 64, 175, 0.36);
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn.timeline-segment-info-driving {
+      border-color: rgba(148, 163, 184, 0.42);
+      background: rgba(148, 163, 184, 0.2);
+      color: #e2e8f0;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn.timeline-segment-info-bus {
+      border-color: rgba(245, 158, 11, 0.58);
+      background: rgba(120, 53, 15, 0.55);
+      color: #fde68a;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn.timeline-segment-info-walking {
+      border-color: rgba(34, 197, 94, 0.56);
+      background: rgba(21, 128, 61, 0.48);
+      color: #bbf7d0;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn.timeline-segment-info-flight {
+      border-color: rgba(248, 113, 113, 0.58);
+      background: rgba(127, 29, 29, 0.56);
+      color: #fecaca;
+    }
+
+    body[data-theme="dark"] .timeline-segment-info-btn.timeline-segment-info-ship {
+      border-color: rgba(96, 165, 250, 0.58);
+      background: rgba(30, 64, 175, 0.5);
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] #einstellungen-dialog {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.92) 100%);
+    }
+
+    body[data-theme="dark"] .einstellungen-hintergrund-icon {
+      opacity: 0.24;
+      filter: blur(22px) saturate(1.12);
+    }
+
+    body[data-theme="dark"] .einstellungen-dialog-titel-aussen {
+      color: #e2e8f0;
+      text-shadow: 0 12px 28px rgba(2, 10, 24, 0.52);
+    }
+
+    body[data-theme="dark"] .timeline-warnung {
+      border-color: #b91c1c;
+      background: #3f1010;
+      color: #fecaca;
+    }
+
+    body[data-theme="dark"] .checkliste-item.kontrolliert {
+      background: #1f2937;
+      border-color: #334155;
     }
 
     body[data-theme="dark"] button {
@@ -2494,6 +3015,32 @@
       border: 1px solid #a78bfa;
     }
 
+    body[data-theme="dark"] .status-slider {
+      border-color: #334155;
+      background: #0f172a;
+    }
+
+    body[data-theme="dark"] .status-slider-label {
+      color: #94a3b8;
+    }
+
+    body[data-theme="dark"] .status-slider-track {
+      border-color: #475569;
+      background: linear-gradient(160deg, #334155, #1e293b);
+    }
+
+    body[data-theme="dark"] .status-slider-track::after {
+      background: #e2e8f0;
+    }
+
+    body[data-theme="dark"] .status-slider[data-status="geplant"] .status-slider-label:first-child {
+      color: #bfdbfe;
+    }
+
+    body[data-theme="dark"] .status-slider[data-status="gebucht"] .status-slider-label:last-child {
+      color: #bbf7d0;
+    }
+
     body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="driving"] {
       border-color: #cbd5e1;
     }
@@ -2508,6 +3055,10 @@
 
     body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="ship"] {
       border-color: #93c5fd;
+    }
+
+    body[data-theme="dark"] .timeline-segment-btn.aktiv[data-segment-profile="bus"] {
+      border-color: #fcd34d;
     }
 
     .karte,
@@ -2612,6 +3163,14 @@
         grid-template-columns: 1fr;
       }
 
+      .einstellungen-hintergrund-icon {
+        display: none !important;
+      }
+
+      .einstellungen-dialog-titel-aussen {
+        display: none !important;
+      }
+
       .kosten-grid {
         grid-template-columns: 1fr;
       }
@@ -2667,11 +3226,22 @@
       }
 
       .kopfbereich {
-        padding-top: 1rem;
+        padding-top: calc(1rem + var(--safe-top));
       }
 
       .karte-canvas {
         height: 460px;
+      }
+
+      .reiter,
+      .reiter-projekt-aktionen button,
+      .daten-aktionen button,
+      .dialog-schliessen,
+      .anzeigemodus-btn,
+      .wiederanzeigen-buttons button,
+      .plus-reise-knopf {
+        min-height: 44px;
+        min-width: 44px;
       }
     }
 
@@ -2696,6 +3266,7 @@
       .karte-canvas {
         height: 360px;
       }
+
     }
 
     @keyframes auftauchen {
@@ -2736,6 +3307,8 @@
             aria-selected="false" data-reiter="karte" aria-label="Karte" title="Karte">🗺️</button>
           <button type="button" class="reiter" role="tab" id="reiter-kosten" aria-controls="kosten-bereich"
             aria-selected="false" data-reiter="kosten" aria-label="Kosten" title="Kosten">💰</button>
+          <button type="button" class="reiter" role="tab" id="reiter-checkliste" aria-controls="checkliste-bereich"
+            aria-selected="false" data-reiter="checkliste" aria-label="Checkliste" title="Checkliste">📋</button>
         </div>
         <p id="haupt-projekt-titel" class="haupt-projekt-titel"></p>
         <div id="reiter-projekt-aktionen" class="reiter-projekt-aktionen" aria-label="Aktives Projekt Aktionen">
@@ -2752,6 +3325,7 @@
         </div>
         <div id="timeline-filter-zeile" class="timeline-filter-zeile" hidden>
           <div id="timeline-tag-filter" class="timeline-tag-filter" hidden></div>
+          <div id="timeline-status-filter" class="timeline-tag-filter timeline-status-filter" hidden></div>
           <div id="timeline-typ-filter" class="timeline-typ-filter" hidden></div>
         </div>
         <ul id="timeline-liste" class="timeline"></ul>
@@ -2810,6 +3384,16 @@
 
       </section>
 
+      <section class="karte" id="checkliste-bereich" role="tabpanel" aria-labelledby="reiter-checkliste" hidden>
+        <div class="bereich-kopf">
+          <div></div>
+        </div>
+        <div id="checkliste-filter-zeile" class="timeline-filter-zeile" hidden>
+          <div id="checkliste-kategorie-filter" class="timeline-tag-filter" hidden></div>
+        </div>
+        <ul id="checkliste-liste" class="liste"></ul>
+      </section>
+
       <section class="karte" id="ablage-bereich" role="tabpanel" aria-labelledby="reiter-ablage" hidden>
         <div class="bereich-kopf">
           <div></div>
@@ -2828,6 +3412,10 @@
   </main>
 
   <dialog id="einstellungen-dialog" class="dialog">
+    <div class="einstellungen-hintergrund-icon" aria-hidden="true">
+      <img src="./icon-192x192.png" alt="" loading="lazy" decoding="async" />
+    </div>
+    <p class="einstellungen-dialog-titel-aussen" aria-hidden="true">Reiseplaner</p>
     <div class="dialog-kopf">
       <h2>Einstellungen</h2>
       <button id="einstellungen-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
@@ -2857,9 +3445,31 @@
         </div>
       </section>
       <section class="karte">
+        <h2>Wieder anzeigen</h2>
+        <div class="wiederanzeigen-buttons">
+          <button id="warnungen-reset-btn" type="button" class="sekundaer">Überschneidungshinweise</button>
+          <button id="checkliste-ausblendungen-reset-btn" type="button" class="sekundaer">Checklisten-Items</button>
+        </div>
+        <p id="wiederanzeigen-hinweis" class="meta-text" aria-live="polite"></p>
+      </section>
+      <section class="karte">
         <h2>Version</h2>
         <p id="app-version-anzeige" class="meta-text"></p>
       </section>
+    </div>
+  </dialog>
+
+  <dialog id="app-dialog" class="dialog">
+    <div class="dialog-kopf">
+      <h2 id="app-dialog-titel">Hinweis</h2>
+      <button id="app-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
+    </div>
+    <div class="dialog-inhalt">
+      <p id="app-dialog-text" class="app-dialog-text"></p>
+      <div class="app-dialog-aktionen">
+        <button id="app-dialog-abbrechen" type="button" class="sekundaer">Abbrechen</button>
+        <button id="app-dialog-bestaetigen" type="button">OK</button>
+      </div>
     </div>
   </dialog>
 
@@ -2929,6 +3539,17 @@
         <label id="eintrag-name-label" for="eintrag-name">Titel</label>
         <input id="eintrag-name" name="name" type="text" maxlength="120" required autocomplete="off" />
 
+        <label for="eintrag-buchungsstatus-toggle">Status</label>
+        <div id="eintrag-buchungsstatus-wrap" class="status-slider" data-status="geplant">
+          <span class="status-slider-label">Geplant</span>
+          <label class="status-slider-switch" for="eintrag-buchungsstatus-toggle">
+            <input id="eintrag-buchungsstatus-toggle" type="checkbox" role="switch" aria-label="Status umschalten" autocomplete="off" />
+            <span class="status-slider-track" aria-hidden="true"></span>
+          </label>
+          <span class="status-slider-label">Gebucht</span>
+        </div>
+        <input id="eintrag-buchungsstatus" name="buchungsstatus" type="hidden" value="geplant" />
+
         <label id="eintrag-adresse-label" for="eintrag-adresse">Ort / Adresse</label>
         <input id="eintrag-adresse" name="adresse" type="text" maxlength="200" autocomplete="street-address" />
 
@@ -2978,6 +3599,35 @@
       </form>
 
       <p id="eintrag-fehler" class="fehler" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <dialog id="segment-metrik-dialog" class="dialog">
+    <div class="dialog-kopf">
+      <h2>Fortbewegung</h2>
+      <button id="segment-metrik-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
+    </div>
+    <div class="dialog-inhalt">
+      <p id="segment-metrik-kontext" class="meta-text"></p>
+      <form id="segment-metrik-form" autocomplete="off">
+        <label>Verkehrsmittel</label>
+        <div id="segment-metrik-profile-liste" class="segment-metrik-profile-liste" role="group" aria-label="Verkehrsmittel">
+          <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="driving" data-segment-profile="driving" aria-label="Auto" title="Auto">🚗</button>
+          <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="bus" data-segment-profile="bus" aria-label="Bus" title="Bus">🚌</button>
+          <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="walking" data-segment-profile="walking" aria-label="Zu Fuß" title="Zu Fuß">🚶</button>
+          <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="flight" data-segment-profile="flight" aria-label="Flugzeug" title="Flugzeug">✈️</button>
+          <button type="button" class="timeline-segment-btn" data-segment-metrik-profile="ship" data-segment-profile="ship" aria-label="Schiff" title="Schiff">🚢</button>
+        </div>
+        <label for="segment-manual-distance">Strecke (km)</label>
+        <input id="segment-manual-distance" name="manualDistanceKm" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Automatisch" autocomplete="off" />
+        <label for="segment-manual-duration">Dauer (Minuten)</label>
+        <input id="segment-manual-duration" name="manualDurationMin" type="number" min="0" step="1" inputmode="numeric" placeholder="Automatisch" autocomplete="off" />
+        <div class="bereich-aktionen">
+          <button id="segment-metrik-reset-btn" type="button" class="sekundaer">Auf automatisch zurücksetzen</button>
+          <button id="segment-metrik-submit-btn" type="submit">Speichern</button>
+        </div>
+      </form>
+      <p id="segment-metrik-fehler" class="fehler" aria-live="polite"></p>
     </div>
   </dialog>
 
@@ -3351,6 +4001,7 @@
           startZeit: String(unterkunft.checkIn || ""),
           endZeit: String(unterkunft.checkOut || ""),
           titel: String(unterkunft.name || "").trim(),
+          buchungsstatus: normalizeBuchungsstatus(unterkunft.buchungsstatus),
           adresse: String(unterkunft.adresse || "").trim(),
           lat: toNumberOrNull(unterkunft.lat),
           lon: toNumberOrNull(unterkunft.lon),
@@ -3375,6 +4026,7 @@
           startZeit: String(aktivitaet.startZeit || ""),
           endZeit: String(aktivitaet.endZeit || ""),
           titel: String(aktivitaet.titel || "").trim(),
+          buchungsstatus: normalizeBuchungsstatus(aktivitaet.buchungsstatus),
           adresse: String(aktivitaet.ort || "").trim(),
           lat: toNumberOrNull(aktivitaet.lat),
           lon: toNumberOrNull(aktivitaet.lon),
@@ -3646,6 +4298,145 @@
         });
       }
 
+      async leseZuletztBearbeitetesProjektId() {
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, "zuletztBearbeitetesProjektId");
+        const raw = String(eintrag?.value || "").trim();
+        return raw || "";
+      }
+
+      async speichereZuletztBearbeitetesProjektId(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          await this.loescheZuletztBearbeitetesProjektId();
+          return;
+        }
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: "zuletztBearbeitetesProjektId",
+          value: cleanProjektId,
+        });
+      }
+
+      async loescheZuletztBearbeitetesProjektId() {
+        await this.db.delete(STORE_NAMES.appSettings, "zuletztBearbeitetesProjektId");
+      }
+
+      async leseChecklisteStatus(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return {};
+        }
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, `checklisteStatus:${cleanProjektId}`);
+        const value = isPlainObject(eintrag?.value) ? eintrag.value : {};
+        const result = {};
+        Object.entries(value).forEach(([id, checked]) => {
+          if (checked) {
+            result[String(id)] = true;
+          }
+        });
+        return result;
+      }
+
+      async speichereChecklisteStatus(projektId, statusById = {}) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        const value = {};
+        Object.entries(isPlainObject(statusById) ? statusById : {}).forEach(([id, checked]) => {
+          if (checked) {
+            value[String(id)] = true;
+          }
+        });
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: `checklisteStatus:${cleanProjektId}`,
+          value,
+        });
+      }
+
+      async loescheChecklisteStatus(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        await this.db.delete(STORE_NAMES.appSettings, `checklisteStatus:${cleanProjektId}`);
+      }
+
+      async leseAusgeblendeteChecklisteItems(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return [];
+        }
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, `ausgeblendeteChecklisteItems:${cleanProjektId}`);
+        const value = Array.isArray(eintrag?.value) ? eintrag.value : [];
+        return value
+          .map((id) => String(id || "").trim())
+          .filter((id) => Boolean(id));
+      }
+
+      async speichereAusgeblendeteChecklisteItems(projektId, itemIds = []) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        const value = Array.from(
+          new Set(
+            (Array.isArray(itemIds) ? itemIds : [])
+              .map((id) => String(id || "").trim())
+              .filter((id) => Boolean(id)),
+          ),
+        );
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: `ausgeblendeteChecklisteItems:${cleanProjektId}`,
+          value,
+        });
+      }
+
+      async loescheAusgeblendeteChecklisteItems(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        await this.db.delete(STORE_NAMES.appSettings, `ausgeblendeteChecklisteItems:${cleanProjektId}`);
+      }
+
+      async leseAusgeblendeteWarnungen(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return [];
+        }
+        const eintrag = await this.db.get(STORE_NAMES.appSettings, `ausgeblendeteWarnungen:${cleanProjektId}`);
+        const value = Array.isArray(eintrag?.value) ? eintrag.value : [];
+        return value
+          .map((id) => String(id || "").trim())
+          .filter((id) => Boolean(id));
+      }
+
+      async speichereAusgeblendeteWarnungen(projektId, warningIds = []) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        const value = Array.from(
+          new Set(
+            (Array.isArray(warningIds) ? warningIds : [])
+              .map((id) => String(id || "").trim())
+              .filter((id) => Boolean(id)),
+          ),
+        );
+        await this.db.put(STORE_NAMES.appSettings, {
+          id: `ausgeblendeteWarnungen:${cleanProjektId}`,
+          value,
+        });
+      }
+
+      async loescheAusgeblendeteWarnungen(projektId) {
+        const cleanProjektId = String(projektId || "").trim();
+        if (!cleanProjektId) {
+          return;
+        }
+        await this.db.delete(STORE_NAMES.appSettings, `ausgeblendeteWarnungen:${cleanProjektId}`);
+      }
+
       async listProjekte() {
         const projekte = await this.db.getAll(STORE_NAMES.projekte);
 
@@ -3758,6 +4549,7 @@
         startZeit,
         endZeit,
         titel,
+        buchungsstatus,
         adresse,
         lat,
         lon,
@@ -3775,6 +4567,7 @@
           startZeit: startZeit || "",
           endZeit: endZeit || "",
           titel: String(titel || "").trim(),
+          buchungsstatus: normalizeBuchungsstatus(buchungsstatus),
           adresse: String(adresse || "").trim(),
           lat: toNumberOrNull(lat),
           lon: toNumberOrNull(lon),
@@ -3798,6 +4591,7 @@
           checkIn: eintrag.startZeit || "",
           checkOut: eintrag.endZeit || "",
           name: eintrag.titel || "",
+          buchungsstatus: normalizeBuchungsstatus(eintrag.buchungsstatus),
           adresse: eintrag.adresse || "",
           lat: toNumberOrNull(eintrag.lat),
           lon: toNumberOrNull(eintrag.lon),
@@ -3821,6 +4615,7 @@
           startZeit: eintrag.startZeit || "",
           endZeit: eintrag.endZeit || "",
           titel: eintrag.titel || "",
+          buchungsstatus: normalizeBuchungsstatus(eintrag.buchungsstatus),
           ort: eintrag.adresse || "",
           lat: toNumberOrNull(eintrag.lat),
           lon: toNumberOrNull(eintrag.lon),
@@ -4007,7 +4802,7 @@
         return aktualisierterStop;
       }
 
-      async createUnterkunft({ projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
+      async createUnterkunft({ projektId, checkIn, checkOut, name, buchungsstatus, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
         const bereinigterName = (name || "").trim();
         if (!projektId) {
           throw new Error("Projekt fehlt.");
@@ -4023,6 +4818,7 @@
           startZeit: checkIn || "",
           endZeit: checkOut || "",
           titel: bereinigterName,
+          buchungsstatus,
           adresse,
           lat,
           lon,
@@ -4042,7 +4838,7 @@
         return this._toUnterkunftView(eintrag);
       }
 
-      async updateUnterkunft(unterkunftId, { projektId, checkIn, checkOut, name, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
+      async updateUnterkunft(unterkunftId, { projektId, checkIn, checkOut, name, buchungsstatus, adresse, lat, lon, preis, waehrung, notizen, link, fruehstueckInklusive }) {
         if (!unterkunftId) {
           throw new Error("Unterkunft fehlt.");
         }
@@ -4064,6 +4860,7 @@
           startZeit: checkIn || "",
           endZeit: checkOut || "",
           titel: bereinigterName,
+          buchungsstatus,
           adresse,
           lat,
           lon,
@@ -4117,7 +4914,7 @@
         return this._toUnterkunftView(aktualisierterEintrag);
       }
 
-      async createAktivitaet({ projektId, startZeit, endZeit, titel, ort, lat, lon, kosten, waehrung, notizen, link }) {
+      async createAktivitaet({ projektId, startZeit, endZeit, titel, buchungsstatus, ort, lat, lon, kosten, waehrung, notizen, link }) {
         const bereinigterTitel = (titel || "").trim();
         if (!projektId) {
           throw new Error("Projekt fehlt.");
@@ -4133,6 +4930,7 @@
           startZeit: startZeit || "",
           endZeit: endZeit || "",
           titel: bereinigterTitel,
+          buchungsstatus,
           adresse: ort,
           lat,
           lon,
@@ -4151,7 +4949,7 @@
         return this._toAktivitaetView(eintrag);
       }
 
-      async updateAktivitaet(aktivitaetId, { projektId, startZeit, endZeit, titel, ort, lat, lon, kosten, waehrung, notizen, link }) {
+      async updateAktivitaet(aktivitaetId, { projektId, startZeit, endZeit, titel, buchungsstatus, ort, lat, lon, kosten, waehrung, notizen, link }) {
         if (!aktivitaetId) {
           throw new Error("Aktivität fehlt.");
         }
@@ -4173,6 +4971,7 @@
           startZeit: startZeit || "",
           endZeit: endZeit || "",
           titel: bereinigterTitel,
+          buchungsstatus,
           adresse: ort,
           lat,
           lon,
@@ -4519,7 +5318,7 @@
         );
       }
 
-      async listSegmentProfileByProjekt(projektId) {
+      async listSegmentConfigByProjekt(projektId) {
         if (!projektId) {
           return {};
         }
@@ -4527,30 +5326,52 @@
         const result = {};
         for (const eintrag of eintraege) {
           const segmentKey = String(eintrag?.segmentKey || "").trim();
-          const profile = normalizeProfile(eintrag?.profile);
           if (!segmentKey) {
             continue;
           }
-          result[segmentKey] = profile;
+          result[segmentKey] = normalizeSegmentConfig(eintrag);
         }
         return result;
       }
 
-      async setSegmentProfile({ projektId, segmentKey, profile }) {
+      async listSegmentProfileByProjekt(projektId) {
+        const configByKey = await this.listSegmentConfigByProjekt(projektId);
+        const result = {};
+        Object.entries(configByKey).forEach(([segmentKey, config]) => {
+          result[segmentKey] = normalizeProfile(config?.profile);
+        });
+        return result;
+      }
+
+      async setSegmentConfig({ projektId, segmentKey, profile, manualDistanceKm, manualDurationMin }) {
         const cleanProjektId = String(projektId || "").trim();
         const cleanSegmentKey = String(segmentKey || "").trim();
-        const cleanProfile = normalizeProfile(profile);
         if (!cleanProjektId || !cleanSegmentKey) {
           return;
         }
         const id = `${cleanProjektId}:${cleanSegmentKey}`;
+        const bestehend = await this.db.get(STORE_NAMES.segmentProfiles, id);
+        const normalizedExisting = normalizeSegmentConfig(bestehend || {});
+        const hasProfile = profile !== undefined;
+        const hasManualDistance = manualDistanceKm !== undefined;
+        const hasManualDuration = manualDurationMin !== undefined;
         await this.db.put(STORE_NAMES.segmentProfiles, {
           id,
           projektId: cleanProjektId,
           segmentKey: cleanSegmentKey,
-          profile: cleanProfile,
+          profile: hasProfile ? normalizeProfile(profile) : normalizedExisting.profile,
+          manualDistanceKm: hasManualDistance
+            ? normalizeManualDistanceKm(manualDistanceKm)
+            : normalizedExisting.manualDistanceKm,
+          manualDurationMin: hasManualDuration
+            ? normalizeManualDurationMin(manualDurationMin)
+            : normalizedExisting.manualDurationMin,
           updatedAt: new Date().toISOString(),
         });
+      }
+
+      async setSegmentProfile({ projektId, segmentKey, profile }) {
+        await this.setSegmentConfig({ projektId, segmentKey, profile });
       }
 
       async listTimelineEintraege(projektId) {
@@ -4900,6 +5721,11 @@
       return text;
     }
 
+    function normalizeBuchungsstatus(value) {
+      const text = String(value || "").trim().toLowerCase();
+      return text === "gebucht" ? "gebucht" : "geplant";
+    }
+
     function roundMoney(value) {
       return Math.round(value * 100) / 100;
     }
@@ -5132,6 +5958,7 @@
     const PROFILE_DEFAULT = "driving";
     const SEGMENT_PROFILE_OPTIONS = [
       { key: "driving", icon: "🚗", label: "Auto" },
+      { key: "bus", icon: "🚌", label: "Bus" },
       { key: "walking", icon: "🚶", label: "Zu Fuß" },
       { key: "flight", icon: "✈️", label: "Flugzeug" },
       { key: "ship", icon: "🚢", label: "Schiff" },
@@ -5140,16 +5967,291 @@
     const OSRM_ROUTING_PROFILES = ["driving", "walking"];
     const PROFILE_SPEED_KMH = {
       driving: 70,
+      bus: 50,
       walking: 5,
       flight: 750,
       ship: 35,
     };
+    const PROFILE_ROUTE_BASE = {
+      bus: "driving",
+    };
     const PROFILE_COLOR = {
       driving: "#64748b",
+      bus: "#f59e0b",
       walking: "#16a34a",
       flight: "#ef4444",
       ship: "#3b82f6",
     };
+    const TRANSFER_WARNUNG_MINUTEN = 30;
+    const PLAUSIBILITAETS_PUFFER_MINUTEN = 8;
+    const CHECKLISTE_VORLAGE = [
+      {
+        kategorie: "DOKUMENTE & FINANZEN",
+        items: [
+          "🛂 Reisepass / Personalausweis",
+          "🛂 Visum",
+          "🎫 Flug-, Bahn- oder Bustickets",
+          "📱 Buchungsbestätigungen",
+          "🗂️ Kopien (Ausweis, Versicherung)",
+          "💳 Kreditkarte / EC-Karte",
+          "💶 Bargeld",
+          "🪪 Führerschein",
+          "🚗 Fahrzeugschein",
+          "📄 Reiseversicherung",
+          "🏨 Hoteladresse",
+          "🧾 Reservierungen",
+          "🔑 Schlüssel",
+          "📇 Notfallkontakte",
+        ],
+      },
+      {
+        kategorie: "KLEIDUNG",
+        items: [
+          "👔 Shirts / Blusen / Hemden",
+          "👕 T-Shirts",
+          "🧥 Pullover / Jacke",
+          "🌧️ Regenjacke",
+          "👖 Hosen",
+          "🩳 Shorts",
+          "👗 Kleider",
+          "🩲 Unterwäsche",
+          "🧦 Socken",
+          "😴 Schlafsachen",
+          "🏊 Badekleidung",
+          "🧣 Schal",
+          "🧤 Handschuhe",
+          "🧢 Mütze / Cap",
+          "👟 Bequeme Schuhe",
+          "🥾 Feste Schuhe",
+          "🩴 Flip-Flops",
+          "🕶️ Sonnenbrille",
+          "🧺 Wäschebeutel",
+        ],
+      },
+      {
+        kategorie: "HYGIENE & PFLEGE",
+        items: [
+          "🪥 Zahnbürste",
+          "🦷 Zahnpasta",
+          "🧴 Shampoo",
+          "🚿 Duschgel",
+          "🧼 Seife",
+          "🧴 Deo",
+          "🪒 Rasierer",
+          "🪮 Kamm / Bürste",
+          "🧻 Taschentücher",
+          "🧴 Gesichtscreme",
+          "💄 Make-up",
+          "🧽 Abschminkzeug",
+          "🧷 Hygieneartikel",
+          "☀️ Sonnencreme",
+          "🦟 Mückenschutz",
+          "💅 Nagelpflege",
+          "🧼 Handdesinfektion",
+          "🧻 Feuchttücher",
+          "🧺 Reisehandtuch",
+        ],
+      },
+      {
+        kategorie: "GESUNDHEIT & REISEAPOTHEKE",
+        items: [
+          "🩺 Krankenversichertenkarte",
+          "💊 Persönliche Medikamente",
+          "🩹 Pflaster",
+          "🌡️ Fieberthermometer",
+          "🤕 Schmerzmittel",
+          "🤧 Mittel gegen Erkältung",
+          "🤢 Mittel gegen Übelkeit",
+          "💧 Elektrolyte",
+          "🧴 Wundsalbe",
+          "😷 Masken",
+          "🧾 Impfpass",
+          "🚑 Notfallmedikamente",
+          "🧪 Allergiemittel",
+        ],
+      },
+      {
+        kategorie: "TECHNIK & ZUBEHÖR",
+        items: [
+          "📱 Smartphone",
+          "🔌 Ladekabel",
+          "🔋 Powerbank",
+          "🎧 Kopfhörer",
+          "⌚ Smartwatch / Uhr",
+          "📷 Kamera",
+          "💾 Speicherkarte",
+          "💻 Laptop / Tablet",
+          "🖱️ Maus",
+          "🔌 Reiseadapter",
+          "🔌 Mehrfachstecker",
+          "💡 E-Reader",
+          "🎮 Unterhaltung",
+          "📡 SIM-Karte / eSIM-Daten",
+          "🧷 Kabeltasche",
+        ],
+      },
+      {
+        kategorie: "TASCHEN & ORGANISATION",
+        items: [
+          "🧳 Koffer",
+          "🎒 Rucksack",
+          "👝 Handtasche",
+          "👜 Daypack",
+          "🧺 Packwürfel",
+          "🛍️ Stoffbeutel",
+          "🔒 Kofferschloss",
+          "🏷️ Gepäckanhänger",
+          "📦 Zip-Beutel",
+          "🧴 Flüssigkeitsbeutel",
+        ],
+      },
+      {
+        kategorie: "ESSEN & UNTERWEGS",
+        items: [
+          "🥤 Trinkflasche",
+          "☕ Thermobecher",
+          "🍫 Snacks",
+          "🥪 Proviant",
+          "🍎 Obst",
+          "🍴 Reisebesteck",
+          "🧻 Servietten",
+          "🧃 Getränke",
+          "😴 Nackenkissen",
+          "🛏️ Schlafmaske",
+          "🔇 Ohrstöpsel",
+        ],
+      },
+      {
+        kategorie: "STRAND / SOMMERURLAUB",
+        items: [
+          "👙 Bikini / Badehose",
+          "🏖️ Strandtuch",
+          "🩴 Badeschuhe / Flip-Flops",
+          "☀️ Sonnencreme",
+          "👒 Sonnenhut",
+          "🕶️ Sonnenbrille",
+          "👜 Strandtasche",
+          "📖 Buch / Magazin",
+          "🤿 Schnorchel-Sachen",
+          "🏐 Strandspiele",
+        ],
+      },
+      {
+        kategorie: "OUTDOOR / AKTIVURLAUB",
+        items: [
+          "🥾 Wanderschuhe",
+          "🧦 Wandersocken",
+          "🎒 Tagesrucksack",
+          "🧥 Wetterfeste Kleidung",
+          "☀️ Sonnenschutz",
+          "🧢 Kopfbedeckung",
+          "🗺️ Karte",
+          "🧭 Kompass / Navigation",
+          "🔦 Taschenlampe",
+          "🧃 Trinksystem",
+          "🍫 Energieriegel",
+          "🩹 Blasenpflaster",
+          "🚴 Sportausrüstung",
+        ],
+      },
+      {
+        kategorie: "KINDER / FAMILIE",
+        items: [
+          "🍼 Fläschchen",
+          "🧸 Kuscheltier",
+          "🧷 Windeln",
+          "🧻 Feuchttücher",
+          "👕 Wechselkleidung",
+          "🍎 Snacks",
+          "🧴 Creme",
+          "🎲 Spielzeug",
+          "📚 Bücher",
+          "🚼 Kinderreiseapotheke",
+        ],
+      },
+      {
+        kategorie: "HAUSTIER",
+        items: [
+          "🍖 Futter",
+          "🥣 Napf",
+          "🦮 Leine",
+          "🧴 Beutel",
+          "🛏️ Decke",
+          "🧸 Spielzeug",
+          "📄 Heimtierausweis",
+          "💊 Tiermedikamente",
+        ],
+      },
+      {
+        kategorie: "AUTO / ROADTRIP",
+        items: [
+          "🔑 Autoschlüssel",
+          "⛽ Tankkarte",
+          "🗺️ Navigation",
+          "📱 Handyhalterung",
+          "🧃 Getränke",
+          "🍿 Snacks",
+          "🧻 Taschentücher",
+          "🦺 Warnweste",
+          "🔦 Taschenlampe",
+          "🛞 Ersatzrad / Pannenset",
+          "🧰 Werkzeug",
+          "📄 Fahrzeugpapiere",
+        ],
+      },
+      {
+        kategorie: "WINTERURLAUB",
+        items: [
+          "🧥 Winterjacke",
+          "🧤 Handschuhe",
+          "🧣 Schal",
+          "🧦 Warme Socken",
+          "🥾 Winterstiefel",
+          "🧢 Mütze",
+          "🎿 Ski-/Snowboardsachen",
+          "🕶️ Skibrille",
+          "🧴 Kälteschutzcreme",
+          "☀️ Sonnenschutz",
+        ],
+      },
+      {
+        kategorie: "UNTERKUNFT & KOMFORT",
+        items: [
+          "🔌 Ladegeräte griffbereit",
+          "🛏️ Schlafsachen",
+          "🧺 Hausschuhe",
+          "🧴 Kleine Waschmittelportion",
+          "🪡 Mini-Nähset",
+          "🧻 Taschentücher",
+          "🕯️ Kleine Extras für Komfort",
+          "📖 Lesestoff",
+        ],
+      },
+      {
+        kategorie: "VOR DER ABREISE",
+        items: [
+          "🏠 Fenster schließen",
+          "🔒 Tür abschließen",
+          "💡 Licht aus",
+          "🔌 Geräte ausstecken",
+          "🗑️ Müll rausbringen",
+          "🥛 Kühlschrank prüfen",
+          "🌿 Pflanzen versorgen",
+          "🐾 Betreuung organisieren",
+          "📱 Akku laden",
+          "⏰ Wecker stellen",
+          "🚕 Transfer planen",
+          "☁️ Wetter checken",
+        ],
+      },
+    ];
+    const CHECKLISTE_ITEMS = CHECKLISTE_VORLAGE.flatMap((gruppe, gruppenIndex) =>
+      (Array.isArray(gruppe?.items) ? gruppe.items : []).map((text, itemIndex) => ({
+        id: `chk-${gruppenIndex + 1}-${itemIndex + 1}`,
+        kategorie: String(gruppe?.kategorie || "").trim() || "Allgemein",
+        text: String(text || "").trim(),
+      })).filter((item) => item.text),
+    );
     let mapTileWarmupStarted = false;
 
     function latLonToTile(lat, lon, zoom) {
@@ -5302,10 +6404,11 @@
         unterkuenfte = [],
         aktivitaeten = [],
         profile = PROFILE_DEFAULT,
-        segmentProfileMap = {},
+        segmentConfigMap = {},
         options = {},
       ) {
         const showSegmentLabels = options.showSegmentLabels !== false;
+        const onSegmentClick = typeof options.onSegmentClick === "function" ? options.onSegmentClick : null;
         const mapReady = this.init();
         const sortedStops = [...stops].sort((a, b) => {
           const orderDiff = Number(a.reihenfolge || 0) - Number(b.reihenfolge || 0);
@@ -5421,20 +6524,30 @@
 
         const routeCoords = [];
         const routeKeys = [];
+        const routeLabels = [];
         routePoints.forEach((point) => {
           if (!hasCoordinates(point.eintrag)) {
             return;
           }
           routeCoords.push([Number(point.eintrag.lat), Number(point.eintrag.lon)]);
           routeKeys.push(`${point.typ}:${point.eintrag.id}`);
+          const eintrag = point.eintrag || {};
+          const label = point.typ === "unterkunft"
+            ? String(eintrag.name || eintrag.titel || "Unterkunft").trim()
+            : (point.typ === "aktivitaet"
+              ? String(eintrag.titel || "Aktivität").trim()
+              : String(eintrag.titel || "Stop").trim());
+          routeLabels.push(label || "Eintrag");
         });
 
         const routeResult = await this._resolveSegmentRoute(
           routeCoords,
           routeKeys,
+          routeLabels,
           profile,
-          segmentProfileMap,
+          segmentConfigMap,
           showSegmentLabels,
+          onSegmentClick,
         );
         this.routeLayer.setLatLngs([]);
 
@@ -5466,6 +6579,7 @@
 
       async _resolveRoute(routeCoords, profile) {
         const normalizedProfile = normalizeProfile(profile);
+        const routeProfile = normalizeProfile(PROFILE_ROUTE_BASE[normalizedProfile] || normalizedProfile);
         if (!Array.isArray(routeCoords) || routeCoords.length < 2) {
           return {
             lineCoords: routeCoords,
@@ -5479,13 +6593,13 @@
         const coordsKey = routeCoords
           .map(([lat, lon]) => `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`)
           .join("|");
-        const cacheKey = `${normalizedProfile}:${coordsKey}`;
+        const cacheKey = `${normalizedProfile}:${routeProfile}:${coordsKey}`;
         if (this.routeCache.has(cacheKey)) {
           return this.routeCache.get(cacheKey);
         }
 
         const fallbackDistanceKm = berechneDistanz(routeCoords);
-        const isRoadProfile = OSRM_ROUTING_PROFILES.includes(normalizedProfile);
+        const isRoadProfile = OSRM_ROUTING_PROFILES.includes(routeProfile);
         const fallback = {
           lineCoords: routeCoords,
           distanceKm: fallbackDistanceKm,
@@ -5501,7 +6615,7 @@
           }
 
           const coordText = routeCoords.map(([lat, lon]) => `${lon},${lat}`).join(";");
-          const url = `${OSRM_BASE_URL}/${normalizedProfile}/${coordText}?overview=full&geometries=geojson`;
+          const url = `${OSRM_BASE_URL}/${routeProfile}/${coordText}?overview=full&geometries=geojson`;
           const response = await fetch(url, { headers: { Accept: "application/json" } });
           if (!response.ok) {
             throw new Error(`OSRM ${response.status}`);
@@ -5543,7 +6657,15 @@
         }
       }
 
-      async _resolveSegmentRoute(routeCoords, routeKeys, defaultProfile, segmentProfileMap = {}, showSegmentLabels = true) {
+      async _resolveSegmentRoute(
+        routeCoords,
+        routeKeys,
+        routeLabels,
+        defaultProfile,
+        segmentConfigMap = {},
+        showSegmentLabels = true,
+        onSegmentClick = null,
+      ) {
         const normalizedDefault = normalizeProfile(defaultProfile);
         if (!Array.isArray(routeCoords) || routeCoords.length < 2) {
           return {
@@ -5565,13 +6687,22 @@
           const from = routeCoords[i - 1];
           const to = routeCoords[i];
           const segmentKey = `${routeKeys[i - 1]}->${routeKeys[i]}`;
-          const segmentProfile = normalizeProfile(segmentProfileMap[segmentKey] || normalizedDefault);
+          const segmentConfig = normalizeSegmentConfig(segmentConfigMap?.[segmentKey] || {});
+          const segmentProfile = normalizeProfile(segmentConfig.profile || normalizedDefault);
           usedProfiles.add(segmentProfile);
 
-          const segment = await this._resolveRoute([from, to], segmentProfile);
-          if (segment.routeType === "fallback") {
+          const autoSegment = await this._resolveRoute([from, to], segmentProfile);
+          if (autoSegment.routeType === "fallback") {
             hadFallback = true;
           }
+          const segmentDistanceKm = segmentConfig.manualDistanceKm ?? Number(autoSegment.distanceKm || 0);
+          const segmentDurationMin = segmentConfig.manualDurationMin ?? Number(autoSegment.durationMin || 0);
+          const segment = {
+            ...autoSegment,
+            distanceKm: Number.isFinite(segmentDistanceKm) ? segmentDistanceKm : 0,
+            durationMin: Number.isFinite(segmentDurationMin) ? segmentDurationMin : 0,
+            profile: segmentProfile,
+          };
 
           distanceKm += Number(segment.distanceKm || 0);
           durationMin += Number(segment.durationMin || 0);
@@ -5591,8 +6722,33 @@
                   permanent: true,
                   direction: "top",
                   offset: [0, -10],
-                  className: `segment-sprechblase segment-sprechblase-${segmentProfile}`,
+                  className: `segment-sprechblase segment-sprechblase-${segmentProfile}${onSegmentClick ? " segment-sprechblase-clickable" : ""}`,
                   opacity: 0.96,
+                  interactive: true,
+                });
+              }
+              if (onSegmentClick) {
+                const segmentMeta = {
+                  segmentKey,
+                  fromLabel: String(routeLabels?.[i - 1] || "Eintrag"),
+                  toLabel: String(routeLabels?.[i] || "Eintrag"),
+                  profile: segmentProfile,
+                  distanceKm: segment.distanceKm,
+                  durationMin: segment.durationMin,
+                  manualDistanceKm: segmentConfig.manualDistanceKm,
+                  manualDurationMin: segmentConfig.manualDurationMin,
+                };
+                segmentLine.on("click", () => onSegmentClick(segmentMeta));
+                segmentLine.on("tooltipopen", (event) => {
+                  const tooltipElement = event?.tooltip?.getElement?.();
+                  if (!(tooltipElement instanceof HTMLElement)) {
+                    return;
+                  }
+                  tooltipElement.onclick = (clickEvent) => {
+                    clickEvent.preventDefault();
+                    clickEvent.stopPropagation();
+                    onSegmentClick(segmentMeta);
+                  };
                 });
               }
               segmentLine.addTo(this.routeLayerGroup);
@@ -5616,6 +6772,43 @@
         return text;
       }
       return PROFILE_DEFAULT;
+    }
+
+    function normalizeManualDistanceKm(value) {
+      if (value === null || value === undefined || String(value).trim() === "") {
+        return null;
+      }
+      const parsed = Number(String(value).replace(",", "."));
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        return null;
+      }
+      return Math.round(parsed * 10) / 10;
+    }
+
+    function normalizeManualDurationMin(value) {
+      if (value === null || value === undefined || String(value).trim() === "") {
+        return null;
+      }
+      const parsed = Number(String(value).replace(",", "."));
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        return null;
+      }
+      return Math.round(parsed);
+    }
+
+    function normalizeSegmentConfig(value) {
+      if (typeof value === "string") {
+        return {
+          profile: normalizeProfile(value),
+          manualDistanceKm: null,
+          manualDurationMin: null,
+        };
+      }
+      return {
+        profile: normalizeProfile(value?.profile),
+        manualDistanceKm: normalizeManualDistanceKm(value?.manualDistanceKm),
+        manualDurationMin: normalizeManualDurationMin(value?.manualDurationMin),
+      };
     }
 
     function estimateDurationMinutes(distanceKm, profile) {
@@ -5742,7 +6935,8 @@
         this.bearbeiteProjektId = null;
         this.bearbeiteEintrag = null;
         this.aktiverHauptReiter = "timeline";
-        this.segmentProfileByKey = {};
+        this.segmentConfigByKey = {};
+        this.aktivesSegmentMetrik = null;
         this.zeigeSegmentSprechblasen = true;
         this.anzeigemodus = detectSystemAnzeigemodus();
         this.aktiverKostenTab = "kategorie";
@@ -5755,8 +6949,19 @@
         this.projektBildDataUrlDraft = "";
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
+        this.timelineStatusFilterValue = "all";
         this.kostenAusgabenTagFilterValue = "all";
         this.kostenAusgabenKategorieFilterValue = "all";
+        this.checklisteKategorieFilterValue = "all";
+        this.checklisteStatusById = {};
+        this.ausgeblendeteChecklisteItemIds = new Set();
+        this.checklisteLongTapTimer = 0;
+        this.checklisteLongTapItemId = "";
+        this.checklisteLongTapStart = null;
+        this.suppressChecklisteChangeUntil = 0;
+        this.dismissedTimelineWarnungIds = new Set();
+        this.preloadProjektIdInFlight = "";
+        this.preloadProjektIdDone = "";
         this.elemente = null;
       }
 
@@ -5775,10 +6980,12 @@
           timelineFilterZeile: document.querySelector("#timeline-filter-zeile"),
           timelineTypFilter: document.querySelector("#timeline-typ-filter"),
           timelineTagFilter: document.querySelector("#timeline-tag-filter"),
+          timelineStatusFilter: document.querySelector("#timeline-status-filter"),
           timelineListe: document.querySelector("#timeline-liste"),
           hauptReiter: document.querySelector("#haupt-reiter"),
           hauptProjektTitel: document.querySelector("#haupt-projekt-titel"),
           karteBereich: document.querySelector("#karte-bereich"),
+          checklisteBereich: document.querySelector("#checkliste-bereich"),
           karteDistanz: document.querySelector("#karte-distanz"),
           karteSegmentLabelsToggle: document.querySelector("#karte-segment-labels-toggle"),
           karteHinweis: document.querySelector("#karte-hinweis"),
@@ -5787,6 +6994,9 @@
           reiterProjektBearbeiten: document.querySelector("#reiter-projekt-bearbeiten"),
           reiterProjektLoeschen: document.querySelector("#reiter-projekt-loeschen"),
           kostenBereich: document.querySelector("#kosten-bereich"),
+          checklisteFilterZeile: document.querySelector("#checkliste-filter-zeile"),
+          checklisteKategorieFilter: document.querySelector("#checkliste-kategorie-filter"),
+          checklisteListe: document.querySelector("#checkliste-liste"),
           kostenGesamtListe: document.querySelector("#kosten-gesamt-liste"),
           kostenKategorieBereich: document.querySelector("#kosten-kategorie-bereich"),
           kostenTagBereich: document.querySelector("#kosten-tag-bereich"),
@@ -5807,6 +7017,9 @@
           jsonExportBtn: document.querySelector("#json-export-btn"),
           jsonFehler: document.querySelector("#json-fehler"),
           anzeigemodusButtons: Array.from(document.querySelectorAll("button[data-anzeigemodus]")),
+          warnungenResetBtn: document.querySelector("#warnungen-reset-btn"),
+          checklisteAusblendungenResetBtn: document.querySelector("#checkliste-ausblendungen-reset-btn"),
+          wiederanzeigenHinweis: document.querySelector("#wiederanzeigen-hinweis"),
           appVersionAnzeige: document.querySelector("#app-version-anzeige"),
           dateiForm: document.querySelector("#datei-form"),
           dateienInput: document.querySelector("#dateien-input"),
@@ -5831,6 +7044,9 @@
           eintragNameLabel: document.querySelector("#eintrag-name-label"),
           eintragAdresseLabel: document.querySelector("#eintrag-adresse-label"),
           eintragKostenLabel: document.querySelector("#eintrag-kosten-label"),
+          eintragBuchungsstatusInput: document.querySelector("#eintrag-buchungsstatus"),
+          eintragBuchungsstatusToggle: document.querySelector("#eintrag-buchungsstatus-toggle"),
+          eintragBuchungsstatusWrap: document.querySelector("#eintrag-buchungsstatus-wrap"),
           eintragWaehrungSelect: document.querySelector("#eintrag-waehrung"),
           ausgabeWaehrungSelect: document.querySelector("#ausgabe-waehrung"),
           einstellungenDialog: document.querySelector("#einstellungen-dialog"),
@@ -5841,6 +7057,15 @@
           zeitplanDialog: document.querySelector("#zeitplan-dialog"),
           zeitplanDialogOeffnen: document.querySelector("#zeitplan-dialog-oeffnen"),
           zeitplanDialogSchliessen: document.querySelector("#zeitplan-dialog-schliessen"),
+          segmentMetrikDialog: document.querySelector("#segment-metrik-dialog"),
+          segmentMetrikDialogSchliessen: document.querySelector("#segment-metrik-dialog-schliessen"),
+          segmentMetrikForm: document.querySelector("#segment-metrik-form"),
+          segmentMetrikKontext: document.querySelector("#segment-metrik-kontext"),
+          segmentMetrikProfileButtons: Array.from(document.querySelectorAll("#segment-metrik-profile-liste [data-segment-metrik-profile]")),
+          segmentMetrikDistanceInput: document.querySelector("#segment-manual-distance"),
+          segmentMetrikDurationInput: document.querySelector("#segment-manual-duration"),
+          segmentMetrikResetBtn: document.querySelector("#segment-metrik-reset-btn"),
+          segmentMetrikFehler: document.querySelector("#segment-metrik-fehler"),
           kostenDialog: document.querySelector("#kosten-dialog"),
           kostenDialogOeffnen: document.querySelector("#kosten-dialog-oeffnen"),
           kostenDialogSchliessen: document.querySelector("#kosten-dialog-schliessen"),
@@ -5849,6 +7074,7 @@
         this._verdrahteEvents();
         this._initDateiDropzones();
         this._aktualisiereEintragTypTabs();
+        this._setEintragBuchungsstatus("geplant");
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this._setAnzeigemodus(this.anzeigemodus, { persist: false });
         this._renderDbDateiStatus();
@@ -5878,6 +7104,48 @@
         await this._renderProjektliste();
         if (!this.aktivesProjekt) {
           this._oeffneEinstellungenDialog();
+        }
+        void this._preloadZuletztBearbeitetesProjektImHintergrund();
+      }
+
+      async _preloadZuletztBearbeitetesProjektImHintergrund() {
+        if (!this.storage.isDbReady()) {
+          return;
+        }
+
+        try {
+          const zuletztBearbeitetesProjektId = await this.storage.leseZuletztBearbeitetesProjektId();
+          const cleanProjektId = String(zuletztBearbeitetesProjektId || "").trim();
+          if (!cleanProjektId) {
+            return;
+          }
+          if (this.aktivesProjekt?.id === cleanProjektId) {
+            return;
+          }
+          if (this.preloadProjektIdInFlight === cleanProjektId || this.preloadProjektIdDone === cleanProjektId) {
+            return;
+          }
+          const projekt = await this.storage.getProjekt(cleanProjektId);
+          if (!projekt) {
+            return;
+          }
+
+          this.preloadProjektIdInFlight = cleanProjektId;
+          const [unterkuenfte, aktivitaeten] = await Promise.all([
+            this.storage.listUnterkuenfteByProjekt(cleanProjektId),
+            this.storage.listAktivitaetenByProjekt(cleanProjektId),
+          ]);
+
+          await Promise.all([
+            this.storage.resolveKoordinatenFuerProjekt({ unterkuenfte, aktivitaeten }),
+            this.storage.listSegmentConfigByProjekt(cleanProjektId),
+            this.storage.listTimelineEintraege(cleanProjektId),
+          ]);
+          this.preloadProjektIdDone = cleanProjektId;
+        } catch (error) {
+          console.warn("Hintergrund-Preload der zuletzt bearbeiteten Reise fehlgeschlagen.", error);
+        } finally {
+          this.preloadProjektIdInFlight = "";
         }
       }
 
@@ -5977,6 +7245,128 @@
           this.timelineTypFilterValue = this.timelineTypFilterValue === value ? "all" : value;
           await this._renderTimeline();
         });
+
+        this.elemente.timelineStatusFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-timeline-status]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.timelineStatus || "").trim();
+          if (!["geplant", "gebucht"].includes(value)) {
+            return;
+          }
+          this.timelineStatusFilterValue = this.timelineStatusFilterValue === value ? "all" : value;
+          await this._renderTimeline();
+        });
+
+        this.elemente.checklisteKategorieFilter?.addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-checkliste-kategorie]");
+          if (!button) {
+            return;
+          }
+          const value = String(button.dataset.checklisteKategorie || "").trim();
+          if (!value) {
+            return;
+          }
+          this.checklisteKategorieFilterValue = this.checklisteKategorieFilterValue === value ? "all" : value;
+          await this._renderCheckliste();
+        });
+
+        this.elemente.checklisteListe?.addEventListener("change", async (event) => {
+          const input = event.target.closest("input[data-checkliste-item-id]");
+          if (!(input instanceof HTMLInputElement) || !this.aktivesProjekt?.id) {
+            return;
+          }
+          const itemId = String(input.dataset.checklisteItemId || "").trim();
+          if (!itemId) {
+            return;
+          }
+          if (Date.now() < this.suppressChecklisteChangeUntil) {
+            input.checked = Boolean(this.checklisteStatusById[itemId]);
+            return;
+          }
+          const item = input.closest(".checkliste-item");
+          const checked = Boolean(input.checked);
+          this.checklisteStatusById[itemId] = checked;
+          if (item instanceof HTMLElement) {
+            item.classList.toggle("kontrolliert", checked);
+          }
+          void this.storage.speichereChecklisteStatus(this.aktivesProjekt.id, this.checklisteStatusById).catch(() => null);
+        });
+        this.elemente.checklisteListe?.addEventListener("contextmenu", async (event) => {
+          const item = event.target.closest(".checkliste-item[data-checkliste-item-id]");
+          if (!(item instanceof HTMLElement)) {
+            return;
+          }
+          event.preventDefault();
+          const itemId = String(item.dataset.checklisteItemId || "").trim();
+          if (!itemId) {
+            return;
+          }
+          await this._blendeChecklisteItemAus(itemId);
+        });
+        this.elemente.checklisteListe?.addEventListener("touchstart", (event) => {
+          const item = event.target.closest(".checkliste-item[data-checkliste-item-id]");
+          if (!(item instanceof HTMLElement)) {
+            return;
+          }
+          const itemId = String(item.dataset.checklisteItemId || "").trim();
+          if (!itemId || this.ausgeblendeteChecklisteItemIds.has(itemId)) {
+            return;
+          }
+          if (this.checklisteLongTapTimer) {
+            window.clearTimeout(this.checklisteLongTapTimer);
+          }
+          const touch = event.touches?.[0];
+          this.checklisteLongTapItemId = itemId;
+          this.checklisteLongTapStart = touch ? { x: touch.clientX, y: touch.clientY } : null;
+          this.checklisteLongTapTimer = window.setTimeout(async () => {
+            const longTapItemId = this.checklisteLongTapItemId;
+            this.checklisteLongTapTimer = 0;
+            this.checklisteLongTapItemId = "";
+            this.checklisteLongTapStart = null;
+            if (!longTapItemId) {
+              return;
+            }
+            this.suppressChecklisteChangeUntil = Date.now() + 700;
+            await this._blendeChecklisteItemAus(longTapItemId);
+          }, 600);
+        }, { passive: true });
+        this.elemente.checklisteListe?.addEventListener("touchmove", (event) => {
+          if (!this.checklisteLongTapTimer || !this.checklisteLongTapStart) {
+            return;
+          }
+          const touch = event.touches?.[0];
+          if (!touch) {
+            return;
+          }
+          const deltaX = Math.abs(touch.clientX - this.checklisteLongTapStart.x);
+          const deltaY = Math.abs(touch.clientY - this.checklisteLongTapStart.y);
+          if (deltaX > 12 || deltaY > 12) {
+            window.clearTimeout(this.checklisteLongTapTimer);
+            this.checklisteLongTapTimer = 0;
+            this.checklisteLongTapItemId = "";
+            this.checklisteLongTapStart = null;
+          }
+        }, { passive: true });
+        this.elemente.checklisteListe?.addEventListener("touchend", () => {
+          if (!this.checklisteLongTapTimer) {
+            return;
+          }
+          window.clearTimeout(this.checklisteLongTapTimer);
+          this.checklisteLongTapTimer = 0;
+          this.checklisteLongTapItemId = "";
+          this.checklisteLongTapStart = null;
+        }, { passive: true });
+        this.elemente.checklisteListe?.addEventListener("touchcancel", () => {
+          if (!this.checklisteLongTapTimer) {
+            return;
+          }
+          window.clearTimeout(this.checklisteLongTapTimer);
+          this.checklisteLongTapTimer = 0;
+          this.checklisteLongTapItemId = "";
+          this.checklisteLongTapStart = null;
+        }, { passive: true });
         this.elemente.kostenBereich?.addEventListener("click", async (event) => {
           const button = event.target.closest("button[data-kosten-nav-action]");
           if (!button) {
@@ -6092,6 +7482,12 @@
             this._setAnzeigemodus(mode, { persist: true });
           });
         });
+        this.elemente.warnungenResetBtn?.addEventListener("click", async () => {
+          await this._handleWarnungenWiedereinblenden();
+        });
+        this.elemente.checklisteAusblendungenResetBtn?.addEventListener("click", async () => {
+          await this._handleChecklisteAusblendungenWiedereinblenden();
+        });
 
         this.elemente.eintragForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -6107,6 +7503,10 @@
             this._setEintragTypValue(typ);
             this._aktualisiereEintragTypTabs();
           });
+        });
+        this.elemente.eintragBuchungsstatusToggle?.addEventListener("change", () => {
+          const status = this.elemente.eintragBuchungsstatusToggle?.checked ? "gebucht" : "geplant";
+          this._setEintragBuchungsstatus(status);
         });
         this.elemente.eintragLoeschenBtn?.addEventListener("click", async () => {
           if (!this.bearbeiteEintrag?.id || !this.bearbeiteEintrag?.typ) {
@@ -6229,6 +7629,31 @@
         });
 
         this.elemente.timelineListe.addEventListener("click", async (event) => {
+          const warnung = event.target.closest(".timeline-warnung[data-warning-id]");
+          if (warnung) {
+            const warningId = String(warnung.dataset.warningId || "").trim();
+            if (!warningId) {
+              return;
+            }
+            const bestaetigt = await zeigeAppBestaetigung({
+              titel: "Hinweis ausblenden",
+              text: "Möchtest du diesen Hinweis ausblenden?",
+              bestaetigenText: "Ausblenden",
+            });
+            if (!bestaetigt) {
+              return;
+            }
+            this.dismissedTimelineWarnungIds.add(warningId);
+            if (this.aktivesProjekt?.id) {
+              await this.storage.speichereAusgeblendeteWarnungen(
+                this.aktivesProjekt.id,
+                Array.from(this.dismissedTimelineWarnungIds),
+              );
+            }
+            await this._renderTimeline({ resolveKoordinaten: false });
+            return;
+          }
+
           const addButton = event.target.closest("button[data-timeline-add]");
           if (addButton) {
             this._oeffneZeitplanDialog();
@@ -6278,47 +7703,14 @@
             return;
           }
 
-          const segmentButton = event.target.closest("button[data-segment-profile][data-segment-key]");
-          if (segmentButton) {
-            const segmentKey = String(segmentButton.dataset.segmentKey || "").trim();
-            const profile = String(segmentButton.dataset.segmentProfile || "").trim().toLowerCase();
-            if (!segmentKey || !SEGMENT_PROFILE_KEYS.includes(profile)) {
+          const segmentInfoButton = event.target.closest("button[data-segment-metrics-action='open'][data-segment-key]");
+          if (segmentInfoButton) {
+            const segmentContainer = segmentInfoButton.closest(".timeline-segment-steuerung");
+            const segmentKey = String(segmentInfoButton.dataset.segmentKey || "").trim();
+            if (!segmentContainer || !segmentKey) {
               return;
             }
-            this.segmentProfileByKey[segmentKey] = profile;
-            if (this.aktivesProjekt?.id) {
-              await this.storage.setSegmentProfile({
-                projektId: this.aktivesProjekt.id,
-                segmentKey,
-                profile,
-              });
-            }
-            const segmentContainer = segmentButton.closest(".timeline-segment-steuerung");
-            if (segmentContainer instanceof HTMLElement) {
-              segmentContainer.querySelectorAll("button[data-segment-profile][data-segment-key]").forEach((button) => {
-                if (!(button instanceof HTMLButtonElement)) {
-                  return;
-                }
-                const istAktiv = String(button.dataset.segmentProfile || "").trim().toLowerCase() === profile;
-                button.classList.toggle("aktiv", istAktiv);
-              });
-              const segmentInfo = segmentContainer.querySelector(".timeline-segment-info");
-              if (segmentInfo instanceof HTMLElement) {
-                const fromLat = Number(segmentContainer.dataset.segmentFromLat);
-                const fromLon = Number(segmentContainer.dataset.segmentFromLon);
-                const toLat = Number(segmentContainer.dataset.segmentToLat);
-                const toLon = Number(segmentContainer.dataset.segmentToLon);
-                const segmentMetrik = await this._resolveTimelineSegmentRouteByCoords(fromLat, fromLon, toLat, toLon, profile);
-                const segmentDauerText = Number.isFinite(Number(segmentMetrik?.durationMin)) && Number(segmentMetrik.durationMin) > 0
-                  ? formatDurationMinutes(segmentMetrik.durationMin)
-                  : "-";
-                const segmentDistanzText = Number.isFinite(Number(segmentMetrik?.distanceKm)) && Number(segmentMetrik.distanceKm) > 0
-                  ? formatDistanzKm(segmentMetrik.distanceKm)
-                  : "-";
-                segmentInfo.innerHTML = `<span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span>`;
-              }
-            }
-            await this._renderKarteRoute();
+            this._oeffneSegmentMetrikDialogFuerElement(segmentContainer, segmentKey);
             return;
           }
 
@@ -6455,6 +7847,23 @@
           this._schliesseZeitplanDialog();
         });
 
+        this.elemente.segmentMetrikDialogSchliessen?.addEventListener("click", () => {
+          this._schliesseSegmentMetrikDialog();
+        });
+        this.elemente.segmentMetrikForm?.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          await this._handleSegmentMetrikSpeichern();
+        });
+        this.elemente.segmentMetrikProfileButtons?.forEach((button) => {
+          button.addEventListener("click", () => {
+            const profile = String(button.dataset.segmentMetrikProfile || "").trim().toLowerCase();
+            this._setSegmentMetrikProfile(profile);
+          });
+        });
+        this.elemente.segmentMetrikResetBtn?.addEventListener("click", async () => {
+          await this._handleSegmentMetrikReset();
+        });
+
         this.elemente.kostenDialogOeffnen?.addEventListener("click", () => {
           this._oeffneKostenDialog();
         });
@@ -6502,6 +7911,16 @@
 
         this.elemente.zeitplanDialog?.addEventListener("cancel", () => {
           this._resetZeitplanDialogState();
+          this._syncDialogBodyState();
+        });
+
+        this.elemente.segmentMetrikDialog?.addEventListener("close", () => {
+          this._resetSegmentMetrikDialogState();
+          this._syncDialogBodyState();
+        });
+
+        this.elemente.segmentMetrikDialog?.addEventListener("cancel", () => {
+          this._resetSegmentMetrikDialogState();
           this._syncDialogBodyState();
         });
 
@@ -6747,12 +8166,24 @@
           return;
         }
 
-        const bestaetigt = window.confirm(`Projekt „${projekt.titel}“ wirklich löschen?`);
+        const bestaetigt = await zeigeAppBestaetigung({
+          titel: "Projekt löschen",
+          text: `Projekt „${projekt.titel}“ wirklich löschen?`,
+          bestaetigenText: "Löschen",
+          gefahr: true,
+        });
         if (!bestaetigt) {
           return;
         }
 
         await this.storage.deleteProjekt(projektId);
+        const zuletztBearbeitetesProjektId = await this.storage.leseZuletztBearbeitetesProjektId();
+        if (zuletztBearbeitetesProjektId === String(projektId || "")) {
+          await this.storage.loescheZuletztBearbeitetesProjektId();
+        }
+        await this.storage.loescheChecklisteStatus(projektId);
+        await this.storage.loescheAusgeblendeteChecklisteItems(projektId);
+        await this.storage.loescheAusgeblendeteWarnungen(projektId);
 
         if (this.aktivesProjekt?.id === projektId) {
           this.aktivesProjekt = null;
@@ -6773,20 +8204,125 @@
           return;
         }
 
-        const [timeline, kosten, dateien] = await Promise.all([
+        const [timelineRaw, kosten, dateien, segmentConfigByKey, checklisteStatusById] = await Promise.all([
           this.storage.listTimelineEintraege(projektId),
           this.storage.getKostenStatistiken(projektId),
           this.storage.listDateienByProjekt(projektId),
+          this.storage.listSegmentConfigByProjekt(projektId),
+          this.storage.leseChecklisteStatus(projektId),
         ]);
+        const timeline = await this._resolveTimelineKoordinaten(timelineRaw);
+        const warnungen = this._collectTimelineWarnungen(timeline, segmentConfigByKey);
+        const timelineKey = (eintrag) => this._timelineEintragKey(eintrag);
+        const isPlanEintrag = (eintrag) => eintrag?.typ === "aktivitaet" || eintrag?.typ === "unterkunft";
+
+        const resolveSegmentMetrik = async ({ key, fromLat, fromLon, toLat, toLon, profile }) => {
+          const normalizedProfile = normalizeProfile(profile || PROFILE_DEFAULT);
+          const config = normalizeSegmentConfig(segmentConfigByKey?.[key] || {});
+          const fromLatNum = Number(fromLat);
+          const fromLonNum = Number(fromLon);
+          const toLatNum = Number(toLat);
+          const toLonNum = Number(toLon);
+          if (!Number.isFinite(fromLatNum)
+            || !Number.isFinite(fromLonNum)
+            || !Number.isFinite(toLatNum)
+            || !Number.isFinite(toLonNum)) {
+            return {
+              profile: normalizedProfile,
+              distanceKm: config.manualDistanceKm !== null ? config.manualDistanceKm : 0,
+              durationMin: config.manualDurationMin !== null ? config.manualDurationMin : 0,
+            };
+          }
+
+          const routeCoords = [
+            [fromLatNum, fromLonNum],
+            [toLatNum, toLonNum],
+          ];
+          const fallbackDistanceKm = berechneDistanz(routeCoords);
+          const fallbackDurationMin = estimateDurationMinutes(fallbackDistanceKm, normalizedProfile);
+          let distanceKm = fallbackDistanceKm;
+          let durationMin = fallbackDurationMin;
+
+          if (this.map && typeof this.map._resolveRoute === "function") {
+            try {
+              const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile);
+              const routeDistance = Number(routeResult?.distanceKm);
+              const routeDuration = Number(routeResult?.durationMin);
+              if (Number.isFinite(routeDistance) && routeDistance >= 0) {
+                distanceKm = routeDistance;
+              }
+              if (Number.isFinite(routeDuration) && routeDuration >= 0) {
+                durationMin = routeDuration;
+              }
+            } catch {
+            }
+          }
+
+          if (config.manualDistanceKm !== null) {
+            distanceKm = config.manualDistanceKm;
+          }
+          if (config.manualDurationMin !== null) {
+            durationMin = config.manualDurationMin;
+          }
+
+          return {
+            profile: normalizedProfile,
+            distanceKm,
+            durationMin,
+          };
+        };
 
         const timelineRows = timeline.length
           ? timeline
             .map((eintrag) => {
               const zeit = formatZeitpunkt(eintrag.typ, eintrag.eintrag);
-              return `<tr><td>${escapeHtml(badgeText(eintrag.typ))}</td><td>${escapeHtml(zeit)}</td><td>${escapeHtml(eintrag.titel)}</td><td>${escapeHtml(eintrag.untertitel || "-")}</td></tr>`;
+              const buchungsstatus = buchungsstatusLabel(normalizeBuchungsstatus(eintrag?.eintrag?.buchungsstatus));
+              const eintragWarnungen = warnungen.eintragWarnungenByKey.get(timelineKey(eintrag)) || [];
+              const warnungText = eintragWarnungen.length ? eintragWarnungen.join(" | ") : "-";
+              return `<tr><td>${escapeHtml(badgeText(eintrag.typ))}</td><td>${escapeHtml(zeit)}</td><td>${escapeHtml(eintrag.titel)}</td><td>${escapeHtml(eintrag.untertitel || "-")}</td><td>${escapeHtml(buchungsstatus)}</td><td class="warn-col">${escapeHtml(warnungText)}</td></tr>`;
             })
             .join("")
-          : '<tr><td colspan="4">Keine Einträge</td></tr>';
+          : '<tr><td colspan="6">Keine Einträge</td></tr>';
+
+        const segmentRowsData = [];
+        for (let index = 0; index < timeline.length - 1; index += 1) {
+          const fromEintrag = timeline[index];
+          const toEintrag = timeline[index + 1];
+          if (!isPlanEintrag(fromEintrag) || !isPlanEintrag(toEintrag)) {
+            continue;
+          }
+          const key = `${timelineKey(fromEintrag)}->${timelineKey(toEintrag)}`;
+          const config = normalizeSegmentConfig(segmentConfigByKey?.[key] || {});
+          const profile = normalizeProfile(config.profile || PROFILE_DEFAULT);
+          const metriken = await resolveSegmentMetrik({
+            key,
+            fromLat: fromEintrag?.eintrag?.lat,
+            fromLon: fromEintrag?.eintrag?.lon,
+            toLat: toEintrag?.eintrag?.lat,
+            toLon: toEintrag?.eintrag?.lon,
+            profile,
+          });
+          const segmentWarnungen = warnungen.segmentWarnungenByKey.get(key) || [];
+          segmentRowsData.push({
+            fromLabel: String(fromEintrag?.titel || "Eintrag").trim() || "Eintrag",
+            toLabel: String(toEintrag?.titel || "Eintrag").trim() || "Eintrag",
+            profile: metriken.profile,
+            durationMin: Number(metriken.durationMin || 0),
+            distanceKm: Number(metriken.distanceKm || 0),
+            warnungen: segmentWarnungen,
+          });
+        }
+
+        const segmentRows = segmentRowsData.length
+          ? segmentRowsData
+            .map((segment) => {
+              const durationText = segment.durationMin > 0 ? formatDurationMinutes(segment.durationMin) : "-";
+              const distanceText = segment.distanceKm > 0 ? formatDistanzKm(segment.distanceKm) : "-";
+              const warnungText = segment.warnungen.length ? segment.warnungen.join(" | ") : "-";
+              return `<tr><td>${escapeHtml(segment.fromLabel)}</td><td>${escapeHtml(segment.toLabel)}</td><td>${escapeHtml(profilLabel(segment.profile))}</td><td>${escapeHtml(durationText)}</td><td>${escapeHtml(distanceText)}</td><td class="warn-col">${escapeHtml(warnungText)}</td></tr>`;
+            })
+            .join("")
+          : '<tr><td colspan="6">Keine Segmente</td></tr>';
 
         const kostenRows = kosten.anzahl
           ? `<tr><td>Gesamt</td><td>${escapeHtml(formatBetrag(kosten.gesamtEur || 0, "EUR"))}</td></tr>`
@@ -6796,33 +8332,73 @@
           ? dateien.map((datei) => `<li>${escapeHtml(formatAnzeigeDateiname(datei.name || "Datei", { maxLength: 40 }))} (${escapeHtml(formatDateigroesse(datei.blob?.size || 0))})</li>`).join("")
           : "<li>Keine Dateien</li>";
 
+        const gesamtCheckliste = CHECKLISTE_ITEMS.length;
+        const erledigtCheckliste = CHECKLISTE_ITEMS
+          .filter((item) => Boolean(checklisteStatusById?.[item.id]))
+          .length;
+        const offeneNachKategorie = new Map();
+        CHECKLISTE_ITEMS.forEach((item) => {
+          if (checklisteStatusById?.[item.id]) {
+            return;
+          }
+          const key = String(item.kategorie || "Allgemein").trim() || "Allgemein";
+          if (!offeneNachKategorie.has(key)) {
+            offeneNachKategorie.set(key, []);
+          }
+          offeneNachKategorie.get(key).push(item.text);
+        });
+        const checklisteRows = offeneNachKategorie.size
+          ? Array.from(offeneNachKategorie.entries())
+            .map(([kategorie, items]) => `<li><strong>${escapeHtml(kategorie)}:</strong> ${escapeHtml(items.join(" | "))}</li>`)
+            .join("")
+          : "<li>Alle Punkte erledigt.</li>";
+
         const html = `<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <title>Druckansicht - ${escapeHtml(projekt.titel || "Reise")}</title>
   <style>
-    body{font-family:Arial,sans-serif;color:#111827;margin:24px;}
-    h1,h2{margin:0 0 10px;} h2{margin-top:24px;font-size:18px;}
-    p.meta{margin:0 0 8px;color:#4b5563;}
-    table{width:100%;border-collapse:collapse;margin-top:8px;}
-    th,td{border:1px solid #d1d5db;padding:8px;text-align:left;font-size:13px;}
+    body{font-family:Arial,sans-serif;color:#111827;margin:20px;line-height:1.28;}
+    h1,h2{margin:0 0 8px;} h2{margin-top:16px;font-size:16px;}
+    p.meta{margin:0 0 8px;color:#4b5563;font-size:12px;}
+    p.compact{margin:6px 0;font-size:12px;}
+    table{width:100%;border-collapse:collapse;margin-top:6px;}
+    th,td{border:1px solid #d1d5db;padding:5px 6px;text-align:left;font-size:11px;vertical-align:top;}
     th{background:#f3f4f6;}
-    ul{margin:8px 0 0;padding-left:18px;}
-    .eur{margin-top:8px;font-weight:700;}
-    @media print { body { margin: 10mm; } }
+    td.warn-col{font-size:10.5px;}
+    ul{margin:6px 0 0;padding-left:18px;}
+    li{font-size:11px;margin:2px 0;}
+    .eur{margin-top:6px;font-size:12px;font-weight:700;}
+    .section{break-inside:avoid;}
+    @media print { body { margin: 8mm; } }
   </style>
 ${"</he"+"ad>"}
 <body>
   <h1>${escapeHtml(projekt.titel || "Reise")}</h1>
   <p class="meta">Exportiert am ${escapeHtml(formatDatumZeit(new Date().toISOString()))}</p>
-  <h2>Zeitplan</h2>
-  <table><thead><tr><th>Typ</th><th>Zeit</th><th>Name</th><th>Ort</th></tr></thead><tbody>${timelineRows}</tbody></table>
-  <h2>Kosten</h2>
-  <table><thead><tr><th>Typ</th><th>Summe</th></tr></thead><tbody>${kostenRows}</tbody></table>
+  <section class="section">
+    <h2>Zeitplan</h2>
+    <table><thead><tr><th>Typ</th><th>Zeit</th><th>Name</th><th>Ort</th><th>Status</th><th>Warnungen</th></tr></thead><tbody>${timelineRows}</tbody></table>
+  </section>
+  <section class="section">
+    <h2>Segmente</h2>
+    <table><thead><tr><th>Von</th><th>Nach</th><th>Verkehr</th><th>Dauer</th><th>Strecke</th><th>Warnungen</th></tr></thead><tbody>${segmentRows}</tbody></table>
+  </section>
+  <section class="section">
+    <h2>Kosten</h2>
+    <table><thead><tr><th>Typ</th><th>Summe</th></tr></thead><tbody>${kostenRows}</tbody></table>
+  </section>
   <p class="eur">Gesamtkosten: ${escapeHtml(formatBetrag(kosten.gesamtEur || 0, "EUR"))}</p>
-  <h2>Dateien</h2>
-  <ul>${dateiRows}</ul>
+  <section class="section">
+    <h2>Checkliste</h2>
+    <p class="compact">Erledigt: ${escapeHtml(String(erledigtCheckliste))} / ${escapeHtml(String(gesamtCheckliste))}</p>
+    <ul>${checklisteRows}</ul>
+  </section>
+  <section class="section">
+    <h2>Dateien</h2>
+    <ul>${dateiRows}</ul>
+  </section>
 ${"</bo"+"dy>"}
 ${"</ht"+"ml>"}
 `;
@@ -6866,10 +8442,30 @@ ${"</ht"+"ml>"}
         this.timelineGalerieAuswahlByEintrag = {};
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
+        this.timelineStatusFilterValue = "all";
         this.kostenAusgabenTagFilterValue = "all";
         this.kostenAusgabenKategorieFilterValue = "all";
+        this.checklisteKategorieFilterValue = "all";
         this.bearbeiteAusgabeId = null;
-        this.segmentProfileByKey = await this.storage.listSegmentProfileByProjekt(projekt.id);
+        const [segmentConfigByKey, checklisteStatusById, ausgeblendeteChecklisteItems, ausgeblendeteWarnungen] = await Promise.all([
+          this.storage.listSegmentConfigByProjekt(projekt.id),
+          this.storage.leseChecklisteStatus(projekt.id),
+          this.storage.leseAusgeblendeteChecklisteItems(projekt.id),
+          this.storage.leseAusgeblendeteWarnungen(projekt.id),
+        ]);
+        this.segmentConfigByKey = segmentConfigByKey;
+        this.checklisteStatusById = checklisteStatusById;
+        this.ausgeblendeteChecklisteItemIds = new Set(ausgeblendeteChecklisteItems);
+        if (this.checklisteLongTapTimer) {
+          window.clearTimeout(this.checklisteLongTapTimer);
+        }
+        this.checklisteLongTapTimer = 0;
+        this.checklisteLongTapItemId = "";
+        this.checklisteLongTapStart = null;
+        this.suppressChecklisteChangeUntil = 0;
+        this.dismissedTimelineWarnungIds = new Set(ausgeblendeteWarnungen);
+        this.aktivesSegmentMetrik = null;
+        void this.storage.speichereZuletztBearbeitetesProjektId(projekt.id).catch(() => null);
         await this._renderProjektliste();
         await this._renderTimeline({ resolveKoordinaten: false, hydrateSegmentMetriken: false });
         void this._renderTimeline().catch((error) => {
@@ -6883,6 +8479,7 @@ ${"</ht"+"ml>"}
           this._aktualisiereWaehrungsAuswahl(),
           this._renderKostenUebersicht(),
           this._renderDateiAblage(),
+          this._renderCheckliste(),
         ]).catch((error) => {
           console.warn("Projekt-Nebenbereiche konnten nicht vollständig vorgeladen werden.", error);
         });
@@ -6922,9 +8519,11 @@ ${"</ht"+"ml>"}
           }
 
           if (fehlendeAngaben.length) {
-            const bestaetigt = window.confirm(
-              `Es fehlen folgende Angaben: ${fehlendeAngaben.join(", ")}.\nTrotzdem speichern?`,
-            );
+            const bestaetigt = await zeigeAppBestaetigung({
+              titel: "Unvollständige Angaben",
+              text: `Es fehlen folgende Angaben: ${fehlendeAngaben.join(", ")}.\nTrotzdem speichern?`,
+              bestaetigenText: "Trotzdem speichern",
+            });
             if (!bestaetigt) {
               return;
             }
@@ -6936,6 +8535,7 @@ ${"</ht"+"ml>"}
               checkIn: startZeit,
               checkOut: endZeit,
               name: formData.get("name"),
+              buchungsstatus: formData.get("buchungsstatus"),
               adresse,
               lat: formData.get("lat"),
               lon: formData.get("lon"),
@@ -6959,6 +8559,7 @@ ${"</ht"+"ml>"}
               startZeit,
               endZeit,
               titel: formData.get("name"),
+              buchungsstatus: formData.get("buchungsstatus"),
               ort: adresse,
               lat: formData.get("lat"),
               lon: formData.get("lon"),
@@ -7049,11 +8650,23 @@ ${"</ht"+"ml>"}
         this._aktualisiereHauptReiter();
         this._resetTimelineBildVorschauen();
         this.timelineGalerieAuswahlByEintrag = {};
-        this.segmentProfileByKey = {};
+        this.segmentConfigByKey = {};
+        this.aktivesSegmentMetrik = null;
         this.timelineTagFilterValue = "all";
         this.timelineTypFilterValue = "all";
         this.kostenAusgabenTagFilterValue = "all";
         this.kostenAusgabenKategorieFilterValue = "all";
+        this.checklisteKategorieFilterValue = "all";
+        this.checklisteStatusById = {};
+        this.ausgeblendeteChecklisteItemIds = new Set();
+        if (this.checklisteLongTapTimer) {
+          window.clearTimeout(this.checklisteLongTapTimer);
+        }
+        this.checklisteLongTapTimer = 0;
+        this.checklisteLongTapItemId = "";
+        this.checklisteLongTapStart = null;
+        this.suppressChecklisteChangeUntil = 0;
+        this.dismissedTimelineWarnungIds = new Set();
         if (this.elemente.timelineTypFilter) {
           this.elemente.timelineTypFilter.innerHTML = "";
           this.elemente.timelineTypFilter.hidden = true;
@@ -7061,6 +8674,10 @@ ${"</ht"+"ml>"}
         if (this.elemente.timelineTagFilter) {
           this.elemente.timelineTagFilter.innerHTML = "";
           this.elemente.timelineTagFilter.hidden = true;
+        }
+        if (this.elemente.timelineStatusFilter) {
+          this.elemente.timelineStatusFilter.innerHTML = "";
+          this.elemente.timelineStatusFilter.hidden = true;
         }
         this._syncTimelineFilterZeile();
         this.elemente.timelineListe.innerHTML = "";
@@ -7082,6 +8699,16 @@ ${"</ht"+"ml>"}
         }
         if (this.elemente.kostenAusgabenFilterZeile) {
           this.elemente.kostenAusgabenFilterZeile.hidden = true;
+        }
+        if (this.elemente.checklisteKategorieFilter) {
+          this.elemente.checklisteKategorieFilter.innerHTML = "";
+          this.elemente.checklisteKategorieFilter.hidden = true;
+        }
+        if (this.elemente.checklisteFilterZeile) {
+          this.elemente.checklisteFilterZeile.hidden = true;
+        }
+        if (this.elemente.checklisteListe) {
+          this.elemente.checklisteListe.innerHTML = "";
         }
         this._setAktiverKostenTab(this.aktiverKostenTab);
         this.elemente.dateienListe.innerHTML = "";
@@ -7159,6 +8786,123 @@ ${"</ht"+"ml>"}
         });
       }
 
+      _timelineEintragKey(eintrag) {
+        return `${String(eintrag?.typ || "")}:${String(eintrag?.eintrag?.id || "")}`;
+      }
+
+      _timelineEintragZeitbereich(eintrag) {
+        const startRaw = eintrag?.typ === "unterkunft"
+          ? eintrag?.eintrag?.checkIn
+          : eintrag?.eintrag?.startZeit;
+        const endeRaw = eintrag?.typ === "unterkunft"
+          ? eintrag?.eintrag?.checkOut
+          : eintrag?.eintrag?.endZeit;
+        const start = startRaw ? new Date(startRaw) : null;
+        const ende = endeRaw ? new Date(endeRaw) : null;
+        return {
+          start: start && !Number.isNaN(start.getTime()) ? start : null,
+          ende: ende && !Number.isNaN(ende.getTime()) ? ende : null,
+        };
+      }
+
+      _addTimelineWarnung(map, key, text) {
+        const cleanKey = String(key || "").trim();
+        const cleanText = String(text || "").trim();
+        if (!cleanKey || !cleanText) {
+          return;
+        }
+        if (!map.has(cleanKey)) {
+          map.set(cleanKey, []);
+        }
+        const list = map.get(cleanKey);
+        if (!list.includes(cleanText)) {
+          list.push(cleanText);
+        }
+      }
+
+      _collectTimelineWarnungen(eintraege, segmentConfigByKeyOverride = null) {
+        const eintragWarnungenByKey = new Map();
+        const segmentWarnungenByKey = new Map();
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const segmentConfigByKey = isPlainObject(segmentConfigByKeyOverride)
+          ? segmentConfigByKeyOverride
+          : this.segmentConfigByKey;
+        for (let index = 0; index < list.length - 1; index += 1) {
+          const current = list[index];
+          const next = list[index + 1];
+          if (!current || !next) {
+            continue;
+          }
+          const currentKey = this._timelineEintragKey(current);
+          const nextKey = this._timelineEintragKey(next);
+          if (!currentKey || !nextKey) {
+            continue;
+          }
+          const segmentKey = `${currentKey}->${nextKey}`;
+          const currentZeit = this._timelineEintragZeitbereich(current);
+          const nextZeit = this._timelineEintragZeitbereich(next);
+
+          if (currentZeit.ende && nextZeit.start && nextZeit.start < currentZeit.ende) {
+            const overlapMin = Math.max(1, Math.round((currentZeit.ende.getTime() - nextZeit.start.getTime()) / 60000));
+            const overlapText = `⚠️ Überschneidung mit ${next.titel || "nächstem Eintrag"} (${overlapMin} min).`;
+            const overlapTextPrev = `⚠️ Überschneidung mit ${current.titel || "vorigem Eintrag"} (${overlapMin} min).`;
+            this._addTimelineWarnung(eintragWarnungenByKey, currentKey, overlapText);
+            this._addTimelineWarnung(eintragWarnungenByKey, nextKey, overlapTextPrev);
+            this._addTimelineWarnung(segmentWarnungenByKey, segmentKey, "⚠️ Zeitfenster überschneidet sich.");
+            continue;
+          }
+
+          if (!currentZeit.ende || !nextZeit.start) {
+            continue;
+          }
+
+          const lueckeMin = Math.round((nextZeit.start.getTime() - currentZeit.ende.getTime()) / 60000);
+          if (!Number.isFinite(lueckeMin) || lueckeMin < 0) {
+            continue;
+          }
+
+          if (lueckeMin < TRANSFER_WARNUNG_MINUTEN) {
+            this._addTimelineWarnung(
+              segmentWarnungenByKey,
+              segmentKey,
+              `⚠️ Kurzer Umstieg: nur ${Math.max(0, lueckeMin)} min Puffer.`,
+            );
+          }
+
+          const profile = normalizeProfile(segmentConfigByKey?.[segmentKey]?.profile || PROFILE_DEFAULT);
+          const metriken = this._berechneTimelineSegmentFallbackMetrik(
+            Number(current?.eintrag?.lat),
+            Number(current?.eintrag?.lon),
+            Number(next?.eintrag?.lat),
+            Number(next?.eintrag?.lon),
+            profile,
+            segmentKey,
+          );
+          const segmentConfig = normalizeSegmentConfig(segmentConfigByKey?.[segmentKey] || {});
+          const fahrzeitMin = Number(
+            segmentConfig.manualDurationMin !== null
+              ? segmentConfig.manualDurationMin
+              : (metriken?.durationMin || 0),
+          );
+          if (fahrzeitMin <= 0) {
+            continue;
+          }
+
+          if (lueckeMin + PLAUSIBILITAETS_PUFFER_MINUTEN < fahrzeitMin) {
+            this._addTimelineWarnung(
+              segmentWarnungenByKey,
+              segmentKey,
+              `⚠️ Unplausible Fahrzeit: verfügbar ${lueckeMin} min, benötigt ca. ${Math.round(fahrzeitMin)} min.`,
+            );
+          }
+        }
+
+        return {
+          eintragWarnungenByKey,
+          segmentWarnungenByKey,
+        };
+      }
+
       async _renderTimeline({ resolveKoordinaten = true, hydrateSegmentMetriken = true } = {}) {
         if (!this.aktivesProjekt) {
           this._zeigeLeeresProjekt();
@@ -7176,12 +8920,17 @@ ${"</ht"+"ml>"}
           return;
         }
         this._renderTimelineTypFilter(eintraege);
+        this._renderTimelineStatusFilter(eintraege);
         const tagOptionen = this._collectTimelineTagOptionen(eintraege);
         this._renderTimelineTagFilter(tagOptionen);
         this._syncTimelineFilterZeile();
+        const warnungen = this._collectTimelineWarnungen(eintraege);
         const eintraegeNachTyp = this._filterTimelineEintraegeByTyp(eintraege, this.timelineTypFilterValue);
-        const gefilterteEintraege = this._filterTimelineEintraegeByTag(eintraegeNachTyp, this.timelineTagFilterValue);
-        const hatAktiveFilter = this.timelineTypFilterValue !== "all" || this.timelineTagFilterValue !== "all";
+        const eintraegeNachStatus = this._filterTimelineEintraegeByStatus(eintraegeNachTyp, this.timelineStatusFilterValue);
+        const gefilterteEintraege = this._filterTimelineEintraegeByTag(eintraegeNachStatus, this.timelineTagFilterValue);
+        const hatAktiveFilter = this.timelineTypFilterValue !== "all"
+          || this.timelineTagFilterValue !== "all"
+          || this.timelineStatusFilterValue !== "all";
         const plusEintrag = `
       <li class="timeline-plus-eintrag">
         <button type="button" class="plus-reise-knopf timeline-plus-knopf" data-timeline-add="1" aria-label="Eintrag hinzufügen">
@@ -7209,6 +8958,9 @@ ${"</ht"+"ml>"}
             const anhaenge = Array.isArray(eintrag.anhaenge) ? eintrag.anhaenge : [];
             const badge = badgeText(eintrag.typ);
             const badgeClass = `badge-${eintrag.typ}`;
+            const buchungsstatus = normalizeBuchungsstatus(eintrag?.eintrag?.buchungsstatus);
+            const buchungsstatusBadgeClass = `badge-buchungsstatus-${buchungsstatus}`;
+            const buchungsstatusBadgeText = buchungsstatusLabel(buchungsstatus);
             const zeiten = formatZeitZeilen(eintrag.typ, eintrag.eintrag);
             const nights = eintrag.typ === "unterkunft"
               ? berechneUebernachtungen(eintrag.eintrag?.checkIn, eintrag.eintrag?.checkOut)
@@ -7281,9 +9033,20 @@ ${"</ht"+"ml>"}
             const ortHtml = isEintrag
               ? `<button type="button" class="timeline-ort-link" data-timeline-ort-action="karte" data-timeline-typ="${eintrag.typ}" data-timeline-id="${eintrag.eintrag.id}">${escapeHtml(eintrag.untertitel || "-")}</button>`
               : `<span>${escapeHtml(eintrag.untertitel || "-")}</span>`;
+            const eintragWarnungen = warnungen.eintragWarnungenByKey.get(timelineKey(eintrag)) || [];
+            const sichtbareEintragWarnungen = eintragWarnungen.filter((text) => {
+              const warningId = `eintrag:${timelineKey(eintrag)}:${text}`;
+              return !this.dismissedTimelineWarnungIds.has(warningId);
+            });
+            const warnungenHtml = sichtbareEintragWarnungen.length
+              ? `<div class="timeline-warnungen">${sichtbareEintragWarnungen.map((text) => {
+                const warningId = `eintrag:${timelineKey(eintrag)}:${text}`;
+                return `<p class="timeline-warnung" data-warning-id="${escapeHtml(warningId)}" title="Zum Ausblenden klicken">${escapeHtml(text)}</p>`;
+              }).join("")}</div>`
+              : "";
 
-            const datenHtml = `<div class="timeline-daten"><div class="timeline-zeiten"><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🟢</span><span class="timeline-zeit-label">${escapeHtml(zeiten.startLabel)}:</span><span>${escapeHtml(zeiten.start)}</span></p><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🔴</span><span class="timeline-zeit-label">${escapeHtml(zeiten.endeLabel)}:</span><span>${escapeHtml(zeiten.ende)}</span></p></div><p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">📍</span>${ortHtml}</p>${naechteHtml}${fruehstueckHtml}${linkHtml}${detailsHtml}</div>`;
-            listHtml += `<li class="timeline-eintrag timeline-typ-${eintrag.typ}${eintragBildKlasse}" style="animation-delay:${index * 36}ms"><div class="timeline-zeile"><div class="timeline-kopf"><div class="timeline-kopf-links"><h4>${escapeHtml(eintrag.titel)}</h4><span class="badge ${badgeClass}">${badge}</span></div><div class="timeline-kopf-rechts">${aktionenHtml}</div></div><div class="timeline-inhalt">${bildVorschauHtml}${datenHtml}</div></div></li>`;
+            const datenHtml = `<div class="timeline-daten"><div class="timeline-zeiten"><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🟢</span><span class="timeline-zeit-label">${escapeHtml(zeiten.startLabel)}:</span><span>${escapeHtml(zeiten.start)}</span></p><p class="timeline-zeitzeile"><span class="timeline-zeit-symbol" aria-hidden="true">🔴</span><span class="timeline-zeit-label">${escapeHtml(zeiten.endeLabel)}:</span><span>${escapeHtml(zeiten.ende)}</span></p></div><p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">📍</span>${ortHtml}</p>${naechteHtml}${fruehstueckHtml}${linkHtml}${detailsHtml}${warnungenHtml}</div>`;
+            listHtml += `<li class="timeline-eintrag timeline-typ-${eintrag.typ}${eintragBildKlasse}" style="animation-delay:${index * 36}ms"><div class="timeline-zeile"><div class="timeline-kopf"><div class="timeline-kopf-links"><h4>${escapeHtml(eintrag.titel)}</h4><span class="badge ${badgeClass}">${badge}</span><span class="badge ${buchungsstatusBadgeClass}">${escapeHtml(buchungsstatusBadgeText)}</span></div><div class="timeline-kopf-rechts">${aktionenHtml}</div></div><div class="timeline-inhalt">${bildVorschauHtml}${datenHtml}</div></div></li>`;
 
             const nextEintrag = gefilterteEintraege[index + 1];
             const hasCurrentAndNext = !hatAktiveFilter
@@ -7291,28 +9054,38 @@ ${"</ht"+"ml>"}
               && (nextEintrag?.typ === "aktivitaet" || nextEintrag?.typ === "unterkunft");
             if (hasCurrentAndNext) {
               const key = segmentKey(eintrag, nextEintrag);
-              const activeProfile = normalizeProfile(this.segmentProfileByKey[key] || PROFILE_DEFAULT);
+              const config = normalizeSegmentConfig(this.segmentConfigByKey[key] || {});
+              const activeProfile = normalizeProfile(config.profile || PROFILE_DEFAULT);
               const fromLat = Number(eintrag?.eintrag?.lat);
               const fromLon = Number(eintrag?.eintrag?.lon);
               const toLat = Number(nextEintrag?.eintrag?.lat);
               const toLon = Number(nextEintrag?.eintrag?.lon);
-              const segmentMetrik = this._berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, activeProfile);
+              const fromLabel = String(eintrag?.titel || "Eintrag").trim() || "Eintrag";
+              const toLabel = String(nextEintrag?.titel || "Eintrag").trim() || "Eintrag";
+              const segmentMetrik = this._berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, activeProfile, key);
               const segmentDauerText = Number.isFinite(Number(segmentMetrik?.durationMin)) && Number(segmentMetrik.durationMin) > 0
                 ? formatDurationMinutes(segmentMetrik.durationMin)
                 : "-";
               const segmentDistanzText = Number.isFinite(Number(segmentMetrik?.distanceKm)) && Number(segmentMetrik.distanceKm) > 0
                 ? formatDistanzKm(segmentMetrik.distanceKm)
                 : "-";
-              const segmentInfoHtml = `<div class="timeline-segment-info"><span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span></div>`;
+              const segmentInfoHtml = `<button type="button" class="timeline-segment-info timeline-segment-info-btn timeline-segment-info-${activeProfile}" data-segment-metrics-action="open" data-segment-key="${escapeHtml(key)}" title="Strecke und Dauer manuell setzen"><span class="timeline-segment-info-item" title="Reisedauer">⏱ ${escapeHtml(segmentDauerText)}</span><span class="timeline-segment-info-item" title="Reisestrecke">📏 ${escapeHtml(segmentDistanzText)}</span></button>`;
+              const segmentWarnungen = warnungen.segmentWarnungenByKey.get(key) || [];
+              const sichtbareSegmentWarnungen = segmentWarnungen.filter((text) => {
+                const warningId = `segment:${key}:${text}`;
+                return !this.dismissedTimelineWarnungIds.has(warningId);
+              });
+              const segmentWarnungenHtml = sichtbareSegmentWarnungen.length
+                ? `<div class="timeline-warnungen">${sichtbareSegmentWarnungen.map((text) => {
+                  const warningId = `segment:${key}:${text}`;
+                  return `<p class="timeline-warnung" data-warning-id="${escapeHtml(warningId)}" title="Zum Ausblenden klicken">${escapeHtml(text)}</p>`;
+                }).join("")}</div>`
+                : "";
               const fromLatAttr = Number.isFinite(fromLat) ? String(fromLat) : "";
               const fromLonAttr = Number.isFinite(fromLon) ? String(fromLon) : "";
               const toLatAttr = Number.isFinite(toLat) ? String(toLat) : "";
               const toLonAttr = Number.isFinite(toLon) ? String(toLon) : "";
-              const profileButtons = SEGMENT_PROFILE_OPTIONS.map((option) => {
-                const aktiv = activeProfile === option.key ? "aktiv" : "";
-                return `<button type="button" class="timeline-segment-btn ${aktiv}" data-segment-key="${escapeHtml(key)}" data-segment-profile="${escapeHtml(option.key)}" aria-label="${escapeHtml(option.label)}" title="${escapeHtml(option.label)}">${option.icon}</button>`;
-              }).join("");
-              listHtml += `<li class="timeline-segment-steuerung" data-segment-key="${escapeHtml(key)}" data-segment-from-lat="${escapeHtml(fromLatAttr)}" data-segment-from-lon="${escapeHtml(fromLonAttr)}" data-segment-to-lat="${escapeHtml(toLatAttr)}" data-segment-to-lon="${escapeHtml(toLonAttr)}"><div class="timeline-segment-inhalt">${segmentInfoHtml}${profileButtons}</div></li>`;
+              listHtml += `<li class="timeline-segment-steuerung" data-segment-key="${escapeHtml(key)}" data-segment-from-label="${escapeHtml(fromLabel)}" data-segment-to-label="${escapeHtml(toLabel)}" data-segment-from-lat="${escapeHtml(fromLatAttr)}" data-segment-from-lon="${escapeHtml(fromLonAttr)}" data-segment-to-lat="${escapeHtml(toLatAttr)}" data-segment-to-lon="${escapeHtml(toLonAttr)}"><div class="timeline-segment-inhalt">${segmentInfoHtml}</div>${segmentWarnungenHtml}</li>`;
               if (hydrateSegmentMetriken) {
                 segmentHydrationJobs.push({
                   key,
@@ -7332,7 +9105,7 @@ ${"</ht"+"ml>"}
         }
       }
 
-      _berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT) {
+      _berechneTimelineSegmentFallbackMetrik(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT, segmentKey = "") {
         if (!Number.isFinite(Number(fromLat))
           || !Number.isFinite(Number(fromLon))
           || !Number.isFinite(Number(toLat))
@@ -7346,7 +9119,10 @@ ${"</ht"+"ml>"}
         ];
         const distanceKm = berechneDistanz(routeCoords);
         const durationMin = estimateDurationMinutes(distanceKm, normalizedProfile);
-        return { distanceKm, durationMin };
+        return this._applySegmentManualMetriken({
+          distanceKm,
+          durationMin,
+        }, segmentKey);
       }
 
       async _hydrateTimelineSegmentMetriken(jobs, { renderVersion, projektId }) {
@@ -7389,6 +9165,7 @@ ${"</ht"+"ml>"}
               job.toLat,
               job.toLon,
               job.profile,
+              job.key,
             );
             if (renderVersion !== this.timelineRenderVersion || projektId !== String(this.aktivesProjekt?.id || "")) {
               return;
@@ -7485,6 +9262,36 @@ ${"</ht"+"ml>"}
         this.elemente.timelineTagFilter.hidden = false;
       }
 
+      _renderTimelineStatusFilter(eintraege) {
+        if (!this.elemente.timelineStatusFilter) {
+          return;
+        }
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const statusWerte = new Set(
+          list
+            .map((eintrag) => normalizeBuchungsstatus(eintrag?.eintrag?.buchungsstatus))
+            .filter((value) => ["geplant", "gebucht"].includes(value)),
+        );
+        if (!statusWerte.size) {
+          this.timelineStatusFilterValue = "all";
+          this.elemente.timelineStatusFilter.innerHTML = "";
+          this.elemente.timelineStatusFilter.hidden = true;
+          return;
+        }
+        if (!["all", "geplant", "gebucht"].includes(this.timelineStatusFilterValue)) {
+          this.timelineStatusFilterValue = "all";
+        }
+        const statusButtons = [];
+        if (statusWerte.has("geplant")) {
+          statusButtons.push(`<button type="button" class="timeline-tag-btn ${this.timelineStatusFilterValue === "geplant" ? "aktiv" : ""}" data-timeline-status="geplant" title="Nochmal klicken zum Deselektieren">Geplant</button>`);
+        }
+        if (statusWerte.has("gebucht")) {
+          statusButtons.push(`<button type="button" class="timeline-tag-btn ${this.timelineStatusFilterValue === "gebucht" ? "aktiv" : ""}" data-timeline-status="gebucht" title="Nochmal klicken zum Deselektieren">Gebucht</button>`);
+        }
+        this.elemente.timelineStatusFilter.innerHTML = statusButtons.join("");
+        this.elemente.timelineStatusFilter.hidden = statusButtons.length === 0;
+      }
+
       _filterTimelineEintraegeByTag(eintraege, tagValue) {
         const list = Array.isArray(eintraege) ? eintraege : [];
         const key = String(tagValue || "all").trim();
@@ -7506,13 +9313,121 @@ ${"</ht"+"ml>"}
         return list.filter((eintrag) => String(eintrag?.typ || "").trim() === key);
       }
 
+      _filterTimelineEintraegeByStatus(eintraege, statusValue) {
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        const key = String(statusValue || "all").trim();
+        if (!key || key === "all") {
+          return list;
+        }
+        if (!["geplant", "gebucht"].includes(key)) {
+          return list;
+        }
+        return list.filter((eintrag) => normalizeBuchungsstatus(eintrag?.eintrag?.buchungsstatus) === key);
+      }
+
       _syncTimelineFilterZeile() {
         if (!this.elemente.timelineFilterZeile) {
           return;
         }
         const tagHidden = this.elemente.timelineTagFilter?.hidden !== false;
         const typHidden = this.elemente.timelineTypFilter?.hidden !== false;
-        this.elemente.timelineFilterZeile.hidden = tagHidden && typHidden;
+        const statusHidden = this.elemente.timelineStatusFilter?.hidden !== false;
+        this.elemente.timelineFilterZeile.hidden = tagHidden && typHidden && statusHidden;
+      }
+
+      _renderChecklisteKategorieFilter(items = CHECKLISTE_ITEMS) {
+        if (!this.elemente.checklisteKategorieFilter) {
+          return;
+        }
+        const list = Array.isArray(items) ? items : CHECKLISTE_ITEMS;
+        const kategorien = Array.from(new Set(list.map((item) => item.kategorie)));
+        if (!kategorien.length) {
+          this.elemente.checklisteKategorieFilter.innerHTML = "";
+          this.elemente.checklisteKategorieFilter.hidden = true;
+          if (this.elemente.checklisteFilterZeile) {
+            this.elemente.checklisteFilterZeile.hidden = true;
+          }
+          this.checklisteKategorieFilterValue = "all";
+          return;
+        }
+        const erlaubteWerte = new Set(["all", ...kategorien]);
+        if (!erlaubteWerte.has(this.checklisteKategorieFilterValue)) {
+          this.checklisteKategorieFilterValue = "all";
+        }
+        this.elemente.checklisteKategorieFilter.innerHTML = kategorien
+          .map((kategorie) => `<button type="button" class="timeline-tag-btn ${this.checklisteKategorieFilterValue === kategorie ? "aktiv" : ""}" data-checkliste-kategorie="${escapeHtml(kategorie)}" title="Nochmal klicken zum Deselektieren">${escapeHtml(formatKategorieLabel(kategorie))}</button>`)
+          .join("");
+        this.elemente.checklisteKategorieFilter.hidden = false;
+        if (this.elemente.checklisteFilterZeile) {
+          this.elemente.checklisteFilterZeile.hidden = false;
+        }
+      }
+
+      async _blendeChecklisteItemAus(itemId) {
+        const cleanItemId = String(itemId || "").trim();
+        if (!cleanItemId) {
+          return;
+        }
+        this.ausgeblendeteChecklisteItemIds.add(cleanItemId);
+        if (this.aktivesProjekt?.id) {
+          await this.storage.speichereAusgeblendeteChecklisteItems(
+            this.aktivesProjekt.id,
+            Array.from(this.ausgeblendeteChecklisteItemIds),
+          );
+        }
+        await this._renderCheckliste();
+      }
+
+      async _renderCheckliste() {
+        if (!this.elemente.checklisteListe) {
+          return;
+        }
+        if (!this.aktivesProjekt?.id) {
+          this.elemente.checklisteListe.innerHTML = "";
+          if (this.elemente.checklisteKategorieFilter) {
+            this.elemente.checklisteKategorieFilter.innerHTML = "";
+            this.elemente.checklisteKategorieFilter.hidden = true;
+          }
+          if (this.elemente.checklisteFilterZeile) {
+            this.elemente.checklisteFilterZeile.hidden = true;
+          }
+          return;
+        }
+
+        const sichtbareItems = CHECKLISTE_ITEMS.filter((item) => !this.ausgeblendeteChecklisteItemIds.has(item.id));
+        this._renderChecklisteKategorieFilter(sichtbareItems);
+
+        const gefiltert = this.checklisteKategorieFilterValue === "all"
+          ? sichtbareItems
+          : sichtbareItems.filter((item) => item.kategorie === this.checklisteKategorieFilterValue);
+
+        if (!gefiltert.length) {
+          this.elemente.checklisteListe.innerHTML = '<li class="timeline-leer">Keine Checklistenpunkte für diesen Filter.</li>';
+          return;
+        }
+
+        const gruppen = new Map();
+        gefiltert.forEach((item) => {
+          const key = String(item.kategorie || "").trim() || "Allgemein";
+          if (!gruppen.has(key)) {
+            gruppen.set(key, []);
+          }
+          gruppen.get(key).push(item);
+        });
+
+        this.elemente.checklisteListe.innerHTML = Array.from(gruppen.entries())
+          .map(([kategorie, items]) => {
+            const itemsHtml = items
+              .map((item) => {
+                const checked = Boolean(this.checklisteStatusById[item.id]);
+                const checkedAttr = checked ? " checked" : "";
+                const checkedClass = checked ? " kontrolliert" : "";
+                return `<li class="checkliste-item${checkedClass}" data-checkliste-item-id="${escapeHtml(item.id)}" title="Rechtsklick: Ausblenden"><label class="checkliste-item-label"><input class="checkliste-item-checkbox" type="checkbox" data-checkliste-item-id="${escapeHtml(item.id)}"${checkedAttr}><span class="checkliste-item-text">${escapeHtml(item.text)}</span></label></li>`;
+              })
+              .join("");
+            return `<li class="checkliste-gruppe"><h4 class="checkliste-gruppe-titel">${escapeHtml(formatKategorieLabel(kategorie))}</h4><ul class="checkliste-gruppe-items">${itemsHtml}</ul></li>`;
+          })
+          .join("");
       }
 
       _resetTimelineBildVorschauen() {
@@ -7632,7 +9547,39 @@ ${"</ht"+"ml>"}
         return url;
       }
 
-      async _resolveTimelineSegmentRoute(fromEintrag, toEintrag, profile = PROFILE_DEFAULT) {
+      _getSegmentConfig(segmentKey) {
+        const key = String(segmentKey || "").trim();
+        if (!key) {
+          return normalizeSegmentConfig({});
+        }
+        return normalizeSegmentConfig(this.segmentConfigByKey[key] || {});
+      }
+
+      _getSegmentProfile(segmentKey, fallbackProfile = PROFILE_DEFAULT) {
+        const config = this._getSegmentConfig(segmentKey);
+        return normalizeProfile(config.profile || fallbackProfile);
+      }
+
+      _applySegmentManualMetriken(metriken, segmentKey = "") {
+        const result = {
+          distanceKm: Number(metriken?.distanceKm || 0),
+          durationMin: Number(metriken?.durationMin || 0),
+        };
+        const key = String(segmentKey || "").trim();
+        if (!key) {
+          return result;
+        }
+        const config = this._getSegmentConfig(key);
+        if (config.manualDistanceKm !== null) {
+          result.distanceKm = config.manualDistanceKm;
+        }
+        if (config.manualDurationMin !== null) {
+          result.durationMin = config.manualDurationMin;
+        }
+        return result;
+      }
+
+      async _resolveTimelineSegmentRoute(fromEintrag, toEintrag, profile = PROFILE_DEFAULT, segmentKey = "") {
         const start = fromEintrag?.eintrag;
         const ziel = toEintrag?.eintrag;
         if (!hasCoordinates(start) || !hasCoordinates(ziel)) {
@@ -7641,10 +9588,10 @@ ${"</ht"+"ml>"}
 
         const fromCoord = [Number(start.lat), Number(start.lon)];
         const toCoord = [Number(ziel.lat), Number(ziel.lon)];
-        return this._resolveTimelineSegmentRouteByCoords(fromCoord[0], fromCoord[1], toCoord[0], toCoord[1], profile);
+        return this._resolveTimelineSegmentRouteByCoords(fromCoord[0], fromCoord[1], toCoord[0], toCoord[1], profile, segmentKey);
       }
 
-      async _resolveTimelineSegmentRouteByCoords(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT) {
+      async _resolveTimelineSegmentRouteByCoords(fromLat, fromLon, toLat, toLon, profile = PROFILE_DEFAULT, segmentKey = "") {
         if (!Number.isFinite(Number(fromLat))
           || !Number.isFinite(Number(fromLon))
           || !Number.isFinite(Number(toLat))
@@ -7661,25 +9608,25 @@ ${"</ht"+"ml>"}
         const fallbackDurationMin = estimateDurationMinutes(fallbackDistanceKm, normalizedProfile);
 
         if (!this.map || typeof this.map._resolveRoute !== "function") {
-          return {
+          return this._applySegmentManualMetriken({
             distanceKm: fallbackDistanceKm,
             durationMin: fallbackDurationMin,
-          };
+          }, segmentKey);
         }
 
         try {
           const routeResult = await this.map._resolveRoute(routeCoords, normalizedProfile);
           const distanceKm = Number(routeResult?.distanceKm);
           const durationMin = Number(routeResult?.durationMin);
-          return {
+          return this._applySegmentManualMetriken({
             distanceKm: Number.isFinite(distanceKm) && distanceKm >= 0 ? distanceKm : fallbackDistanceKm,
             durationMin: Number.isFinite(durationMin) && durationMin >= 0 ? durationMin : fallbackDurationMin,
-          };
+          }, segmentKey);
         } catch {
-          return {
+          return this._applySegmentManualMetriken({
             distanceKm: fallbackDistanceKm,
             durationMin: fallbackDurationMin,
-          };
+          }, segmentKey);
         }
       }
 
@@ -7706,8 +9653,13 @@ ${"</ht"+"ml>"}
           resolved.unterkuenfte,
           resolved.aktivitaeten,
           PROFILE_DEFAULT,
-          this.segmentProfileByKey,
-          { showSegmentLabels: this.zeigeSegmentSprechblasen },
+          this.segmentConfigByKey,
+          {
+            showSegmentLabels: this.zeigeSegmentSprechblasen,
+            onSegmentClick: (segmentMeta) => {
+              this._oeffneSegmentMetrikDialog(segmentMeta);
+            },
+          },
         );
 
         if (result.markerCount >= 2) {
@@ -8168,7 +10120,6 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const vorherAktivesProjektId = this.aktivesProjekt?.id || "";
         this._setJsonDbAuswahlPending(true);
         if (this.elemente.jsonFehler) {
           this.elemente.jsonFehler.textContent = "";
@@ -8176,6 +10127,8 @@ ${"</ht"+"ml>"}
 
         try {
           await this.storage.waehleJsonDatenbank({ mode: normalizedMode });
+          this.preloadProjektIdInFlight = "";
+          this.preloadProjektIdDone = "";
           await this._ladeAnzeigemodusAusDatenbank();
           if (this.elemente.einstellungenDialogSchliessen) {
             this.elemente.einstellungenDialogSchliessen.disabled = false;
@@ -8185,22 +10138,10 @@ ${"</ht"+"ml>"}
           this.bearbeiteProjektId = null;
 
           await this._renderProjektliste();
-          if (vorherAktivesProjektId) {
-            const projekt = await this.storage.getProjekt(vorherAktivesProjektId);
-            if (projekt) {
-              await this._setAktivesProjekt(vorherAktivesProjektId);
-              this._setStatus("");
-              return;
-            }
-          }
-
-          const projekte = await this.storage.listProjekte();
-          if (projekte.length) {
-            await this._setAktivesProjekt(projekte[0].id);
-          } else {
-            this.aktivesProjekt = null;
-            this._zeigeLeeresProjekt();
-          }
+          this.aktivesProjekt = null;
+          this._zeigeLeeresProjekt();
+          this._oeffneEinstellungenDialog();
+          void this._preloadZuletztBearbeitetesProjektImHintergrund();
           this._setStatus("");
         } catch (error) {
           if (error?.name === "AbortError") {
@@ -8294,7 +10235,12 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const bestaetigt = window.confirm(`Datei „${dateiEintrag.name}“ wirklich löschen?`);
+        const bestaetigt = await zeigeAppBestaetigung({
+          titel: "Datei löschen",
+          text: `Datei „${dateiEintrag.name}“ wirklich löschen?`,
+          bestaetigenText: "Löschen",
+          gefahr: true,
+        });
         if (!bestaetigt) {
           return;
         }
@@ -8499,6 +10445,20 @@ ${"</ht"+"ml>"}
         }
       }
 
+      _setEintragBuchungsstatus(status) {
+        const normalized = normalizeBuchungsstatus(status);
+        if (this.elemente.eintragBuchungsstatusInput) {
+          this.elemente.eintragBuchungsstatusInput.value = normalized;
+        }
+        if (this.elemente.eintragBuchungsstatusToggle) {
+          this.elemente.eintragBuchungsstatusToggle.checked = normalized === "gebucht";
+          this.elemente.eintragBuchungsstatusToggle.setAttribute("aria-checked", String(normalized === "gebucht"));
+        }
+        if (this.elemente.eintragBuchungsstatusWrap) {
+          this.elemente.eintragBuchungsstatusWrap.setAttribute("data-status", normalized);
+        }
+      }
+
       async _starteEintragBearbeiten(typ, eintragId) {
         if (!this.aktivesProjekt || !eintragId) {
           return;
@@ -8518,6 +10478,7 @@ ${"</ht"+"ml>"}
           this.elemente.eintragForm.querySelector("#eintrag-endDate").value = ende.date;
           this.elemente.eintragForm.querySelector("#eintrag-endTime").value = ende.time;
           this.elemente.eintragForm.querySelector("#eintrag-name").value = aktivitaet.titel || "";
+          this._setEintragBuchungsstatus(aktivitaet.buchungsstatus);
           this.elemente.eintragForm.querySelector("#eintrag-adresse").value = aktivitaet.ort || "";
           this.elemente.eintragForm.querySelector("#eintrag-kosten").value = aktivitaet.kosten ?? "";
           this.elemente.eintragForm.querySelector("#eintrag-waehrung").value = aktivitaet.waehrung || "EUR";
@@ -8548,6 +10509,7 @@ ${"</ht"+"ml>"}
           this.elemente.eintragForm.querySelector("#eintrag-endDate").value = checkOut.date;
           this.elemente.eintragForm.querySelector("#eintrag-endTime").value = checkOut.time;
           this.elemente.eintragForm.querySelector("#eintrag-name").value = unterkunft.name || "";
+          this._setEintragBuchungsstatus(unterkunft.buchungsstatus);
           this.elemente.eintragForm.querySelector("#eintrag-adresse").value = unterkunft.adresse || "";
           this.elemente.eintragForm.querySelector("#eintrag-kosten").value = unterkunft.preis ?? "";
           this.elemente.eintragForm.querySelector("#eintrag-waehrung").value = unterkunft.waehrung || "EUR";
@@ -8579,7 +10541,12 @@ ${"</ht"+"ml>"}
             return;
           }
 
-          const bestaetigt = window.confirm(`Eintrag „${aktivitaet.titel || "Eintrag"}“ wirklich löschen?`);
+          const bestaetigt = await zeigeAppBestaetigung({
+            titel: "Eintrag löschen",
+            text: `Eintrag „${aktivitaet.titel || "Eintrag"}“ wirklich löschen?`,
+            bestaetigenText: "Löschen",
+            gefahr: true,
+          });
           if (!bestaetigt) {
             return;
           }
@@ -8603,7 +10570,12 @@ ${"</ht"+"ml>"}
             return;
           }
 
-          const bestaetigt = window.confirm(`Eintrag „${unterkunft.name || "Eintrag"}“ wirklich löschen?`);
+          const bestaetigt = await zeigeAppBestaetigung({
+            titel: "Eintrag löschen",
+            text: `Eintrag „${unterkunft.name || "Eintrag"}“ wirklich löschen?`,
+            bestaetigenText: "Löschen",
+            gefahr: true,
+          });
           if (!bestaetigt) {
             return;
           }
@@ -8663,13 +10635,54 @@ ${"</ht"+"ml>"}
         void text;
       }
 
+      _setWiederanzeigenHinweis(text) {
+        if (!this.elemente?.wiederanzeigenHinweis) {
+          return;
+        }
+        this.elemente.wiederanzeigenHinweis.textContent = String(text || "").trim();
+      }
+
+      async _handleWarnungenWiedereinblenden() {
+        if (!this.aktivesProjekt?.id) {
+          this._setWiederanzeigenHinweis("Keine aktive Reise ausgewählt.");
+          return;
+        }
+        const hatteAusgeblendeteWarnungen = this.dismissedTimelineWarnungIds.size > 0;
+        this.dismissedTimelineWarnungIds.clear();
+        await this.storage.loescheAusgeblendeteWarnungen(this.aktivesProjekt.id);
+        await this._renderTimeline({ resolveKoordinaten: false });
+        if (hatteAusgeblendeteWarnungen) {
+          this._setStatus("Ausgeblendete Hinweise wurden wieder eingeblendet.");
+          this._setWiederanzeigenHinweis("Überschneidungshinweise wurden wieder angezeigt.");
+          return;
+        }
+        this._setWiederanzeigenHinweis("Keine ausgeblendeten Überschneidungshinweise vorhanden.");
+      }
+
+      async _handleChecklisteAusblendungenWiedereinblenden() {
+        if (!this.aktivesProjekt?.id) {
+          this._setWiederanzeigenHinweis("Keine aktive Reise ausgewählt.");
+          return;
+        }
+        const hatteAusgeblendeteItems = this.ausgeblendeteChecklisteItemIds.size > 0;
+        this.ausgeblendeteChecklisteItemIds.clear();
+        await this.storage.loescheAusgeblendeteChecklisteItems(this.aktivesProjekt.id);
+        await this._renderCheckliste();
+        if (hatteAusgeblendeteItems) {
+          this._setStatus("Ausgeblendete Checklisten-Items wurden wieder eingeblendet.");
+          this._setWiederanzeigenHinweis("Ausgeblendete Checklisten-Items wurden wieder angezeigt.");
+          return;
+        }
+        this._setWiederanzeigenHinweis("Keine ausgeblendeten Checklisten-Items vorhanden.");
+      }
+
       _setProjektDialogModus(istBearbeiten) {
         this.elemente.projektDialogTitel.textContent = istBearbeiten ? "Reisetitel bearbeiten" : "Neue Reise";
         this.elemente.projektDialogSubmit.textContent = istBearbeiten ? "Änderungen speichern" : "Projekt speichern";
       }
 
       _setAktiverHauptReiter(reiterName) {
-        if (!["timeline", "karte", "kosten", "ablage"].includes(reiterName)) {
+        if (!["timeline", "karte", "kosten", "checkliste", "ablage"].includes(reiterName)) {
           return;
         }
 
@@ -8681,6 +10694,9 @@ ${"</ht"+"ml>"}
             this.map?.invalidateSize();
             await this._renderKarteRoute();
           });
+        }
+        if (reiterName === "checkliste" && this.aktivesProjekt) {
+          void this._renderCheckliste();
         }
       }
 
@@ -8703,6 +10719,7 @@ ${"</ht"+"ml>"}
           timeline: this.elemente.timelineBereich,
           karte: this.elemente.karteBereich,
           kosten: this.elemente.kostenBereich,
+          checkliste: this.elemente.checklisteBereich,
           ablage: this.elemente.ablageBereich,
         };
 
@@ -8920,6 +10937,152 @@ ${"</ht"+"ml>"}
         }
       }
 
+      _oeffneSegmentMetrikDialogFuerElement(segmentContainer, segmentKey) {
+        if (!(segmentContainer instanceof HTMLElement)) {
+          return;
+        }
+        const fromLabel = String(segmentContainer.dataset.segmentFromLabel || "Eintrag").trim() || "Eintrag";
+        const toLabel = String(segmentContainer.dataset.segmentToLabel || "Eintrag").trim() || "Eintrag";
+        const profile = this._getSegmentProfile(segmentKey, PROFILE_DEFAULT);
+        this._oeffneSegmentMetrikDialog({
+          segmentKey,
+          fromLabel,
+          toLabel,
+          profile,
+        });
+      }
+
+      _oeffneSegmentMetrikDialog(segmentMeta) {
+        const segmentKey = String(segmentMeta?.segmentKey || "").trim();
+        if (!segmentKey || !this.aktivesProjekt?.id || !this.elemente.segmentMetrikDialog) {
+          return;
+        }
+        const config = this._getSegmentConfig(segmentKey);
+        const profile = this._getSegmentProfile(segmentKey, segmentMeta?.profile || PROFILE_DEFAULT);
+        const fromLabel = String(segmentMeta?.fromLabel || "Eintrag").trim() || "Eintrag";
+        const toLabel = String(segmentMeta?.toLabel || "Eintrag").trim() || "Eintrag";
+        this.aktivesSegmentMetrik = {
+          segmentKey,
+          fromLabel,
+          toLabel,
+          profile,
+        };
+        if (this.elemente.segmentMetrikKontext) {
+          this.elemente.segmentMetrikKontext.textContent = `${fromLabel} → ${toLabel} · ${profilLabel(profile)}`;
+        }
+        if (this.elemente.segmentMetrikDistanceInput) {
+          this.elemente.segmentMetrikDistanceInput.value = config.manualDistanceKm === null ? "" : String(config.manualDistanceKm);
+        }
+        if (this.elemente.segmentMetrikDurationInput) {
+          this.elemente.segmentMetrikDurationInput.value = config.manualDurationMin === null ? "" : String(config.manualDurationMin);
+        }
+        if (this.elemente.segmentMetrikFehler) {
+          this.elemente.segmentMetrikFehler.textContent = "";
+        }
+        this._setSegmentMetrikProfile(profile);
+        this._oeffneDialog(this.elemente.segmentMetrikDialog);
+      }
+
+      _setSegmentMetrikProfile(profile) {
+        const normalized = normalizeProfile(profile);
+        if (this.aktivesSegmentMetrik) {
+          this.aktivesSegmentMetrik.profile = normalized;
+          if (this.elemente.segmentMetrikKontext) {
+            this.elemente.segmentMetrikKontext.textContent =
+              `${this.aktivesSegmentMetrik.fromLabel} → ${this.aktivesSegmentMetrik.toLabel} · ${profilLabel(normalized)}`;
+          }
+        }
+        this.elemente.segmentMetrikProfileButtons?.forEach((button) => {
+          const buttonProfile = String(button.dataset.segmentMetrikProfile || "").trim().toLowerCase();
+          const aktiv = buttonProfile === normalized;
+          button.classList.toggle("aktiv", aktiv);
+          button.setAttribute("aria-pressed", String(aktiv));
+        });
+      }
+
+      async _handleSegmentMetrikSpeichern() {
+        if (!this.aktivesProjekt?.id || !this.aktivesSegmentMetrik?.segmentKey) {
+          return;
+        }
+        const rawDistance = String(this.elemente.segmentMetrikDistanceInput?.value || "").trim();
+        const rawDuration = String(this.elemente.segmentMetrikDurationInput?.value || "").trim();
+        const manualDistanceKm = normalizeManualDistanceKm(rawDistance);
+        const manualDurationMin = normalizeManualDurationMin(rawDuration);
+        if (rawDistance && manualDistanceKm === null) {
+          if (this.elemente.segmentMetrikFehler) {
+            this.elemente.segmentMetrikFehler.textContent = "Strecke muss eine Zahl größer oder gleich 0 sein.";
+          }
+          return;
+        }
+        if (rawDuration && manualDurationMin === null) {
+          if (this.elemente.segmentMetrikFehler) {
+            this.elemente.segmentMetrikFehler.textContent = "Dauer muss eine Zahl größer oder gleich 0 sein.";
+          }
+          return;
+        }
+        const segmentKey = String(this.aktivesSegmentMetrik.segmentKey || "").trim();
+        const profile = normalizeProfile(this.aktivesSegmentMetrik.profile || PROFILE_DEFAULT);
+        await this.storage.setSegmentConfig({
+          projektId: this.aktivesProjekt.id,
+          segmentKey,
+          profile,
+          manualDistanceKm,
+          manualDurationMin,
+        });
+        this.segmentConfigByKey[segmentKey] = {
+          profile,
+          manualDistanceKm,
+          manualDurationMin,
+        };
+        this._schliesseSegmentMetrikDialog();
+        await this._renderTimeline();
+        await this._renderKarteRoute();
+      }
+
+      async _handleSegmentMetrikReset() {
+        if (!this.aktivesProjekt?.id || !this.aktivesSegmentMetrik?.segmentKey) {
+          return;
+        }
+        const segmentKey = String(this.aktivesSegmentMetrik.segmentKey || "").trim();
+        const profile = normalizeProfile(this.aktivesSegmentMetrik.profile || PROFILE_DEFAULT);
+        await this.storage.setSegmentConfig({
+          projektId: this.aktivesProjekt.id,
+          segmentKey,
+          profile,
+          manualDistanceKm: null,
+          manualDurationMin: null,
+        });
+        this.segmentConfigByKey[segmentKey] = {
+          profile,
+          manualDistanceKm: null,
+          manualDurationMin: null,
+        };
+        this._schliesseSegmentMetrikDialog();
+        await this._renderTimeline();
+        await this._renderKarteRoute();
+      }
+
+      _schliesseSegmentMetrikDialog() {
+        this._schliesseDialog(this.elemente.segmentMetrikDialog);
+      }
+
+      _resetSegmentMetrikDialogState() {
+        this.aktivesSegmentMetrik = null;
+        if (this.elemente.segmentMetrikForm) {
+          this.elemente.segmentMetrikForm.reset();
+        }
+        this.elemente.segmentMetrikProfileButtons?.forEach((button) => {
+          button.classList.remove("aktiv");
+          button.setAttribute("aria-pressed", "false");
+        });
+        if (this.elemente.segmentMetrikKontext) {
+          this.elemente.segmentMetrikKontext.textContent = "";
+        }
+        if (this.elemente.segmentMetrikFehler) {
+          this.elemente.segmentMetrikFehler.textContent = "";
+        }
+      }
+
       _schliesseZeitplanDialog() {
         this._resetZeitplanDialogState();
         this._schliesseDialog(this.elemente.zeitplanDialog);
@@ -8928,6 +11091,7 @@ ${"</ht"+"ml>"}
       _resetZeitplanDialogState() {
         this._beendeEintragBearbeiten();
         this.elemente.eintragForm?.reset();
+        this._setEintragBuchungsstatus("geplant");
         this._versteckeEintragDateiOptionen();
         if (this.elemente.eintragDateienBereich) {
           this.elemente.eintragDateienBereich.hidden = true;
@@ -9021,7 +11185,12 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const bestaetigt = window.confirm(`Ausgabe „${ausgabe.titel || "Ausgabe"}“ wirklich löschen?`);
+        const bestaetigt = await zeigeAppBestaetigung({
+          titel: "Ausgabe löschen",
+          text: `Ausgabe „${ausgabe.titel || "Ausgabe"}“ wirklich löschen?`,
+          bestaetigenText: "Löschen",
+          gefahr: true,
+        });
         if (!bestaetigt) {
           return;
         }
@@ -9040,6 +11209,7 @@ ${"</ht"+"ml>"}
 
       _oeffneEinstellungenDialog() {
         this._renderDbDateiStatus();
+        this._setWiederanzeigenHinweis("");
         this._oeffneDialog(this.elemente.einstellungenDialog);
       }
 
@@ -9160,6 +11330,10 @@ ${"</ht"+"ml>"}
       return "Aktivität";
     }
 
+    function buchungsstatusLabel(status) {
+      return normalizeBuchungsstatus(status) === "gebucht" ? "Gebucht" : "Geplant";
+    }
+
     function formatZeitpunkt(typ, eintrag) {
       const startWert = typ === "unterkunft" ? eintrag.checkIn : eintrag.startZeit;
       const endeWert = typ === "unterkunft" ? eintrag.checkOut : eintrag.endZeit;
@@ -9277,6 +11451,15 @@ ${"</ht"+"ml>"}
       }).format(date);
     }
 
+    function formatKategorieLabel(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      const lower = text.toLowerCase();
+      return lower.replace(/(^|[\s/&-])([a-zäöü])/g, (match, delimiter, letter) => `${delimiter}${letter.toUpperCase()}`);
+    }
+
     function berechneUebernachtungen(checkIn, checkOut) {
       const start = String(checkIn || "").trim();
       const ende = String(checkOut || "").trim();
@@ -9346,6 +11529,9 @@ ${"</ht"+"ml>"}
       }
       if (key === "ship") {
         return "Schiff";
+      }
+      if (key === "bus") {
+        return "Bus";
       }
       if (key === "walking") {
         return "Zu Fuß";
@@ -9420,6 +11606,170 @@ ${"</ht"+"ml>"}
       return new Blob([], { type: fallbackType });
     }
 
+    function syncGlobalDialogBodyState() {
+      const hatOffenenDialog = Boolean(document.querySelector("dialog[open]"));
+      document.body.classList.toggle("dialog-offen", hatOffenenDialog);
+    }
+
+    function oeffneGlobalDialog(dialog) {
+      if (!(dialog instanceof HTMLDialogElement)) {
+        return;
+      }
+      try {
+        if (typeof dialog.showModal === "function" && !dialog.open) {
+          dialog.showModal();
+        }
+      } catch {
+      }
+      if (!dialog.open) {
+        dialog.setAttribute("open", "");
+      }
+      syncGlobalDialogBodyState();
+    }
+
+    function schliesseGlobalDialog(dialog) {
+      if (!(dialog instanceof HTMLDialogElement)) {
+        return;
+      }
+      try {
+        if (typeof dialog.close === "function" && dialog.open) {
+          dialog.close();
+        }
+      } catch {
+      }
+      if (dialog.open) {
+        dialog.removeAttribute("open");
+      }
+      syncGlobalDialogBodyState();
+    }
+
+    let appDialogKette = Promise.resolve();
+
+    function zeigeAppDialog({
+      titel = "Hinweis",
+      text = "",
+      bestaetigenText = "OK",
+      abbrechenText = "Abbrechen",
+      showCancel = false,
+      gefahr = false,
+    } = {}) {
+      const run = () =>
+        new Promise((resolve) => {
+          const dialog = document.querySelector("#app-dialog");
+          const titleEl = document.querySelector("#app-dialog-titel");
+          const textEl = document.querySelector("#app-dialog-text");
+          const closeBtn = document.querySelector("#app-dialog-schliessen");
+          const cancelBtn = document.querySelector("#app-dialog-abbrechen");
+          const confirmBtn = document.querySelector("#app-dialog-bestaetigen");
+
+          if (
+            !(dialog instanceof HTMLDialogElement) ||
+            !(titleEl instanceof HTMLElement) ||
+            !(textEl instanceof HTMLElement) ||
+            !(closeBtn instanceof HTMLButtonElement) ||
+            !(cancelBtn instanceof HTMLButtonElement) ||
+            !(confirmBtn instanceof HTMLButtonElement)
+          ) {
+            resolve(showCancel ? false : true);
+            return;
+          }
+
+          titleEl.textContent = String(titel || "Hinweis");
+          textEl.textContent = String(text || "").trim();
+          cancelBtn.textContent = String(abbrechenText || "Abbrechen");
+          confirmBtn.textContent = String(bestaetigenText || "OK");
+          cancelBtn.hidden = !showCancel;
+          confirmBtn.classList.toggle("gefahr", Boolean(gefahr));
+
+          const cancelResult = showCancel ? false : true;
+          let erledigt = false;
+
+          const finish = (result) => {
+            if (erledigt) {
+              return;
+            }
+            erledigt = true;
+            cleanup();
+            resolve(Boolean(result));
+          };
+
+          const onConfirm = () => {
+            finish(true);
+            schliesseGlobalDialog(dialog);
+          };
+          const onCancel = () => {
+            finish(cancelResult);
+            schliesseGlobalDialog(dialog);
+          };
+          const onDialogCancel = (event) => {
+            event.preventDefault();
+            onCancel();
+          };
+          const onDialogClose = () => {
+            finish(cancelResult);
+            schliesseGlobalDialog(dialog);
+          };
+
+          const cleanup = () => {
+            confirmBtn.removeEventListener("click", onConfirm);
+            cancelBtn.removeEventListener("click", onCancel);
+            closeBtn.removeEventListener("click", onCancel);
+            dialog.removeEventListener("cancel", onDialogCancel);
+            dialog.removeEventListener("close", onDialogClose);
+          };
+
+          confirmBtn.addEventListener("click", onConfirm);
+          cancelBtn.addEventListener("click", onCancel);
+          closeBtn.addEventListener("click", onCancel);
+          dialog.addEventListener("cancel", onDialogCancel);
+          dialog.addEventListener("close", onDialogClose);
+
+          oeffneGlobalDialog(dialog);
+          window.requestAnimationFrame(() => {
+            if (showCancel) {
+              confirmBtn.focus();
+              return;
+            }
+            confirmBtn.focus();
+          });
+        });
+
+      const queued = appDialogKette.then(run, run);
+      appDialogKette = queued.catch(() => null);
+      return queued;
+    }
+
+    async function zeigeAppBestaetigung({
+      titel = "Bestätigen",
+      text = "",
+      bestaetigenText = "Bestätigen",
+      abbrechenText = "Abbrechen",
+      gefahr = false,
+    } = {}) {
+      return zeigeAppDialog({
+        titel,
+        text,
+        bestaetigenText,
+        abbrechenText,
+        showCancel: true,
+        gefahr,
+      });
+    }
+
+    async function zeigeAppHinweis({
+      titel = "Hinweis",
+      text = "",
+      bestaetigenText = "OK",
+    } = {}) {
+      await zeigeAppDialog({
+        titel,
+        text,
+        bestaetigenText,
+        showCancel: false,
+        gefahr: false,
+      });
+    }
+
 
     const PWA_AKTIV = true;
 
@@ -9440,10 +11790,16 @@ ${"</ht"+"ml>"}
           return;
         }
 
-        const confirmUpdate = window.confirm("Neue Version verfügbar – App neu starten");
-        if (confirmUpdate) {
+        void zeigeAppBestaetigung({
+          titel: "Update verfügbar",
+          text: "Neue Version verfügbar. App jetzt neu starten?",
+          bestaetigenText: "Neu starten",
+        }).then((confirmUpdate) => {
+          if (!confirmUpdate) {
+            return;
+          }
           waitingWorker.postMessage("SKIP_WAITING");
-        }
+        });
       };
 
       navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -9499,12 +11855,15 @@ ${"</ht"+"ml>"}
         const ui = new ReiseUI({ storage, map });
 
         ui.init();
-        await ui.renderInitial();
-
         initPwa();
+        await ui.renderInitial();
       } catch (error) {
         console.error("Bootstrap-Fehler:", error);
-        window.alert(error?.message || "Die Anwendung konnte nicht gestartet werden.");
+        await zeigeAppHinweis({
+          titel: "Startfehler",
+          text: error?.message || "Die Anwendung konnte nicht gestartet werden.",
+          bestaetigenText: "Schließen",
+        });
       }
     }
 
