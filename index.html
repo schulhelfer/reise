@@ -819,6 +819,73 @@
       display: none;
     }
 
+    #timeline-filter-zeile {
+      justify-content: flex-start;
+      column-gap: 0.55rem;
+      row-gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    #timeline-tag-filter {
+      flex: 1 1 30rem;
+      min-width: 0;
+      flex-wrap: wrap;
+      overflow: visible;
+      row-gap: 0.4rem;
+      align-self: flex-start;
+    }
+
+    #timeline-status-filter {
+      margin-left: auto;
+      overflow: visible;
+    }
+
+    #timeline-typ-filter {
+      flex: 0 0 auto;
+      overflow: visible;
+    }
+
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt {
+      column-gap: 0.32rem;
+      row-gap: 0.2rem;
+      margin-bottom: 0.45rem;
+    }
+
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt #timeline-tag-filter {
+      gap: 0.24rem;
+      row-gap: 0.2rem;
+    }
+
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt #timeline-status-filter,
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt #timeline-typ-filter {
+      gap: 0.24rem;
+    }
+
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt .timeline-tag-btn,
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt .timeline-typ-btn {
+      padding: 0.18rem 0.5rem;
+      font-size: 0.72rem;
+      line-height: 1;
+      min-height: 1.5rem;
+    }
+
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt .timeline-tag-btn.aktiv,
+    #timeline-filter-zeile.timeline-filter-zeile-kompakt .timeline-typ-btn.aktiv {
+      box-shadow: 0 4px 10px rgba(21, 93, 252, 0.14);
+    }
+
+    @media (max-width: 980px) {
+      #timeline-status-filter,
+      #timeline-typ-filter {
+        order: 1;
+      }
+
+      #timeline-tag-filter {
+        order: 2;
+        flex-basis: 100%;
+      }
+    }
+
     .timeline-typ-btn {
       width: auto;
       margin-top: 0;
@@ -1346,13 +1413,8 @@
       margin-top: 0.45rem;
     }
 
-    .eintrag-timezone-zeile input,
     .eintrag-timezone-zeile select {
       margin-top: 0;
-    }
-
-    .eintrag-timezone-hinweis {
-      margin: 0.55rem 0 0;
     }
 
     #eintrag-form.eintrag-form-unterkunft .eintrag-unterkunft-option {
@@ -3781,8 +3843,8 @@
     <div class="dialog-kopf">
       <h2>Zeitplan-Eintrag</h2>
       <div class="dialog-kopf-aktionen">
-        <button id="eintrag-loeschen-btn" type="button" class="gefahr" aria-label="Item löschen" title="Item löschen" hidden>🗑️</button>
         <button id="eintrag-submit-btn" type="submit" form="eintrag-form" aria-label="Item speichern" title="Item speichern">💾</button>
+        <button id="eintrag-loeschen-btn" type="button" class="gefahr" aria-label="Item löschen" title="Item löschen" hidden>🗑️</button>
         <button id="zeitplan-dialog-schliessen" type="button" class="sekundaer dialog-schliessen" aria-label="Schließen" title="Schließen">✕</button>
       </div>
     </div>
@@ -3833,18 +3895,13 @@
 
         <div id="eintrag-timezone-bereich" class="eintrag-timezone-bereich" data-visible="false" hidden>
           <div class="eintrag-timezone-zeile">
-            <label for="eintrag-timezone-source">Zeitzone</label>
-            <select id="eintrag-timezone-source" name="timeZoneSource" autocomplete="off">
+            <label for="eintrag-timezone-select">Zeitzone</label>
+            <select id="eintrag-timezone-select" autocomplete="off">
               <option value="auto">Automatisch</option>
-              <option value="manual">Manuell</option>
             </select>
           </div>
-          <div class="eintrag-timezone-zeile">
-            <label for="eintrag-timezone">IANA-Zeitzone</label>
-            <input id="eintrag-timezone" name="timeZone" type="text" maxlength="80" list="iana-timezones"
-              placeholder="z. B. Europe/Berlin" autocomplete="off" />
-          </div>
-          <p id="eintrag-timezone-hinweis" class="meta-text eintrag-timezone-hinweis"></p>
+          <input id="eintrag-timezone-source" name="timeZoneSource" type="hidden" value="auto" />
+          <input id="eintrag-timezone" name="timeZone" type="hidden" value="" />
         </div>
 
         <label id="eintrag-kosten-label" for="eintrag-kosten">Kosten</label>
@@ -3900,8 +3957,6 @@
       <p id="eintrag-fehler" class="fehler" aria-live="polite"></p>
     </div>
   </dialog>
-
-  <datalist id="iana-timezones"></datalist>
 
   <dialog id="segment-metrik-dialog" class="dialog">
     <div class="dialog-kopf">
@@ -4589,6 +4644,9 @@
       "railway",
       "public_transport",
     ]);
+    const GEOCODE_CONTEXT_COUNTRY_LIMIT = 3;
+    const GEOCODE_PLACE_RECENTER_DISTANCE_KM = 80;
+    const GEOCODE_NULL_ISLAND_THRESHOLD_DEG = 0.35;
 
     function neueId() {
       if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -5189,7 +5247,91 @@
         });
       }
 
+      _normalizeCountryCode(value) {
+        const code = String(value || "").trim().toUpperCase();
+        return /^[A-Z]{2}$/.test(code) ? code : "";
+      }
+
+      _sammleCountryCodeStatistik(statistik, eintraege = []) {
+        if (!(statistik instanceof Map)) {
+          return;
+        }
+        const list = Array.isArray(eintraege) ? eintraege : [];
+        for (const eintrag of list) {
+          const code = this._normalizeCountryCode(eintrag?.countryCode || "");
+          if (!code) {
+            continue;
+          }
+          statistik.set(code, Number(statistik.get(code) || 0) + 1);
+        }
+      }
+
+      async _ermittleProjektCountryKontext({ projektId = "", unterkuenfte = [], aktivitaeten = [] } = {}) {
+        const statistik = new Map();
+        this._sammleCountryCodeStatistik(statistik, unterkuenfte);
+        this._sammleCountryCodeStatistik(statistik, aktivitaeten);
+
+        const cleanProjektId = String(projektId || "").trim();
+        if (cleanProjektId && statistik.size < GEOCODE_CONTEXT_COUNTRY_LIMIT) {
+          const eintraege = await this.db.getAllByIndex(STORE_NAMES.eintraege, "projektId", cleanProjektId);
+          this._sammleCountryCodeStatistik(statistik, eintraege);
+        }
+
+        if (!statistik.size) {
+          return [];
+        }
+
+        return Array.from(statistik.entries())
+          .sort((a, b) => {
+            if (b[1] !== a[1]) {
+              return b[1] - a[1];
+            }
+            return a[0].localeCompare(b[0]);
+          })
+          .map(([code]) => code)
+          .slice(0, GEOCODE_CONTEXT_COUNTRY_LIMIT);
+      }
+
+      _istNaheNullIsland(lat, lon) {
+        const latNum = Number(lat);
+        const lonNum = Number(lon);
+        if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+          return false;
+        }
+        return Math.abs(latNum) <= GEOCODE_NULL_ISLAND_THRESHOLD_DEG
+          && Math.abs(lonNum) <= GEOCODE_NULL_ISLAND_THRESHOLD_DEG;
+      }
+
+      _sollKoordinatenAufOrtszentrumNeuSetzen(aktuellLat, aktuellLon, zielLat, zielLon) {
+        const currentLat = Number(aktuellLat);
+        const currentLon = Number(aktuellLon);
+        const targetLat = Number(zielLat);
+        const targetLon = Number(zielLon);
+        if (!Number.isFinite(targetLat) || !Number.isFinite(targetLon)) {
+          return false;
+        }
+        if (!Number.isFinite(currentLat) || !Number.isFinite(currentLon)) {
+          return true;
+        }
+        if (this._istNaheNullIsland(currentLat, currentLon)) {
+          return true;
+        }
+        return haversine(currentLat, currentLon, targetLat, targetLon) >= GEOCODE_PLACE_RECENTER_DISTANCE_KM;
+      }
+
       async resolveKoordinatenFuerProjekt({ stops = [], unterkuenfte = [], aktivitaeten = [] }) {
+        const projektId = String(
+          unterkuenfte?.[0]?.projektId
+          || aktivitaeten?.[0]?.projektId
+          || stops?.[0]?.projektId
+          || "",
+        ).trim();
+        const preferredCountryCodes = await this._ermittleProjektCountryKontext({
+          projektId,
+          unterkuenfte,
+          aktivitaeten,
+        });
+
         const aufgeloesteStops = [];
         for (const stop of stops) {
           aufgeloesteStops.push(await this._resolveStopKoordinaten(stop));
@@ -5197,12 +5339,12 @@
 
         const aufgeloesteUnterkuenfte = [];
         for (const unterkunft of unterkuenfte) {
-          aufgeloesteUnterkuenfte.push(await this._resolveUnterkunftKoordinaten(unterkunft));
+          aufgeloesteUnterkuenfte.push(await this._resolveUnterkunftKoordinaten(unterkunft, { preferredCountryCodes }));
         }
 
         const aufgeloesteAktivitaeten = [];
         for (const aktivitaet of aktivitaeten) {
-          aufgeloesteAktivitaeten.push(await this._resolveAktivitaetKoordinaten(aktivitaet));
+          aufgeloesteAktivitaeten.push(await this._resolveAktivitaetKoordinaten(aktivitaet, { preferredCountryCodes }));
         }
 
         return {
@@ -5446,7 +5588,7 @@
         await this.db.delete(STORE_NAMES.eintraege, unterkunftId);
       }
 
-      async _resolveUnterkunftKoordinaten(unterkunft) {
+      async _resolveUnterkunftKoordinaten(unterkunft, { preferredCountryCodes = [] } = {}) {
         const eintrag = await this._getEintragByTypAndId(unterkunft.id, "unterkunft");
         const basis = eintrag || unterkunft;
         if (!basis) {
@@ -5458,13 +5600,28 @@
         let nextCountryCode = String(basis.countryCode || "").toUpperCase();
         let autoTimeZone = "";
 
-        if (cleanAdresse && (nextLat === null || nextLon === null)) {
-          const result = await this._geocodeAddress(cleanAdresse, { preferPlaceCenter: true });
+        const queryLooksPlace = this._isLikelyPlaceNameQuery(cleanAdresse);
+        const hatKoordinaten = Number.isFinite(nextLat) && Number.isFinite(nextLon);
+        if (cleanAdresse && (!hatKoordinaten || queryLooksPlace)) {
+          const result = await this._geocodeAddress(cleanAdresse, {
+            preferPlaceCenter: true,
+            preferredCountryCodes,
+          });
           if (result) {
-            nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
-            nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
-            nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
-            autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+            const resolvedLat = Number(result.lat);
+            const resolvedLon = Number(result.lon);
+            const shouldApplyResolved = (!hatKoordinaten)
+              || (queryLooksPlace && this._sollKoordinatenAufOrtszentrumNeuSetzen(nextLat, nextLon, resolvedLat, resolvedLon));
+            if (shouldApplyResolved) {
+              nextLat = Number.isFinite(resolvedLat) ? resolvedLat : nextLat;
+              nextLon = Number.isFinite(resolvedLon) ? resolvedLon : nextLon;
+              nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
+            } else if (!nextCountryCode) {
+              nextCountryCode = String(result.countryCode || "").toUpperCase();
+            }
+            if (shouldApplyResolved) {
+              autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+            }
           }
         }
 
@@ -5669,7 +5826,7 @@
         await this.db.delete(STORE_NAMES.eintraege, aktivitaetId);
       }
 
-      async _resolveAktivitaetKoordinaten(aktivitaet) {
+      async _resolveAktivitaetKoordinaten(aktivitaet, { preferredCountryCodes = [] } = {}) {
         const eintrag = await this._getEintragByTypAndId(aktivitaet.id, "aktivitaet");
         const basis = eintrag || aktivitaet;
         if (!basis) {
@@ -5681,13 +5838,28 @@
         let nextCountryCode = String(basis.countryCode || "").toUpperCase();
         let autoTimeZone = "";
 
-        if (cleanOrt && (nextLat === null || nextLon === null)) {
-          const result = await this._geocodeAddress(cleanOrt, { preferPlaceCenter: true });
+        const queryLooksPlace = this._isLikelyPlaceNameQuery(cleanOrt);
+        const hatKoordinaten = Number.isFinite(nextLat) && Number.isFinite(nextLon);
+        if (cleanOrt && (!hatKoordinaten || queryLooksPlace)) {
+          const result = await this._geocodeAddress(cleanOrt, {
+            preferPlaceCenter: true,
+            preferredCountryCodes,
+          });
           if (result) {
-            nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
-            nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
-            nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
-            autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+            const resolvedLat = Number(result.lat);
+            const resolvedLon = Number(result.lon);
+            const shouldApplyResolved = (!hatKoordinaten)
+              || (queryLooksPlace && this._sollKoordinatenAufOrtszentrumNeuSetzen(nextLat, nextLon, resolvedLat, resolvedLon));
+            if (shouldApplyResolved) {
+              nextLat = Number.isFinite(resolvedLat) ? resolvedLat : nextLat;
+              nextLon = Number.isFinite(resolvedLon) ? resolvedLon : nextLon;
+              nextCountryCode = String(result.countryCode || nextCountryCode || "").toUpperCase();
+            } else if (!nextCountryCode) {
+              nextCountryCode = String(result.countryCode || "").toUpperCase();
+            }
+            if (shouldApplyResolved) {
+              autoTimeZone = normalizeTimeZoneId(result.timeZone || "");
+            }
           }
         }
 
@@ -6266,12 +6438,33 @@
         }
       }
 
-      _buildGeocodeCacheKey(normalized, { preferPlaceCenter = false } = {}) {
+      _normalizePreferredCountryCodes(countryCodes) {
+        const list = Array.isArray(countryCodes) ? countryCodes : [];
+        const normalized = [];
+        for (const entry of list) {
+          const code = this._normalizeCountryCode(entry);
+          if (!code || normalized.includes(code)) {
+            continue;
+          }
+          normalized.push(code);
+          if (normalized.length >= GEOCODE_CONTEXT_COUNTRY_LIMIT) {
+            break;
+          }
+        }
+        return normalized;
+      }
+
+      _buildGeocodeCacheKey(normalized, { preferPlaceCenter = false, preferredCountryCodes = [] } = {}) {
         const cleanNormalized = normalizeAddress(normalized);
         if (!cleanNormalized) {
           return "";
         }
-        return preferPlaceCenter ? `entry-place:${cleanNormalized}` : cleanNormalized;
+        if (!preferPlaceCenter) {
+          return cleanNormalized;
+        }
+        const preferred = this._normalizePreferredCountryCodes(preferredCountryCodes);
+        const preferredKey = preferred.length ? `${preferred.join(",")}|` : "";
+        return `entry-place-v2:${preferredKey}${cleanNormalized}`;
       }
 
       _isLikelyPlaceNameQuery(normalized) {
@@ -6318,7 +6511,7 @@
         return "other";
       }
 
-      _scoreGeocodeCandidate(candidate, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+      _scoreGeocodeCandidate(candidate, { preferPlaceCenter = false, queryLooksPlace = false, preferredCountryCodes = [] } = {}) {
         const classification = this._classifyGeocodeCandidate(candidate?.placeType, candidate?.placeClass);
         const importance = Number(candidate?.importance);
         let score = Number.isFinite(importance) ? importance * 10 : 0;
@@ -6341,6 +6534,17 @@
           score += 65;
         } else if (classification === "poi") {
           score += 35;
+        }
+
+        if (preferPlaceCenter && queryLooksPlace) {
+          const preferred = this._normalizePreferredCountryCodes(preferredCountryCodes);
+          const candidateCountryCode = this._normalizeCountryCode(candidate?.countryCode || "");
+          const preferredIndex = candidateCountryCode ? preferred.indexOf(candidateCountryCode) : -1;
+          if (preferredIndex === 0) {
+            score += 70;
+          } else if (preferredIndex > 0) {
+            score += Math.max(40, 60 - preferredIndex * 8);
+          }
         }
 
         return score;
@@ -6408,14 +6612,18 @@
         };
       }
 
-      async _geocodeAddress(address, { preferPlaceCenter = false } = {}) {
+      async _geocodeAddress(address, { preferPlaceCenter = false, preferredCountryCodes = [] } = {}) {
         const normalized = normalizeAddress(address);
         if (!normalized) {
           return null;
         }
 
         const queryLooksPlace = Boolean(preferPlaceCenter) && this._isLikelyPlaceNameQuery(normalized);
-        const cacheKey = this._buildGeocodeCacheKey(normalized, { preferPlaceCenter: queryLooksPlace });
+        const normalizedPreferredCountryCodes = this._normalizePreferredCountryCodes(preferredCountryCodes);
+        const cacheKey = this._buildGeocodeCacheKey(normalized, {
+          preferPlaceCenter: queryLooksPlace,
+          preferredCountryCodes: normalizedPreferredCountryCodes,
+        });
         if (!cacheKey) {
           return null;
         }
@@ -6428,6 +6636,7 @@
           cacheKey,
           preferPlaceCenter: queryLooksPlace,
           queryLooksPlace,
+          preferredCountryCodes: normalizedPreferredCountryCodes,
         }).finally(() => {
           this.geocodeInFlight.delete(cacheKey);
         });
@@ -6452,9 +6661,14 @@
         };
       }
 
-      async _geocodeAddressInner(normalized, { cacheKey = "", preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+      async _geocodeAddressInner(normalized, {
+        cacheKey = "",
+        preferPlaceCenter = false,
+        queryLooksPlace = false,
+        preferredCountryCodes = [],
+      } = {}) {
         const resolvedCacheKey = String(cacheKey || "").trim()
-          || this._buildGeocodeCacheKey(normalized, { preferPlaceCenter });
+          || this._buildGeocodeCacheKey(normalized, { preferPlaceCenter, preferredCountryCodes });
         if (!resolvedCacheKey) {
           return null;
         }
@@ -6484,7 +6698,11 @@
         }
 
         try {
-          const result = await this._runGeocodeRequest(normalized, { preferPlaceCenter, queryLooksPlace });
+          const result = await this._runGeocodeRequest(normalized, {
+            preferPlaceCenter,
+            queryLooksPlace,
+            preferredCountryCodes,
+          });
           if (!result) {
             await this.db.put(STORE_NAMES.geocodeCache, {
               query: resolvedCacheKey,
@@ -6574,23 +6792,31 @@
         return normalizeTimeZoneId(payload?.timezone || "");
       }
 
-      async _runGeocodeRequest(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+      async _runGeocodeRequest(address, { preferPlaceCenter = false, queryLooksPlace = false, preferredCountryCodes = [] } = {}) {
         const run = async () => {
           try {
-            const photonResult = await this._geocodeViaPhoton(address, { preferPlaceCenter, queryLooksPlace });
+            const photonResult = await this._geocodeViaPhoton(address, {
+              preferPlaceCenter,
+              queryLooksPlace,
+              preferredCountryCodes,
+            });
             if (photonResult) {
               return photonResult;
             }
           } catch {
           }
-          return this._geocodeViaNominatim(address, { preferPlaceCenter, queryLooksPlace });
+          return this._geocodeViaNominatim(address, {
+            preferPlaceCenter,
+            queryLooksPlace,
+            preferredCountryCodes,
+          });
         };
 
         this.geocodeChain = this.geocodeChain.then(run, run);
         return this.geocodeChain;
       }
 
-      async _geocodeViaPhoton(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+      async _geocodeViaPhoton(address, { preferPlaceCenter = false, queryLooksPlace = false, preferredCountryCodes = [] } = {}) {
         const limit = preferPlaceCenter && queryLooksPlace ? 6 : 1;
         const query = encodeURIComponent(address);
         const url = `${PHOTON_URL}?q=${query}&limit=${limit}&lang=de`;
@@ -6607,7 +6833,11 @@
         const candidates = (Array.isArray(payload?.features) ? payload.features : [])
           .map((feature) => this._mapPhotonFeatureToGeocodeCandidate(feature, address))
           .filter(Boolean);
-        const best = this._pickBestGeocodeCandidate(candidates, { preferPlaceCenter, queryLooksPlace });
+        const best = this._pickBestGeocodeCandidate(candidates, {
+          preferPlaceCenter,
+          queryLooksPlace,
+          preferredCountryCodes,
+        });
         if (!best) {
           return null;
         }
@@ -6620,7 +6850,7 @@
         };
       }
 
-      async _geocodeViaNominatim(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+      async _geocodeViaNominatim(address, { preferPlaceCenter = false, queryLooksPlace = false, preferredCountryCodes = [] } = {}) {
         const limit = preferPlaceCenter && queryLooksPlace ? 6 : 1;
         const query = encodeURIComponent(address);
         const url = `${NOMINATIM_URL}?format=jsonv2&addressdetails=1&limit=${limit}&accept-language=de,en&q=${query}`;
@@ -6643,7 +6873,11 @@
         const candidates = (Array.isArray(payload) ? payload : [])
           .map((result) => this._mapNominatimResultToGeocodeCandidate(result, address))
           .filter(Boolean);
-        const best = this._pickBestGeocodeCandidate(candidates, { preferPlaceCenter, queryLooksPlace });
+        const best = this._pickBestGeocodeCandidate(candidates, {
+          preferPlaceCenter,
+          queryLooksPlace,
+          preferredCountryCodes,
+        });
         if (!best) {
           return null;
         }
@@ -7248,15 +7482,19 @@
       {
         kategorie: "KLEIDUNG",
         items: [
-          "👔 Shirts / Blusen / Hemden",
+          "👔 Hemden / Blusen",
           "👕 T-Shirts",
-          "🧥 Pullover / Jacke",
+          "🧶 Langarmshirts",
+          "🧥 Jacke",
+          "🧥 Pullover",
+          "🦺 Fleece / Hoodie",
           "🌧️ Regenjacke",
-          "👖 Hosen",
+          "👖 Lange Hosen",
           "🩳 Shorts",
-          "👗 Kleider",
+          "👗 Kleider / Röcke",
           "🩲 Unterwäsche",
           "🧦 Socken",
+          "🧦 Warme Socken",
           "😴 Schlafsachen",
           "🏊 Badekleidung",
           "🧣 Schal",
@@ -7266,6 +7504,7 @@
           "🥾 Feste Schuhe",
           "🩴 Flip-Flops",
           "🕶️ Sonnenbrille",
+          "🪢 Gürtel",
           "🧺 Wäschebeutel",
         ],
       },
@@ -8311,12 +8550,12 @@
       }
     }
 
-    function formatLinkLabel(url, maxLength = 20) {
+    function formatLinkLabel(url, maxLength = 100) {
       const text = String(url || "").trim();
       if (!text) {
         return "";
       }
-      const limit = Math.max(12, Number(maxLength) || 56);
+      const limit = Math.max(12, Number(maxLength) || 100);
       if (text.length <= limit) {
         return text;
       }
@@ -8498,10 +8737,9 @@
           eintragBuchungsstatusToggle: document.querySelector("#eintrag-buchungsstatus-toggle"),
           eintragBuchungsstatusWrap: document.querySelector("#eintrag-buchungsstatus-wrap"),
           eintragTimeZoneBereich: document.querySelector("#eintrag-timezone-bereich"),
+          eintragTimeZoneSelect: document.querySelector("#eintrag-timezone-select"),
           eintragTimeZoneSource: document.querySelector("#eintrag-timezone-source"),
           eintragTimeZoneInput: document.querySelector("#eintrag-timezone"),
-          eintragTimeZoneHinweis: document.querySelector("#eintrag-timezone-hinweis"),
-          ianaTimeZonesDatalist: document.querySelector("#iana-timezones"),
           eintragWaehrungSelect: document.querySelector("#eintrag-waehrung"),
           ausgabeWaehrungSelect: document.querySelector("#ausgabe-waehrung"),
           einstellungenDialog: document.querySelector("#einstellungen-dialog"),
@@ -8748,6 +8986,9 @@
           }
           this.timelineStatusFilterValue = this.timelineStatusFilterValue === value ? "all" : value;
           await this._renderTimeline();
+        });
+        window.addEventListener("resize", () => {
+          this._aktualisiereTimelineFilterKompaktklasse();
         });
 
         this.elemente.checklisteKategorieFilter?.addEventListener("click", async (event) => {
@@ -8999,14 +9240,8 @@
           const status = this.elemente.eintragBuchungsstatusToggle?.checked ? "gebucht" : "geplant";
           this._setEintragBuchungsstatus(status);
         });
-        this.elemente.eintragTimeZoneSource?.addEventListener("change", () => {
+        this.elemente.eintragTimeZoneSelect?.addEventListener("change", () => {
           this._syncEintragTimeZoneEditorState();
-        });
-        this.elemente.eintragTimeZoneInput?.addEventListener("blur", () => {
-          const normalized = normalizeTimeZoneId(this.elemente.eintragTimeZoneInput?.value || "");
-          if (normalized) {
-            this.elemente.eintragTimeZoneInput.value = normalized;
-          }
         });
         this.elemente.eintragLoeschenBtn?.addEventListener("click", async () => {
           if (!this.bearbeiteEintrag?.id || !this.bearbeiteEintrag?.typ) {
@@ -11003,7 +11238,42 @@ ${"</ht"+"ml>"}
         const tagHidden = this.elemente.timelineTagFilter?.hidden !== false;
         const typHidden = this.elemente.timelineTypFilter?.hidden !== false;
         const statusHidden = this.elemente.timelineStatusFilter?.hidden !== false;
-        this.elemente.timelineFilterZeile.hidden = tagHidden && typHidden && statusHidden;
+        const zeileIstVersteckt = tagHidden && typHidden && statusHidden;
+        this.elemente.timelineFilterZeile.hidden = zeileIstVersteckt;
+        if (zeileIstVersteckt) {
+          this.elemente.timelineFilterZeile.classList.remove("timeline-filter-zeile-kompakt");
+          return;
+        }
+        window.requestAnimationFrame(() => this._aktualisiereTimelineFilterKompaktklasse());
+      }
+
+      _aktualisiereTimelineFilterKompaktklasse() {
+        const zeile = this.elemente.timelineFilterZeile;
+        if (!zeile || zeile.hidden) {
+          return;
+        }
+
+        let mehrzeilig = false;
+        const sichtbareGruppen = [
+          this.elemente.timelineTagFilter,
+          this.elemente.timelineStatusFilter,
+          this.elemente.timelineTypFilter,
+        ].filter((element) => element && element.hidden === false);
+
+        if (sichtbareGruppen.length > 1) {
+          const basisTop = sichtbareGruppen[0].offsetTop;
+          mehrzeilig = sichtbareGruppen.some((element) => Math.abs(element.offsetTop - basisTop) > 2);
+        }
+
+        if (!mehrzeilig && this.elemente.timelineTagFilter?.hidden === false) {
+          const tagButtons = Array.from(this.elemente.timelineTagFilter.querySelectorAll(".timeline-tag-btn"));
+          if (tagButtons.length > 1) {
+            const basisTop = tagButtons[0].offsetTop;
+            mehrzeilig = tagButtons.some((button) => Math.abs(button.offsetTop - basisTop) > 2);
+          }
+        }
+
+        zeile.classList.toggle("timeline-filter-zeile-kompakt", mehrzeilig);
       }
 
       _renderChecklisteKategorieFilter(items = CHECKLISTE_ITEMS) {
@@ -12201,10 +12471,13 @@ ${"</ht"+"ml>"}
 
       _initTimeZoneOptionen() {
         this.verfuegbareTimeZones = listSupportedTimeZones();
-        if (this.elemente.ianaTimeZonesDatalist) {
-          this.elemente.ianaTimeZonesDatalist.innerHTML = this.verfuegbareTimeZones
-            .map((timeZone) => `<option value="${escapeHtml(timeZone)}"></option>`)
-            .join("");
+        if (this.elemente.eintragTimeZoneSelect) {
+          const optionen = ["<option value=\"auto\">Automatisch</option>"];
+          this.verfuegbareTimeZones.forEach((timeZone) => {
+            optionen.push(`<option value="${escapeHtml(timeZone)}">${escapeHtml(timeZone)}</option>`);
+          });
+          this.elemente.eintragTimeZoneSelect.innerHTML = optionen.join("");
+          this.elemente.eintragTimeZoneSelect.value = "auto";
         }
         if (this.elemente.tzFallbackSelect) {
           const systemZone = getSystemTimeZone();
@@ -12227,37 +12500,33 @@ ${"</ht"+"ml>"}
         this.elemente.eintragTimeZoneBereich.setAttribute("data-visible", anzeigen ? "true" : "false");
       }
 
-      _setEintragTimeZoneEditorState({ visible = false, source = "auto", timeZone = "", hint = "" } = {}) {
+      _setEintragTimeZoneEditorState({ visible = false, source = "auto", timeZone = "" } = {}) {
         this._setEintragTimeZoneEditorVisible(visible);
-        if (this.elemente.eintragTimeZoneSource) {
-          this.elemente.eintragTimeZoneSource.value = normalizeTimeZoneSource(source);
-        }
-        if (this.elemente.eintragTimeZoneInput) {
-          this.elemente.eintragTimeZoneInput.value = normalizeTimeZoneId(timeZone) || "";
+        const normalizedSource = normalizeTimeZoneSource(source);
+        const normalizedTimeZone = normalizeTimeZoneId(timeZone) || "";
+        const selectValue = normalizedSource === "manual" && normalizedTimeZone ? normalizedTimeZone : "auto";
+        const select = this.elemente.eintragTimeZoneSelect;
+        if (select) {
+          const hatOption = Array.from(select.options).some((option) => String(option.value || "") === selectValue);
+          if (!hatOption && selectValue !== "auto") {
+            const newOption = document.createElement("option");
+            newOption.value = selectValue;
+            newOption.textContent = selectValue;
+            select.append(newOption);
+          }
+          select.value = selectValue;
         }
         this._syncEintragTimeZoneEditorState();
-        if (this.elemente.eintragTimeZoneHinweis && String(hint || "").trim()) {
-          this.elemente.eintragTimeZoneHinweis.textContent = String(hint || "").trim();
-        }
       }
 
       _syncEintragTimeZoneEditorState() {
-        const source = normalizeTimeZoneSource(this.elemente.eintragTimeZoneSource?.value || "auto");
-        const istManuell = source === "manual";
-        const input = this.elemente.eintragTimeZoneInput;
-        if (input) {
-          input.disabled = !istManuell;
-          input.required = istManuell;
-          if (!istManuell) {
-            input.setCustomValidity("");
-          }
+        const selectValue = normalizeTimeZoneId(this.elemente.eintragTimeZoneSelect?.value || "");
+        const istAutomatisch = !selectValue || selectValue === "auto";
+        if (this.elemente.eintragTimeZoneSource) {
+          this.elemente.eintragTimeZoneSource.value = istAutomatisch ? "auto" : "manual";
         }
-        if (this.elemente.eintragTimeZoneHinweis) {
-          if (istManuell) {
-            this.elemente.eintragTimeZoneHinweis.textContent = "Manuelle IANA-Zeitzone (z. B. Europe/Berlin).";
-          } else {
-            this.elemente.eintragTimeZoneHinweis.textContent = "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt.";
-          }
+        if (this.elemente.eintragTimeZoneInput) {
+          this.elemente.eintragTimeZoneInput.value = istAutomatisch ? "" : selectValue;
         }
       }
 
@@ -12387,11 +12656,6 @@ ${"</ht"+"ml>"}
             visible: true,
             source: aktivitaetTimeZoneSource,
             timeZone: aktivitaetTimeZone,
-            hint: aktivitaetTimeZoneSource === "manual"
-              ? "Manuell gesetzte Zeitzone."
-              : (aktivitaetTimeZone
-                ? `Automatisch erkannt: ${aktivitaetTimeZone}`
-                : "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt."),
           });
           this.bearbeiteEintrag = { typ, id: eintragId };
           this._setEintragTypValue("aktivitaet");
@@ -12430,11 +12694,6 @@ ${"</ht"+"ml>"}
             visible: true,
             source: unterkunftTimeZoneSource,
             timeZone: unterkunftTimeZone,
-            hint: unterkunftTimeZoneSource === "manual"
-              ? "Manuell gesetzte Zeitzone."
-              : (unterkunftTimeZone
-                ? `Automatisch erkannt: ${unterkunftTimeZone}`
-                : "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt."),
           });
           const fruehstueckInput = this.elemente.eintragForm.querySelector("#eintrag-fruehstueck");
           if (fruehstueckInput) {
@@ -13485,7 +13744,6 @@ ${"</ht"+"ml>"}
           visible: false,
           source: "auto",
           timeZone: "",
-          hint: "",
         });
         this._versteckeEintragDateiOptionen();
         this._versteckeEintragDateiDropzoneKontextmenue();
