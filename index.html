@@ -3790,7 +3790,7 @@
       <form id="eintrag-form" class="eintrag-form" autocomplete="off">
         <label>Typ</label>
         <div class="eintrag-typ-buttons" id="eintrag-typ-buttons" role="group" aria-label="Eintragstyp">
-          <button type="button" class="eintrag-typ-btn" data-eintrag-typ="aktivitaet">Aktivität</button>
+          <button type="button" class="eintrag-typ-btn" data-eintrag-typ="aktivitaet">Stopp</button>
           <button type="button" class="eintrag-typ-btn" data-eintrag-typ="unterkunft">Unterkunft</button>
         </div>
         <input id="eintrag-typ" name="eintragTyp" type="hidden" value="aktivitaet" />
@@ -3829,7 +3829,7 @@
         <input id="eintrag-buchungsstatus" name="buchungsstatus" type="hidden" value="geplant" />
 
         <label id="eintrag-adresse-label" for="eintrag-adresse">Ort / Adresse</label>
-        <input id="eintrag-adresse" name="adresse" type="text" maxlength="200" autocomplete="street-address" />
+        <input id="eintrag-adresse" name="adresse" type="text" maxlength="200" placeholder="z. B. Berlin oder Musterstraße 1, Berlin" autocomplete="street-address" />
 
         <div id="eintrag-timezone-bereich" class="eintrag-timezone-bereich" data-visible="false" hidden>
           <div class="eintrag-timezone-zeile">
@@ -4540,6 +4540,55 @@
     const RESTCOUNTRIES_URL = "https://restcountries.com/v3.1/alpha/";
     const FX_API_URL = "https://api.frankfurter.app/latest";
     const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+    const GEOCODE_STREET_HINTS = [
+      "strasse",
+      "straße",
+      "street",
+      "avenue",
+      "ave",
+      "road",
+      "rd",
+      "boulevard",
+      "blvd",
+      "lane",
+      "ln",
+      "weg",
+      "allee",
+      "platz",
+      "gasse",
+      "ring",
+      "house",
+      "hausnummer",
+    ];
+    const GEOCODE_PRIMARY_PLACE_TYPES = new Set([
+      "city",
+      "town",
+      "village",
+      "municipality",
+      "administrative",
+      "county",
+      "state",
+      "region",
+    ]);
+    const GEOCODE_SECONDARY_PLACE_TYPES = new Set([
+      "locality",
+      "district",
+      "suburb",
+      "quarter",
+      "hamlet",
+      "island",
+      "country",
+    ]);
+    const GEOCODE_POI_CLASSES = new Set([
+      "amenity",
+      "shop",
+      "tourism",
+      "leisure",
+      "building",
+      "office",
+      "railway",
+      "public_transport",
+    ]);
 
     function neueId() {
       if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -5410,7 +5459,7 @@
         let autoTimeZone = "";
 
         if (cleanAdresse && (nextLat === null || nextLon === null)) {
-          const result = await this._geocodeAddress(cleanAdresse);
+          const result = await this._geocodeAddress(cleanAdresse, { preferPlaceCenter: true });
           if (result) {
             nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
             nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
@@ -5545,12 +5594,12 @@
         timeZoneSource,
       }) {
         if (!aktivitaetId) {
-          throw new Error("Aktivität fehlt.");
+          throw new Error("Stopp fehlt.");
         }
 
         const bestehenderEintrag = await this.db.get(STORE_NAMES.eintraege, aktivitaetId);
         if (!bestehenderEintrag) {
-          throw new Error("Aktivität nicht gefunden.");
+          throw new Error("Stopp nicht gefunden.");
         }
 
         const bereinigterTitel = (titel || "").trim();
@@ -5633,7 +5682,7 @@
         let autoTimeZone = "";
 
         if (cleanOrt && (nextLat === null || nextLon === null)) {
-          const result = await this._geocodeAddress(cleanOrt);
+          const result = await this._geocodeAddress(cleanOrt, { preferPlaceCenter: true });
           if (result) {
             nextLat = Number.isFinite(Number(result.lat)) ? Number(result.lat) : nextLat;
             nextLon = Number.isFinite(Number(result.lon)) ? Number(result.lon) : nextLon;
@@ -5825,7 +5874,7 @@
           addKostenposten({
             betrag: aktivitaet.kosten,
             waehrung: aktivitaet.waehrung || "EUR",
-            kategorie: "Aktivität",
+            kategorie: "Stopp",
             tag: aktivitaet.startZeit || "Ohne Datum",
           });
         }
@@ -6217,20 +6266,172 @@
         }
       }
 
-      async _geocodeAddress(address) {
+      _buildGeocodeCacheKey(normalized, { preferPlaceCenter = false } = {}) {
+        const cleanNormalized = normalizeAddress(normalized);
+        if (!cleanNormalized) {
+          return "";
+        }
+        return preferPlaceCenter ? `entry-place:${cleanNormalized}` : cleanNormalized;
+      }
+
+      _isLikelyPlaceNameQuery(normalized) {
+        const text = String(normalized || "").trim().toLowerCase();
+        if (!text) {
+          return false;
+        }
+        if (/\d/.test(text)) {
+          return false;
+        }
+        if ((text.match(/,/g) || []).length >= 2) {
+          return false;
+        }
+        if (/[;@]/.test(text)) {
+          return false;
+        }
+        if (GEOCODE_STREET_HINTS.some((hint) => text.includes(hint))) {
+          return false;
+        }
+        const words = text.split(/[\s,/.-]+/).filter(Boolean);
+        if (!words.length) {
+          return false;
+        }
+        return words.length <= 6;
+      }
+
+      _classifyGeocodeCandidate(placeType, placeClass) {
+        const type = String(placeType || "").trim().toLowerCase();
+        const klass = String(placeClass || "").trim().toLowerCase();
+
+        if (GEOCODE_PRIMARY_PLACE_TYPES.has(type)) {
+          return "primary-place";
+        }
+        if (GEOCODE_SECONDARY_PLACE_TYPES.has(type) || ["place", "boundary"].includes(klass)) {
+          return "place";
+        }
+        if (["highway", "street", "house", "housenumber", "house_number", "road", "residential"].includes(type)
+          || klass === "highway") {
+          return "address";
+        }
+        if (GEOCODE_POI_CLASSES.has(klass) || ["amenity", "tourism", "shop"].includes(type)) {
+          return "poi";
+        }
+        return "other";
+      }
+
+      _scoreGeocodeCandidate(candidate, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+        const classification = this._classifyGeocodeCandidate(candidate?.placeType, candidate?.placeClass);
+        const importance = Number(candidate?.importance);
+        let score = Number.isFinite(importance) ? importance * 10 : 0;
+
+        if (preferPlaceCenter && queryLooksPlace) {
+          if (classification === "primary-place") {
+            score += 120;
+          } else if (classification === "place") {
+            score += 90;
+          } else if (classification === "address") {
+            score += 25;
+          } else if (classification === "poi") {
+            score += 5;
+          }
+        } else if (classification === "address") {
+          score += 100;
+        } else if (classification === "primary-place") {
+          score += 80;
+        } else if (classification === "place") {
+          score += 65;
+        } else if (classification === "poi") {
+          score += 35;
+        }
+
+        return score;
+      }
+
+      _pickBestGeocodeCandidate(candidates, options = {}) {
+        if (!Array.isArray(candidates) || !candidates.length) {
+          return null;
+        }
+        const prepared = candidates
+          .map((candidate, index) => ({
+            ...candidate,
+            __idx: index,
+            __score: this._scoreGeocodeCandidate(candidate, options),
+          }))
+          .filter((candidate) => Number.isFinite(Number(candidate.lat)) && Number.isFinite(Number(candidate.lon)))
+          .sort((a, b) => {
+            if (b.__score !== a.__score) {
+              return b.__score - a.__score;
+            }
+            return a.__idx - b.__idx;
+          });
+        return prepared[0] || null;
+      }
+
+      _mapPhotonFeatureToGeocodeCandidate(feature, fallbackDisplayName = "") {
+        const lon = Number(feature?.geometry?.coordinates?.[0]);
+        const lat = Number(feature?.geometry?.coordinates?.[1]);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+          return null;
+        }
+        const properties = isPlainObject(feature?.properties) ? feature.properties : {};
+        const displayName = String(
+          properties.name
+            || properties.city
+            || properties.state
+            || properties.country
+            || fallbackDisplayName,
+        ).trim();
+        return {
+          lat,
+          lon,
+          displayName: displayName || fallbackDisplayName,
+          countryCode: String(properties.countrycode || "").toUpperCase(),
+          placeType: String(properties.osm_value || properties.type || "").trim().toLowerCase(),
+          placeClass: String(properties.osm_key || "").trim().toLowerCase(),
+          importance: Number(properties.importance),
+        };
+      }
+
+      _mapNominatimResultToGeocodeCandidate(result, fallbackDisplayName = "") {
+        const lat = Number(result?.lat);
+        const lon = Number(result?.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+          return null;
+        }
+        return {
+          lat,
+          lon,
+          displayName: String(result?.display_name || fallbackDisplayName).trim() || fallbackDisplayName,
+          countryCode: String(result?.address?.country_code || "").toUpperCase(),
+          placeType: String(result?.addresstype || result?.type || "").trim().toLowerCase(),
+          placeClass: String(result?.class || "").trim().toLowerCase(),
+          importance: Number(result?.importance),
+        };
+      }
+
+      async _geocodeAddress(address, { preferPlaceCenter = false } = {}) {
         const normalized = normalizeAddress(address);
         if (!normalized) {
           return null;
         }
 
-        if (this.geocodeInFlight.has(normalized)) {
-          return this.geocodeInFlight.get(normalized);
+        const queryLooksPlace = Boolean(preferPlaceCenter) && this._isLikelyPlaceNameQuery(normalized);
+        const cacheKey = this._buildGeocodeCacheKey(normalized, { preferPlaceCenter: queryLooksPlace });
+        if (!cacheKey) {
+          return null;
         }
 
-        const request = this._geocodeAddressInner(normalized).finally(() => {
-          this.geocodeInFlight.delete(normalized);
+        if (this.geocodeInFlight.has(cacheKey)) {
+          return this.geocodeInFlight.get(cacheKey);
+        }
+
+        const request = this._geocodeAddressInner(normalized, {
+          cacheKey,
+          preferPlaceCenter: queryLooksPlace,
+          queryLooksPlace,
+        }).finally(() => {
+          this.geocodeInFlight.delete(cacheKey);
         });
-        this.geocodeInFlight.set(normalized, request);
+        this.geocodeInFlight.set(cacheKey, request);
         return request;
       }
 
@@ -6251,8 +6452,14 @@
         };
       }
 
-      async _geocodeAddressInner(normalized) {
-        const cached = await this.db.get(STORE_NAMES.geocodeCache, normalized);
+      async _geocodeAddressInner(normalized, { cacheKey = "", preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+        const resolvedCacheKey = String(cacheKey || "").trim()
+          || this._buildGeocodeCacheKey(normalized, { preferPlaceCenter });
+        if (!resolvedCacheKey) {
+          return null;
+        }
+
+        const cached = await this.db.get(STORE_NAMES.geocodeCache, resolvedCacheKey);
         if (cached && isFreshCache(cached.updatedAt, cached.failed ? GEOCODE_FAIL_CACHE_TTL_MS : GEOCODE_CACHE_TTL_MS)) {
           if (cached.failed) {
             return null;
@@ -6277,18 +6484,18 @@
         }
 
         try {
-          const result = await this._runGeocodeRequest(normalized);
+          const result = await this._runGeocodeRequest(normalized, { preferPlaceCenter, queryLooksPlace });
           if (!result) {
             await this.db.put(STORE_NAMES.geocodeCache, {
-              query: normalized,
+              query: resolvedCacheKey,
               lat: null,
               lon: null,
-                displayName: normalized,
-                countryCode: "",
-                timeZone: "",
-                failed: true,
-                updatedAt: new Date().toISOString(),
-              });
+              displayName: normalized,
+              countryCode: "",
+              timeZone: "",
+              failed: true,
+              updatedAt: new Date().toISOString(),
+            });
             return null;
           }
 
@@ -6296,7 +6503,7 @@
             || await this._resolveTimeZoneByCoordinates(result.lat, result.lon);
 
           await this.db.put(STORE_NAMES.geocodeCache, {
-            query: normalized,
+            query: resolvedCacheKey,
             lat: result.lat,
             lon: result.lon,
             displayName: String(result.displayName || normalized),
@@ -6367,25 +6574,26 @@
         return normalizeTimeZoneId(payload?.timezone || "");
       }
 
-      async _runGeocodeRequest(address) {
+      async _runGeocodeRequest(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
         const run = async () => {
           try {
-            const photonResult = await this._geocodeViaPhoton(address);
+            const photonResult = await this._geocodeViaPhoton(address, { preferPlaceCenter, queryLooksPlace });
             if (photonResult) {
               return photonResult;
             }
           } catch {
           }
-          return this._geocodeViaNominatim(address);
+          return this._geocodeViaNominatim(address, { preferPlaceCenter, queryLooksPlace });
         };
 
         this.geocodeChain = this.geocodeChain.then(run, run);
         return this.geocodeChain;
       }
 
-      async _geocodeViaPhoton(address) {
+      async _geocodeViaPhoton(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+        const limit = preferPlaceCenter && queryLooksPlace ? 6 : 1;
         const query = encodeURIComponent(address);
-        const url = `${PHOTON_URL}?q=${query}&limit=1&lang=de`;
+        const url = `${PHOTON_URL}?q=${query}&limit=${limit}&lang=de`;
         const response = await fetch(url, {
           headers: {
             Accept: "application/json",
@@ -6396,24 +6604,26 @@
         }
 
         const payload = await response.json();
-        const first = Array.isArray(payload?.features) ? payload.features[0] : null;
-        const lon = Number(first?.geometry?.coordinates?.[0]);
-        const lat = Number(first?.geometry?.coordinates?.[1]);
-        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        const candidates = (Array.isArray(payload?.features) ? payload.features : [])
+          .map((feature) => this._mapPhotonFeatureToGeocodeCandidate(feature, address))
+          .filter(Boolean);
+        const best = this._pickBestGeocodeCandidate(candidates, { preferPlaceCenter, queryLooksPlace });
+        if (!best) {
           return null;
         }
 
         return {
-          lat,
-          lon,
-          displayName: String(first?.properties?.name || address),
-          countryCode: String(first?.properties?.countrycode || "").toUpperCase(),
+          lat: best.lat,
+          lon: best.lon,
+          displayName: best.displayName || address,
+          countryCode: best.countryCode || "",
         };
       }
 
-      async _geocodeViaNominatim(address) {
+      async _geocodeViaNominatim(address, { preferPlaceCenter = false, queryLooksPlace = false } = {}) {
+        const limit = preferPlaceCenter && queryLooksPlace ? 6 : 1;
         const query = encodeURIComponent(address);
-        const url = `${NOMINATIM_URL}?format=jsonv2&addressdetails=1&limit=1&accept-language=de,en&q=${query}`;
+        const url = `${NOMINATIM_URL}?format=jsonv2&addressdetails=1&limit=${limit}&accept-language=de,en&q=${query}`;
         let payload = null;
 
         try {
@@ -6427,25 +6637,26 @@
           }
           payload = await response.json();
         } catch {
-          payload = await this._geocodeViaNominatimJsonp(address);
+          payload = await this._geocodeViaNominatimJsonp(address, { limit });
         }
 
-        const first = Array.isArray(payload) ? payload[0] : null;
-        const lat = Number(first?.lat);
-        const lon = Number(first?.lon);
-        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        const candidates = (Array.isArray(payload) ? payload : [])
+          .map((result) => this._mapNominatimResultToGeocodeCandidate(result, address))
+          .filter(Boolean);
+        const best = this._pickBestGeocodeCandidate(candidates, { preferPlaceCenter, queryLooksPlace });
+        if (!best) {
           return null;
         }
 
         return {
-          lat,
-          lon,
-          displayName: String(first.display_name || address),
-          countryCode: String(first?.address?.country_code || "").toUpperCase(),
+          lat: best.lat,
+          lon: best.lon,
+          displayName: best.displayName || address,
+          countryCode: best.countryCode || "",
         };
       }
 
-      async _geocodeViaNominatimJsonp(address) {
+      async _geocodeViaNominatimJsonp(address, { limit = 1 } = {}) {
         if (typeof document === "undefined" || typeof window === "undefined") {
           return null;
         }
@@ -6453,7 +6664,7 @@
         const callbackName = `nominatimJsonp_${Date.now()}_${Math.random().toString(16).slice(2)}`;
         const query = encodeURIComponent(address);
         const url =
-          `${NOMINATIM_URL}?format=jsonv2&addressdetails=1&limit=1&accept-language=de,en` +
+          `${NOMINATIM_URL}?format=jsonv2&addressdetails=1&limit=${Math.max(1, Number(limit) || 1)}&accept-language=de,en` +
           `&q=${query}&json_callback=${encodeURIComponent(callbackName)}`;
 
         return new Promise((resolve) => {
@@ -7546,9 +7757,9 @@
             fillColor: "#fb923c",
             fillOpacity: 0.85,
           });
-          const name = escapeHtml(aktivitaet.titel || `Aktivität ${index + 1}`);
+          const name = escapeHtml(aktivitaet.titel || `Stopp ${index + 1}`);
           const address = aktivitaet.ort ? `<br>${escapeHtml(aktivitaet.ort)}` : "";
-          marker.bindPopup(`<strong>Aktivität: ${name}</strong>${address}`);
+          marker.bindPopup(`<strong>Stopp: ${name}</strong>${address}`);
           marker.addTo(this.markerLayer);
         });
 
@@ -7565,7 +7776,7 @@
           const label = point.typ === "unterkunft"
             ? String(eintrag.name || eintrag.titel || "Unterkunft").trim()
             : (point.typ === "aktivitaet"
-              ? String(eintrag.titel || "Aktivität").trim()
+              ? String(eintrag.titel || "Stopp").trim()
               : String(eintrag.titel || "Stop").trim());
           routeLabels.push(label || "Eintrag");
         });
@@ -8100,6 +8311,18 @@
       }
     }
 
+    function formatLinkLabel(url, maxLength = 20) {
+      const text = String(url || "").trim();
+      if (!text) {
+        return "";
+      }
+      const limit = Math.max(12, Number(maxLength) || 56);
+      if (text.length <= limit) {
+        return text;
+      }
+      return `${text.slice(0, Math.max(1, limit - 3)).trimEnd()}...`;
+    }
+
 
     function toDateTimeLocalValue(date) {
       const pad = (value) => String(value).padStart(2, "0");
@@ -8458,13 +8681,34 @@
           this._setStatus("Projekt geöffnet.");
         });
 
-        this.elemente.hauptReiter.addEventListener("click", (event) => {
+        this.elemente.hauptReiter.addEventListener("click", async (event) => {
           const button = event.target.closest("button[data-reiter]");
           if (!button) {
             return;
           }
 
-          this._setAktiverHauptReiter(button.dataset.reiter);
+          const reiterName = String(button.dataset.reiter || "").trim();
+          if (reiterName === "timeline") {
+            this.timelineTagFilterValue = "all";
+            this.timelineTypFilterValue = "all";
+            this.timelineStatusFilterValue = "all";
+          } else if (reiterName === "kosten") {
+            this.kostenAusgabenTagFilterValue = "all";
+            this.kostenAusgabenKategorieFilterValue = "all";
+          } else if (reiterName === "checkliste") {
+            this.checklisteKategorieFilterValue = "all";
+          }
+
+          this._setAktiverHauptReiter(reiterName);
+
+          if (!this.aktivesProjekt) {
+            return;
+          }
+          if (reiterName === "timeline") {
+            await this._renderTimeline({ resolveKoordinaten: false });
+          } else if (reiterName === "kosten") {
+            await this._renderKostenUebersicht();
+          }
         });
 
         this.elemente.timelineTagFilter?.addEventListener("click", async (event) => {
@@ -9011,41 +9255,6 @@
             await this._handleTimelineEintragLoeschen(typ, eintragId);
           }
         });
-
-        const startDateInput = this.elemente.eintragForm.querySelector("#eintrag-startDate");
-        const startTimeInput = this.elemente.eintragForm.querySelector("#eintrag-startTime");
-        const endDateInput = this.elemente.eintragForm.querySelector("#eintrag-endDate");
-        const endTimeInput = this.elemente.eintragForm.querySelector("#eintrag-endTime");
-        if (startDateInput && startTimeInput && endDateInput && endTimeInput) {
-          const syncEndeDefault = () => {
-            const startWert = combineDateAndTime(startDateInput.value, startTimeInput.value);
-            if (!startWert) {
-              return;
-            }
-
-            const startDatum = new Date(startWert);
-            if (Number.isNaN(startDatum.getTime())) {
-              return;
-            }
-
-            const endeWert = combineDateAndTime(endDateInput.value, endTimeInput.value);
-            const endeDatum = endeWert ? new Date(endeWert) : null;
-
-            if (endeDatum && !Number.isNaN(endeDatum.getTime()) && endeDatum > startDatum) {
-              return;
-            }
-
-            const naechsterTag = new Date(startDatum);
-            naechsterTag.setDate(naechsterTag.getDate() + 1);
-            const next = toDateTimeLocalValue(naechsterTag);
-            const [nextDate, nextTime] = next.split("T");
-            endDateInput.value = nextDate;
-            endTimeInput.value = nextTime;
-          };
-
-          startDateInput.addEventListener("change", syncEndeDefault);
-          startTimeInput.addEventListener("change", syncEndeDefault);
-        }
 
         this.elemente.ausgabeForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -9948,7 +10157,7 @@ ${"</ht"+"ml>"}
             fehlendeAngaben.push(endLabel);
           }
           if (!adresse) {
-            fehlendeAngaben.push("Adresse");
+            fehlendeAngaben.push("Ort/Adresse");
           }
 
           if (fehlendeAngaben.length) {
@@ -10424,8 +10633,9 @@ ${"</ht"+"ml>"}
               : "";
             const detailsHtml = eintrag.details ? `<p class="timeline-details">${escapeHtml(eintrag.details)}</p>` : "";
             const linkUrl = normalizeExternalLink(eintrag?.eintrag?.link);
+            const linkLabel = formatLinkLabel(linkUrl);
             const linkHtml = linkUrl
-              ? `<p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">🔗</span><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer">Öffnen</a></p>`
+              ? `<p class="timeline-meta timeline-meta-zeile"><span class="timeline-meta-symbol" aria-hidden="true">🔗</span><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(linkUrl)}">${escapeHtml(linkLabel)}</a></p>`
               : "";
             const galerieDateien = anhaenge.filter((datei) => String(datei?.id || "").trim());
             const standardBildDatei = galerieDateien.find((datei) => Boolean(datei?.istVorschaubild)) || galerieDateien[0] || null;
@@ -10694,7 +10904,7 @@ ${"</ht"+"ml>"}
         }
         const html = [
           `<button type="button" class="timeline-typ-btn ${this.timelineTypFilterValue === "unterkunft" ? "aktiv" : ""}" data-timeline-typ="unterkunft" title="Nochmal klicken zum Deselektieren">Unterkünfte</button>`,
-          `<button type="button" class="timeline-typ-btn ${this.timelineTypFilterValue === "aktivitaet" ? "aktiv" : ""}" data-timeline-typ="aktivitaet" title="Nochmal klicken zum Deselektieren">Aktivitäten</button>`,
+          `<button type="button" class="timeline-typ-btn ${this.timelineTypFilterValue === "aktivitaet" ? "aktiv" : ""}" data-timeline-typ="aktivitaet" title="Nochmal klicken zum Deselektieren">Stopps</button>`,
         ].join("");
         this.elemente.timelineTypFilter.innerHTML = html;
         this.elemente.timelineTypFilter.hidden = false;
@@ -11314,7 +11524,7 @@ ${"</ht"+"ml>"}
                   const key = kategorieName.toLowerCase();
                   const typFilter = key === "unterkunft"
                     ? "unterkunft"
-                    : (key === "aktivität" || key === "aktivitaet" ? "aktivitaet" : "");
+                    : (["aktivität", "aktivitaet", "stopp", "stop", "stopps"].includes(key) ? "aktivitaet" : "");
                   const labelHtml = typFilter
                     ? `<button type="button" class="kosten-filter-link" data-kosten-nav-action="typ" data-kosten-typ="${escapeHtml(typFilter)}" title="Zur Tagesansicht mit Filter">${escapeHtml(kategorieName)}</button>`
                     : `<button type="button" class="kosten-filter-link" data-kosten-nav-action="ausgaben-kategorie" data-kosten-kategorie="${escapeHtml(kategorieName)}" title="Zu Weitere Kostenposten mit Filter">${escapeHtml(kategorieName)}</button>`;
@@ -12046,7 +12256,7 @@ ${"</ht"+"ml>"}
           if (istManuell) {
             this.elemente.eintragTimeZoneHinweis.textContent = "Manuelle IANA-Zeitzone (z. B. Europe/Berlin).";
           } else {
-            this.elemente.eintragTimeZoneHinweis.textContent = "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt.";
+            this.elemente.eintragTimeZoneHinweis.textContent = "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt.";
           }
         }
       }
@@ -12181,7 +12391,7 @@ ${"</ht"+"ml>"}
               ? "Manuell gesetzte Zeitzone."
               : (aktivitaetTimeZone
                 ? `Automatisch erkannt: ${aktivitaetTimeZone}`
-                : "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt."),
+                : "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt."),
           });
           this.bearbeiteEintrag = { typ, id: eintragId };
           this._setEintragTypValue("aktivitaet");
@@ -12224,7 +12434,7 @@ ${"</ht"+"ml>"}
               ? "Manuell gesetzte Zeitzone."
               : (unterkunftTimeZone
                 ? `Automatisch erkannt: ${unterkunftTimeZone}`
-                : "Automatische Zeitzone wird aus Adresse/Koordinaten bestimmt."),
+                : "Automatische Zeitzone wird aus Ort/Adresse oder Koordinaten bestimmt."),
           });
           const fruehstueckInput = this.elemente.eintragForm.querySelector("#eintrag-fruehstueck");
           if (fruehstueckInput) {
@@ -12629,7 +12839,7 @@ ${"</ht"+"ml>"}
         }
 
         if (!zielEintrag || !hasCoordinates(zielEintrag)) {
-          this.elemente.karteHinweis.textContent = "Für diese Adresse konnten keine Koordinaten ermittelt werden.";
+          this.elemente.karteHinweis.textContent = "Für diesen Ort bzw. diese Adresse konnten keine Koordinaten ermittelt werden.";
           return;
         }
 
@@ -13524,7 +13734,7 @@ ${"</ht"+"ml>"}
         return "Unterkunft";
       }
 
-      return "Aktivität";
+      return "Stopp";
     }
 
     function buchungsstatusLabel(status) {
